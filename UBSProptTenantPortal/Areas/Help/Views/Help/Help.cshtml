@@ -1,0 +1,31 @@
+﻿@using System;
+@model HelpViewModel
+@{
+    ViewData["Title"] = "Help ";
+    Layout = "~/Views/Shared/_Profilelayout.cshtml";
+}
+<div class="card pageheader" style="margin-bottom: 0px !important;">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-sm-6">
+                <h4><i class="fa fa-question-circle"></i> Help</h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card h-100">
+    <div style="margin: 10px;">
+        <p style="font-size: 14px; margin-bottom: 10px;">
+            Call us at: <span>@Model.MobileNumber1</span>
+        </p>
+        <p style="font-size: 14px; margin-bottom: 10px;">
+            Call us at: <span>@Model.MobileNumber2</span>
+        </p>
+        <p style="font-size: 14px;">
+            Email us at: <a href="mailto:@Model.Email" style="text-decoration: none; color: #007bff;">@Model.Email</a>
+        </p>
+    </div>
+</div>
+<script src="~/js/profile-page-scripts.js"></script>
+

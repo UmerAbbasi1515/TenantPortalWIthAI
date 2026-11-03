@@ -1,0 +1,99 @@
+﻿.page-sidebar .sidebar-link {
+    padding: 6px 10px !important;
+}
+
+.page-sidebar .sidebar-menu .sidebar-list i {
+    display: inline-block;
+    margin-right: 10px;
+    min-width: 20px;
+    text-align: center;
+}
+
+.page-sidebar .sidebar-menu .sidebar-list strong {
+    display: inline-block;
+    font-weight: normal;
+    white-space: nowrap;
+    width: 190px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.page-sidebar .sidebar-link span {
+    display: flex;
+}
+
+    .page-sidebar .sidebar-link span i {
+        padding-top: 4px;
+    }
+
+.main-four-boxes .card {
+    border: 0;
+    box-shadow: none;
+    box-shadow: 0 5px 7px 0 rgba(0, 0, 0, 0.1);
+}
+
+.text-primary {
+    --bs-text-opacity: 1;
+    color: rgb(21 141 133) !important;
+}
+
+@media(min-width:991px) {
+    /* Hide dropdown by default */
+    .custom-drops .custom-menu {
+        display: none;
+        position: absolute;
+        top: 100%; /* Position below the parent */
+        left: 0;
+        background-color: #fff;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        padding: 10px 0;
+        width: 200px; /* Adjust width as needed */
+        margin-top: 0 !important;
+        transition: 0.5s;
+        width: 225px !important;
+        border: 1px solid #f4f4f4;
+    }
+
+    .custom-drops .profile-dropdown {
+        transition: 0.5s;
+    }
+
+        .custom-drops .profile-dropdown:hover {
+            background: #d0edec !important;
+            cursor: pointer;
+        }
+            /* Show dropdown on hover */
+            .custom-drops .profile-dropdown:hover .custom-menu {
+                display: block !important;
+                opacity: 1;
+                visibility: visible
+            }
+
+    /* Parent must have relative positioning */
+    .custom-drops .profile-dropdown {
+        position: relative;
+        padding: 0px 10px !important;
+        border-radius: 4px !important;
+    }
+
+    /* Styling for dropdown items */
+    .custom-drops .custom-menu ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+        .custom-drops .custom-menu ul li {
+            padding: 10px 15px;
+            white-space: nowrap;
+        }
+
+
+            .custom-drops .custom-menu ul li a {
+                text-decoration: none;
+                color: #333;
+                display: flex;
+                align-items: center;
+            }
+}

@@ -1,0 +1,12 @@
+/Users/apple/System/WebRelated/DotNetCoreUpdated/UBSPortals/UBSPropTLandlordPortal2025/UBSProptSharedModel/bin/Debug/net7.0/UBSProptSharedModel.deps.json
+/Users/apple/System/WebRelated/DotNetCoreUpdated/UBSPortals/UBSPropTLandlordPortal2025/UBSProptSharedModel/bin/Debug/net7.0/UBSProptSharedModel.dll
+/Users/apple/System/WebRelated/DotNetCoreUpdated/UBSPortals/UBSPropTLandlordPortal2025/UBSProptSharedModel/bin/Debug/net7.0/UBSProptSharedModel.pdb
+/Users/apple/System/WebRelated/DotNetCoreUpdated/UBSPortals/UBSPropTLandlordPortal2025/UBSProptSharedModel/obj/Debug/net7.0/UBSProptSharedModel.csproj.AssemblyReference.cache
+/Users/apple/System/WebRelated/DotNetCoreUpdated/UBSPortals/UBSPropTLandlordPortal2025/UBSProptSharedModel/obj/Debug/net7.0/UBSProptSharedModel.GeneratedMSBuildEditorConfig.editorconfig
+/Users/apple/System/WebRelated/DotNetCoreUpdated/UBSPortals/UBSPropTLandlordPortal2025/UBSProptSharedModel/obj/Debug/net7.0/UBSProptSharedModel.AssemblyInfoInputs.cache
+/Users/apple/System/WebRelated/DotNetCoreUpdated/UBSPortals/UBSPropTLandlordPortal2025/UBSProptSharedModel/obj/Debug/net7.0/UBSProptSharedModel.AssemblyInfo.cs
+/Users/apple/System/WebRelated/DotNetCoreUpdated/UBSPortals/UBSPropTLandlordPortal2025/UBSProptSharedModel/obj/Debug/net7.0/UBSProptSharedModel.csproj.CoreCompileInputs.cache
+/Users/apple/System/WebRelated/DotNetCoreUpdated/UBSPortals/UBSPropTLandlordPortal2025/UBSProptSharedModel/obj/Debug/net7.0/UBSProptSharedModel.dll
+/Users/apple/System/WebRelated/DotNetCoreUpdated/UBSPortals/UBSPropTLandlordPortal2025/UBSProptSharedModel/obj/Debug/net7.0/refint/UBSProptSharedModel.dll
+/Users/apple/System/WebRelated/DotNetCoreUpdated/UBSPortals/UBSPropTLandlordPortal2025/UBSProptSharedModel/obj/Debug/net7.0/UBSProptSharedModel.pdb
+/Users/apple/System/WebRelated/DotNetCoreUpdated/UBSPortals/UBSPropTLandlordPortal2025/UBSProptSharedModel/obj/Debug/net7.0/ref/UBSProptSharedModel.dll

@@ -1,0 +1,173 @@
+@using UBSProptTenantPortal
+@model List<Notification>
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="~/css/site.css"> <!-- Link to your CSS file -->
+    <style>
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background-color: white;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .table-container {
+            margin: 20px;
+        }
+
+        .table thead {
+            background-color: #f0f0f0;
+        }
+
+        .list-group-item {
+            transition: background-color 0.3s ease;
+        }
+
+            .list-group-item:hover {
+                background-color: #bfd1ec;
+            }
+
+        .list-group-item-custom {
+            margin-top: 4px;
+            margin-bottom: 4px;
+            position: relative;
+            display: block;
+            padding: var(--bs-list-group-item-padding-y) var(--bs-list-group-item-padding-x);
+            color: var(--bs-list-group-color);
+            text-decoration: none;
+            border: var(--bs-list-group-border-width) solid var(--bs-list-group-border-color);
+        }
+
+            .list-group-item-custom:hover {
+                background-color: var(--light-color); /* 👈 Your hover color */
+                cursor: pointer;
+            }
+
+        .unread-dot {
+            height: 10px;
+            width: 10px;
+            background-color: red;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .action-menu {
+            position: relative;
+        }
+
+        .action-dots {
+            cursor: pointer;
+            font-size: 20px;
+            padding: 4px 10px;
+        }
+
+        .menu-dropdown {
+            display: none;
+            position: absolute;
+            top: 25px;
+            right: 0;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            min-width: 120px;
+        }
+
+            .menu-dropdown.show {
+                display: block;
+            }
+
+        .menu-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+            .menu-item:hover {
+                background-color: #f5f5f5;
+            }
+    </style>
+</head>
+
+<div class="text-center" style="height: 100vh; margin-right: -10px;">
+    <div class="col-md-12 col-lg-12 col-xl-12 d-flex">
+        <div class="card invoice-card mb-0 w-100" style="display: flex; flex-direction: column; height: 100%;">
+            <div class="card-body d-flex flex-column" style="flex-grow: 1; padding-bottom: 92px;    padding-bottom: 92px;">
+                @if (Model == null || Model?.Count == 0)
+                {
+                    
+
+                    <div class="card-header pb-0" style="height: 350px;text-align: center;">
+                        <center style="padding-top: 150px;">
+
+                            @if (@ViewBag.errorGetAll == "")
+                            {
+                                <h4>No Data Found</h4>
+                            }
+                            else
+                            {
+                                <h4>@ViewBag.errorGetAll</h4>
+                            }
+
+                        </center>
+                        <a href="@Url.Action("NotificationsN", "Notification", new {area = "Notifications"})">
+                            <i class="fa fa-refresh" aria-hidden="true" style="padding-top: 5px; font-size: 18px; color: black;"
+                               ></i>
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <div class="">
+                        <div class="listScroll h-100">
+                            <ul class="list-group ui-sortable">
+                                @for (int i = 0; i < (@Model?.Count); i++)
+                                {
+                                    var rowClass = (i % 2 == 0) ? "even" : "odd";
+                                    var isUnreadClass = "";
+                                    if (@Model[i].IsRead == true)
+                                    {
+                                        isUnreadClass = "";
+                                    }
+                                    else
+                                    {
+                                        isUnreadClass = "unread-dot";
+                                    }
+                                    <li class="list-group-item-custom @rowClass" style="position: relative;">
+                                        <!-- 3-dot menu at top-right -->
+                                        <div class="action-menu" style="position: absolute; top: 10px; right: 10px;">
+                                            <span class="action-dots">⋮</span>
+                                            <div class="menu-dropdown">
+                                                <div class="menu-item" id="readbtnID" data-action="mark-as-read" data-id="@Model[i].NotificationId">Mark as Read</div>
+                                                <div class="menu-item" id="archievebtnID" data-action="archive" data-id="@Model[i].NotificationId">Mark as Archive</div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Main clickable area -->
+                                        <a href="@Url.Action("NotificationsDetails", "Notification", new { area = "Notifications", id = Model[i].NotificationId })" data-action="notification-link" data-id="@Model[i].NotificationId"
+                                           style="text-decoration: none; color: inherit; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                            <div style="display: flex; align-items: center; gap: 10px;">
+
+                                                <span class="dot @isUnreadClass" data-id="@Model[i].NotificationId"></span>
+
+                                                <div style="text-align: left;">
+                                                    <h5><strong>@Model[i].Title</strong></h5>
+                                                    <small>@Model[i].CreatedOn</small><br />
+                                                    <p style="font-weight: 200;">@Html.Raw(Model[i].Description)</p>
+                                                    <p style="padding-top: 5px; color: #43B9B2">Read More...</p>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li class="line"></li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

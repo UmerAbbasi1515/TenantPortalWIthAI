@@ -1,0 +1,609 @@
+﻿@using UBSProptTenantPortal
+@model OfferLetterDownload
+
+@{
+    ViewData["Title"] = "Sign Contract";
+    var ContractNo = ViewBag.ContractNo;
+    var dueActionID = ViewBag.DueActionID;
+    var ContractID = ViewBag.ContractID;
+    var CaseNO = ViewBag.caseNo;
+    var StageID = ViewBag.StageID;
+    var directionClass = LabelsLandlordPortal._language == "English" ? "ltr" : "rtl";
+    var callingFrom = ViewBag.callingFrom;
+    var tab = callingFrom == "Renewal" ? "RCF" : "NCF";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="~/css/site.css">
+
+    <style>
+        /* Checkbox */
+        #agreeTerms {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #43B9B2;
+            border: 2px solid #43B9B2;
+            border-radius: 4px;
+        }
+
+            #agreeTerms:checked {
+                background-color: #43B9B2;
+                border-color: #43B9B2;
+            }
+
+        /* Page container */
+        .contract-container {
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        /* Header card */
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* PDF viewer */
+        .pdf-viewer {
+            width: 100%;
+            height: 600px;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        /* Signature section */
+        .signature-section {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .signature-canvas {
+            width: 100%;
+            max-width: 500px;
+            height: 200px;
+            border: 2px dashed #43B9B2;
+            border-radius: 8px;
+            background: #fff;
+            cursor: crosshair;
+        }
+
+            .signature-canvas.signed {
+                border-style: solid;
+            }
+
+        /* Buttons */
+        .btn-primary-custom {
+            background-color: #43B9B2;
+            border-color: #43B9B2;
+            color: #fff;
+            font-weight: 500;
+            padding: 12px 32px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+            .btn-primary-custom:hover:not(:disabled) {
+                background-color: #369a94;
+                border-color: #369a94;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(67, 185, 178, 0.3);
+            }
+
+            .btn-primary-custom:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+
+        .btn-outline-custom {
+            border: 2px solid #43B9B2;
+            color: #43B9B2;
+            background: transparent;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+            .btn-outline-custom:hover {
+                background-color: #43B9B2;
+                color: #fff;
+            }
+
+        /* Terms link */
+        .terms-link {
+            color: #43B9B2;
+            font-weight: 600;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+            .terms-link:hover {
+                color: #369a94;
+                text-decoration: underline;
+            }
+
+        /* Full page loader */
+        .full-page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 99999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .loader-content {
+            text-align: center;
+            color: #fff;
+        }
+
+        .spinner-border-custom {
+            width: 3rem;
+            height: 3rem;
+            border-width: 4px;
+        }
+
+        /* Alert */
+        .alert-light-primary {
+            background-color: #e8f6f5;
+            border-left: 4px solid #43B9B2;
+        }
+
+        /* Back link */
+        .back-link {
+            color: #212529;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.25rem;
+            transition: color 0.2s ease;
+        }
+
+            .back-link:hover {
+                color: #43B9B2;
+            }
+
+        /* Agreement container */
+        .agreement-container {
+            padding: 1rem;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            margin-top: 1.5rem;
+        }
+
+        /* Submit container */
+        .submit-container {
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            .pdf-viewer {
+                height: 400px;
+            }
+
+            .submit-container {
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+            }
+        }
+    </style>
+</head>
+
+<div class="contract-container" id="scrollContainer">
+
+    @* ===== Header ===== *@
+    <div class="card sticky-header">
+        <div class="card-header bg-white">
+            <div class="row align-items-center">
+                <div class="col-12">
+                    <a href="@Url.Action("ContractAction", "Renewal", new { area = "RenewalFlow", tab = tab })"
+                       class="back-link">
+                        <i class="fa fa-arrow-left me-2"></i>Contract No. @ContractNo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ===== Main content ===== *@
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+
+                        @* PDF viewer *@
+                        <div class="mb-4">
+                            <iframe src="data:application/pdf;base64,@Model.path#toolbar=0&navpanes=0&zoom=fit"
+                                    class="pdf-viewer">
+                            </iframe>
+                        </div>
+
+                        @* Signature section *@
+                        <input id="tenantSignature" type="hidden" />
+                        <div id="tenantSignatureID">
+                            <div class="row alert alert-light-primary subtitle mt-4" role="alert">
+                                <div class="col-sm-6">
+                                    <h5 class="ps-3" style="text-align: start">Signature</h5>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3" style="width:400px">
+                                <label style="width:400px">Please sign below in a manner similar to your Emirates ID</label>
+
+                                <div id="canvas">
+                                    <canvas class="roundCorners" id="newSignature"
+                                            style="position: relative; margin: 0; padding: 0; border: 1px solid #43B9B2;"></canvas>
+                                </div>
+
+                                <button class="btn btn-outline-primary mt-1 mb-2" type="button" style="padding: 8px;"
+                                        onclick="signatureSave()">
+                                    Save signature
+                                </button>
+                                <button class="btn btn-outline-danger mt-1 mb-2" type="button" style="padding: 8px;"
+                                        onclick="signatureClear()">
+                                    Clear signature
+                                </button>
+
+                                <label class="mt-1" id="saveSignatureLabel" style="display:none;">Saved Image</label>
+                                <img id="saveSignature" alt="Saved image png"
+                                     style="display: none; position: relative; margin: 0; padding: 0; border: 1px solid #43B9B2;" />
+
+                                <button class="btn btn-outline-primary mb-3 mt-2" type="button" id="uploadBtn" style="display:none;"
+                                        onclick="ServiceRequestTenantSaveSignature('0','signature', @CaseNO)">
+                                    Upload
+                                </button>
+                            </div>
+                        </div>
+
+                        @* Terms agreement *@
+                        <div class="agreement-container">
+                            <div class="d-flex align-items-center">
+                                <input type="checkbox" id="agreeTerms" class="form-check-input me-3" style="margin-bottom: 4px;" />
+                                <label for="agreeTerms" class="mb-0">
+                                    I have read and agree to the
+                                    <a href="#"
+                                       onclick="getTerms(@ContractID); return false;"
+                                       class="terms-link"
+                                       id="btn-terms">
+                                        Terms and Conditions
+                                    </a>
+                                </label>
+                            </div>
+                        </div>
+
+                        @* Submit *@
+                        <div class="submit-container text-center" style="max-width: 400px; margin-left: auto; margin-right: auto;">
+                            <button id="submitBtn"
+                                    onclick="UpdateStage(@dueActionID, @StageID)"
+                                    class="btn btn-primary-custom w-100"
+                                    disabled>
+                                <i class="me-2"></i>Submit
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ===== Confirmation modal ===== *@
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-3" style="padding: 30px;">
+            <img src="~/assets/images/bluetick.png"
+                 alt="Check"
+                 class="img-fluid"
+                 style="object-fit: contain; max-height: 113px; padding-bottom: 10px;" />
+
+            <label><strong>Thank you for completing the Sign Contract Stage</strong></label>
+            <p class="mb-4" id="message">Successfully signed.</p>
+
+            <div class="d-flex justify-content-center gap-3">
+                <button type="button" class="btn btn-primary text-white" onclick="closeConfirmationModel()">Done</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ===== Full page loader ===== *@
+<div id="fullPageLoader" class="full-page-loader">
+    <div class="loader-content">
+        <div class="spinner-border text-light spinner-border-custom" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <div class="mt-3 fs-5">Loading...</div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="~/js/signature.js"></script>
+
+<script>// ---------- Helpers ----------
+
+    // Safely parse a fetch Response body as JSON.
+    // Returns null if the body is empty or is not valid JSON, instead of throwing.
+    async function readSafeJson(response) {
+        try {
+            const text = await response.text();
+            return text ? JSON.parse(text) : null;
+        } catch (e) {
+            console.error('Invalid JSON response:', e);
+            return null;
+        }
+    }
+
+    function showLoader() {
+        const loader = document.getElementById('fullPageLoader');
+        if (loader) loader.style.display = 'flex';
+    }
+
+    function hideLoader() {
+        const loader = document.getElementById('fullPageLoader');
+        if (loader) loader.style.display = 'none';
+    }
+
+    // Convert base64 data URL to File
+    function base64ToFile(base64, filename) {
+        const arr = base64.split(',');
+        const mime = arr[0].match(/:(.*?);/)[1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new File([u8arr], filename, { type: mime });
+    }
+
+    // Open a base64 PDF in a new tab
+    function downloadPdf(base64StringFromAPI) {
+        const byteCharacters = atob(base64StringFromAPI);
+        const byteNumbers = Array.from(byteCharacters, c => c.charCodeAt(0));
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        const blobUrl = URL.createObjectURL(blob);
+
+        window.open(blobUrl, "_blank");
+        URL.revokeObjectURL(blobUrl);
+    }
+
+    // ---------- Page load ----------
+
+    // Auto-scroll to bottom on page load
+    document.addEventListener("DOMContentLoaded", function () {
+        setTimeout(function () {
+            const scrollContainer = document.getElementById("scrollContainer");
+            if (scrollContainer) {
+                scrollContainer.scrollTo({ top: scrollContainer.scrollHeight, behavior: "smooth" });
+            }
+        }, 200);
+    });
+
+    // Initialize signature capture on load
+    window.onload = function () {
+        if (typeof signatureCapture === 'function') {
+            signatureCapture();
+        }
+    };
+
+    // ---------- Checkbox ----------
+
+    const checkbox = document.getElementById("agreeTerms");
+    const submitBtn = document.getElementById("submitBtn");
+
+    checkbox.addEventListener("change", function () {
+        submitBtn.disabled = !this.checked;
+    });
+
+    // ---------- Signature canvas ----------
+
+    let canvas = document.getElementById("newSignature");
+    let ctx = canvas.getContext("2d");
+    let drawing = false;
+
+    // Adjust canvas for high-DPI screens
+    function resizeCanvas() {
+        let ratio = Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        canvas.getContext("2d").scale(ratio, ratio);
+    }
+    resizeCanvas();
+
+    function draw(event) {
+        if (!drawing) return;
+        ctx.lineWidth = 2;
+        ctx.lineCap = "round";
+        ctx.strokeStyle = "black";
+        ctx.lineTo(event.offsetX, event.offsetY);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(event.offsetX, event.offsetY);
+    }
+
+    canvas.addEventListener("mousedown", () => drawing = true);
+    canvas.addEventListener("mouseup", () => drawing = false);
+    canvas.addEventListener("mouseout", () => drawing = false);
+    canvas.addEventListener("mousemove", draw);
+
+    // ---------- Terms and Conditions ----------
+
+    async function getTerms(ContractId) {
+        try {
+            btnshowLoader("btn-terms");
+            showLoader();
+
+            // Scroll to top
+            const scrollContainer = document.querySelector(".contract-container");
+            if (scrollContainer) {
+                scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
+            } else {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            }
+
+            const data = { ContractId: ContractId.toString() };
+
+            const response = await fetch('/RenewalFlow/Renewal/getContractTerms', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                const jsonResponse = await readSafeJson(response);
+                if (jsonResponse?.path) {
+                    downloadPdf(jsonResponse.path);
+                } else {
+                    toastr.warning("Terms and Conditions not found");
+                }
+                btnhideLoader("btn-terms");
+            } else {
+                btnhideLoader("btn-terms");
+                toastr.error("Error loading Terms and Conditions");
+                console.error('Error in response:', response.status);
+            }
+        } catch (error) {
+            btnhideLoader("btn-terms");
+            toastr.error("Network error occurred");
+            console.error('Error:', error);
+        } finally {
+            hideLoader();
+        }
+    }
+
+    // ---------- Submit stage ----------
+
+    async function UpdateStage(dueActionID, stageID) {
+        btnshowLoader("submitBtn");
+
+        const tenantSignature = $('#tenantSignature').val();
+        if (tenantSignature == "false" || tenantSignature == "") {
+            document.getElementById('tenantSignatureID').style.display = 'block';
+            toastr.warning("Stignatur is mandatory for completing this stage");
+            btnhideLoader("submitBtn");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("DueActionid", dueActionID);
+        formData.append("StageId", stageID);
+
+        try {
+            const response = await fetch('/RenewalFlow/Renewal/UpdateSignedContractStage', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const data1 = await readSafeJson(response);
+
+                if (data1?.message == "Stage Updated Successfully") {
+                    toastr.success("Stage Updated Successfully");
+
+                    const emirateIdValue = data1.emirateId[0];
+                    if (emirateIdValue != 1) {
+                        document.getElementById('message').textContent = "Successfully signed";
+                    } else {
+                        document.getElementById('message').textContent = "Contract signed successfully, however, please note that your contract will be generated after completion of Tawtheeq Process.";
+                    }
+                    showConfirmationModel();
+                } else {
+                    toastr.error("Stage Updated failed: " + data1?.message);
+                }
+            } else {
+                toastr.error("Stage Updated failed: " + response.message);
+            }
+        } catch (error) {
+            toastr.error("Stage Updated failed: " + error);
+        } finally {
+            btnhideLoader("submitBtn");
+        }
+    }
+
+    // ---------- Confirmation modal ----------
+
+    function showConfirmationModel() {
+        $('#confirmationModal').modal('show');
+    }
+
+    function closeConfirmationModel() {
+        $('#submitBtn').hide();
+        $('#confirmationModal').modal('hide');
+
+        // Wait for modal to fully close, then redirect
+        $('#confirmationModal').on('hidden.bs.modal', function () {
+            window.location.href = '/RenewalFlow/Renewal/RenewalContracts';
+        });
+    }
+
+    // ---------- Save signature ----------
+
+    async function ServiceRequestTenantSaveSignature(documentTypeID, attachementType, caseNo) {
+        showLoader();
+        const base64Image = document.getElementById("saveSignature").src;
+
+        if (!base64Image || !base64Image.startsWith("data:image")) {
+            toastr.warning("Please draw and save your signature first");
+            hideLoader();
+            return;
+        }
+
+        const signatureFile = base64ToFile(base64Image, 'signature.png');
+
+        const expiryDate = "";
+        const formData = new FormData();
+        formData.append("caseNo", caseNo);
+        formData.append("expiry", expiryDate);
+        formData.append("attachementType", attachementType);
+        formData.append("documentTypeId", documentTypeID);
+        formData.append("file", signatureFile);
+
+        try {
+            const response = await fetch('/RenewalFlow/Renewal/SaveSignature', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const result = await readSafeJson(response);
+
+                if (result?.success) {
+                    document.getElementById('tenantSignatureID').style.display = 'none';
+                    document.getElementById('tenantSignature').value = "true";
+                    toastr.success("Signature uploaded successfully");
+                } else {
+                    toastr.error("Upload failed: " + result?.message);
+                    document.getElementById('tenantSignature').value = "false";
+                }
+            } else {
+                const errorText = await response.text();
+                toastr.error("Server error: " + errorText);
+                document.getElementById('tenantSignature').value = "false";
+            }
+        } catch (error) {
+            toastr.error("Network error occurred");
+            console.error('Error:', error);
+            document.getElementById('tenantSignature').value = "false";
+        } finally {
+            hideLoader();
+        }
+    }</script>

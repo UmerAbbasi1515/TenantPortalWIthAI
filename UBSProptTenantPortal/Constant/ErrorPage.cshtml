@@ -1,0 +1,8 @@
+@page
+@model ErrorPageModel
+
+<h2>Error Occurred</h2>
+
+<p>@Model.ErrorMessage</p>
+
+<a href="@Model.UrlToRetry">Click here to retry the same operation.</a>

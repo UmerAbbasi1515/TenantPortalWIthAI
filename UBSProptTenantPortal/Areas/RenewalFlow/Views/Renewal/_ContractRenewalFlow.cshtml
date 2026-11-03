@@ -1,0 +1,730 @@
+@using UBSProptTenantPortal
+@model List<ContractWithDueAction>
+@{
+    // Partial view: must NOT set Layout or ViewData["Title"]; the parent page owns those.
+    var directionClass = LabelsLandlordPortal._language == "English" ? "ltr" : "rtl";
+
+    var labels = new[] {
+        "Upload Docs", "Documents Submitted", "Docs Approved", "Make Payment",
+        "Sign Contract", "Contract Signed", "Municipal Approval", "Download Contract"
+    };
+}
+
+@*
+    NOTE: A partial cannot have its own <head>. The two <link> tags and the <style>
+    block below are injected into the parent's <body>. Ideally they live once in
+    _Layout.cshtml (or a @section Styles) so they are not duplicated if this partial
+    is rendered more than once.
+*@
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" href="~/css/site.css">
+
+<style>
+    /* Contract box */
+    .contract-box {
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+
+    /* Stepper */
+    .stepper-container {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .step {
+        display: flex;
+        align-items: center;
+        background-color: #ccc;
+        color: white;
+        border-radius: 20px;
+        padding: 4px 10px;
+        font-weight: bold;
+        position: relative;
+        cursor: default;
+    }
+
+        .step.active {
+            background-color: #43B9B2;
+            color: white;
+        }
+
+        .step span {
+            margin-left: 5px;
+        }
+
+        .step .tooltip-text {
+            visibility: hidden;
+            background-color: rgba(123, 199, 197, 0.1) !important;
+            color: #43B9B2;
+            border: 2px solid #43B9B2 !important;
+            text-align: center;
+            padding: 8px 12px;
+            border-radius: 4px;
+            position: absolute;
+            z-index: 1;
+            bottom: 140%;
+            opacity: 0;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+        }
+
+        .step:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .step.completed {
+            background-color: #43B9B2;
+            color: white;
+            border-radius: 100%;
+        }
+
+    /* Action buttons */
+    .action-buttons button {
+        margin-right: 10px;
+        padding: 5px 10px;
+        border: none;
+        border-radius: 8px;
+        background-color: #f1f1f1;
+        cursor: pointer;
+    }
+
+    /* Step guidance */
+    .guide-box {
+        background-color: rgba(67, 185, 178, 0.1) !important;
+        color: #43B9B2 !important;
+        border-radius: 8px;
+        padding: 12px;
+        margin-top: 10px;
+        text-align: center;
+    }
+
+    .guide-content {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #333;
+    }
+
+        .guide-content i {
+            color: #43B9B2;
+            font-size: 16px;
+        }
+
+    /* Contract header */
+    .contract-header {
+        margin-bottom: 10px;
+    }
+
+    .contract-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .contract-sub {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 14px;
+        color: #555;
+    }
+
+    .contract-title {
+        font-weight: bold;
+    }
+
+    .contract-request {
+        color: #007bff;
+        font-weight: 500;
+    }
+
+    /* Custom buttons */
+    .custom-btn-green {
+        border: 2px solid rgb(67, 185, 178) !important;
+        color: rgb(67, 185, 178) !important;
+        background-color: transparent;
+    }
+
+        .custom-btn-green:hover {
+            color: #43B9B2;
+            border: 2px solid #43B9B2 !important;
+        }
+
+    .custom-btn-red {
+        border: 2px solid red !important;
+        color: red !important;
+        background-color: transparent;
+    }
+
+        .custom-btn-red:hover {
+            color: #43B9B2;
+            border: 2px solid #43B9B2 !important;
+        }
+
+    .stage-custom-btn {
+        background-color: rgba(67, 185, 178, 0.1) !important;
+        color: #43B9B2 !important;
+        border: 1px solid;
+    }
+</style>
+
+<div class="text-center" style="height: 100vh;">
+
+    @* ===== Page header ===== *@
+    <div class="card pageheader sticky-header">
+        <div class="card-header">
+            <div class="row">
+                <div class="col-12 text-start" style="display:flex; flex-direction:row; justify-content:space-between">
+                    <h4>
+                        <i class="fa fa-file-signature"></i> Contract Renwal Flow
+                    </h4>
+                    <div>
+                        <span>Video tutorial of the contract renwal process </span>
+                        <a href="javascript:void(0);" onclick="showVidoTutorail()" style="color: #43b9b2; text-decoration: underline;">
+                            Click Here
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model != null)
+    {
+        <div class="col-md-12 col-lg-12 col-xl-12 mt-2 d-flex">
+            <div class="card invoice-card mb-0 w-100" style="display: flex; flex-direction: column; height: 100%;">
+                <div class="card-body d-flex flex-column" style="flex-grow: 1;">
+
+                    @foreach (var contract in Model)
+                    {
+                        var stageId = contract.StageId;
+                        var currentStep = stageId - 2;
+                        var status = contract.Status;
+                        string statusClass = LabelsTenantPortal.GetStatusCssClass(status);
+
+                        <div class="contract-box">
+
+                            @* ----- Contract header ----- *@
+                            <div class="contract-header">
+                                <div class="contract-top">
+                                    <div class="contract-title">
+                                        <strong>@contract?.PropertyName</strong> — (Contract No:
+                                        <a href="@Url.Action("ContractDetails", "Contract", new { area = "Contracts", contractID = contract?.ContractId })">
+                                            <span style="color: #43B9B2">@contract?.ContractNo</span>
+                                        </a>
+                                        )
+                                    </div>
+                                    <div>
+                                        <span class="status-custom @statusClass">@status</span>
+                                    </div>
+                                </div>
+
+                                <div class="contract-sub">
+                                    <div class="contract-dates">
+                                        @contract?.FromDate → @contract?.ToDate
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(contract?.CaseId.ToString()) && contract?.CaseId.ToString() != "0")
+                                    {
+                                        <div class="contract-title">
+                                            <strong>Request No: </strong>
+                                            <a href="@Url.Action("ServiceRequestDetailN", "ServiceRequest", new { area = "ServiceRequests", caseNo = contract?.CaseId, tab = 1, callingFrom = "Renewal" })">
+                                                <span style="color: #43B9B2">@contract?.CaseId</span>
+                                            </a>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            @* ----- Stage 1: action buttons / other stages: stepper ----- *@
+                            @if (stageId == 1)
+                            {
+                                <div class="action-buttons mt-2">
+                                    @* Renew *@
+                                    <button type="button" id="btn-renew-@contract?.ContractId" class="btn custom-btn-green me-2"
+                                            onclick="ContractRenew('@contract?.ContractNo','@contract?.ContractId','@contract?.DueActionId')" title="Search">
+                                        <i class="fas fa-sync-alt" style="font-size:14px"></i>
+                                        Renew
+                                    </button>
+
+                                    @* Extend *@
+                                    <button type="button" id="btn-extend-@contract?.ContractId" class="btn custom-btn-green me-2"
+                                            onclick="ContractExtend('@contract?.ContractNo','@contract?.ContractId','@contract?.DueActionId')" title="Search">
+                                        <i class="fas fa-calendar-plus" style="font-size:14px"></i>
+                                        Extend
+                                    </button>
+
+                                    @* Vacate *@
+                                    <button type="button" id="btn-vacate-@contract?.ContractId" class="btn custom-btn-red"
+                                            onclick="ContractTerminate('@contract?.ContractNo','@contract?.ContractId','@contract?.DueActionId')" title="Search">
+                                        <i class="fas fa-sign-out-alt" style="font-size:14px"></i>
+                                        Vacate
+                                    </button>
+
+                                    @* Offer letter *@
+                                    @if (contract?.ShowOfferLetter == 1)
+                                    {
+                                        <button type="button" id="btn-offerletter-@contract?.ContractId" class="btn custom-btn-green"
+                                                onclick="OfferLetter('@contract?.ContractId')" title="Search">
+                                            <i class="fas fa-sign-out-alt" style="font-size:14px"></i>
+                                            Offer Letter
+                                        </button>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div style="display: flex; justify-content: center; padding-top: 10px;">
+                                    <div class="stepper-container" style="padding-top: 10px">
+                                        @for (int i = 0; i < labels.Length; i++)
+                                        {
+                                            var isActive = i == currentStep;
+                                            var isCompleted = i < currentStep;
+                                            var stepNumber = i + 1;
+                                            var stepStageId = stepNumber + 1;
+                                            var contractNo = contract?.ContractNo;
+                                            var contractId = contract?.ContractId;
+                                            var dueActionId = contract?.DueActionId;
+
+                                            <div class="step @(isActive ? "active" : (isCompleted ? "completed" : ""))"
+                                                 title="@labels[i]"
+                                                 onclick="@(isActive ? $"handleStepClick({stepStageId}, {stepNumber}, '{labels[i]}','{contract?.CaseId}',{contractId},{contractNo},{dueActionId} )" : "void(0)")">
+                                                <div>
+                                                    @if (isCompleted)
+                                                    {
+                                                        @* Tick *@
+                                                        <span style="margin-left: 0px !important">&#10003;</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        @stepNumber
+                                                    }
+                                                    @if (isActive)
+                                                    {
+                                                        <span> @labels[i]</span>
+                                                    }
+                                                    <div class="tooltip-text">@labels[i]</div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+
+                            <div style="height:10px"></div>
+
+                            @* ----- Stage action link ----- *@
+                            @if (stageId == 2)
+                            {
+                                <a class="btn btn-secondary mt-1 stage-custom-btn"
+                                   id="btn-download"
+                                   href="@Url.Action("ServiceRequestDetailN", "ServiceRequest", new { area = "ServiceRequests", caseNo = contract?.CaseId, tab = 2, callingFrom = "Renewal" })">
+                                    Upload Documents
+                                </a>
+                            }
+                            else if (stageId == 3)
+                            {
+                                <a class="btn btn-secondary mt-1 stage-custom-btn"
+                                   id="btn-download"
+                                   href="@Url.Action("ServiceRequestDetailN", "ServiceRequest", new { area = "ServiceRequests", caseNo = contract?.CaseId, tab = 2, callingFrom = "Renewal" })">
+                                    Documents Submitted
+                                </a>
+                            }
+                            else if (stageId == 4)
+                            {
+                                <a class="btn btn-secondary mt-1 stage-custom-btn"
+                                   id="btn-download"
+                                   href="@Url.Action("ServiceRequestDetailN", "ServiceRequest", new { area = "ServiceRequests", caseNo = contract?.CaseId, tab = 2, callingFrom = "Renewal" })">
+                                    Documents Approved
+                                </a>
+                            }
+                            else if (stageId == 5)
+                            {
+                                <a class="btn btn-secondary mt-1 stage-custom-btn"
+                                   id="btn-download"
+                                   href="@Url.Action("OutStandingPayments", "Renewal", new { area = "RenewalFlow", ContractId = contract?.ContractId, ContractNo = contract?.ContractNo, callingFrom = "Renewal" })">
+                                    Make Payment
+                                </a>
+                            }
+                            else if (stageId == 6)
+                            {
+                                <a class="btn btn-secondary mt-1 stage-custom-btn"
+                                   id="btn-download-@contract?.ContractNo"
+                                   href="#"
+                                   onclick="DownloadContract('@contract?.ContractNo', '@contract?.ContractId', '@contract?.DueActionId', '@contract?.CaseId', '@contract?.StageId', 'Renewal')">
+                                    Sign Contract
+                                </a>
+                            }
+                            else if (stageId == 8)
+                            {
+                                <a class="btn btn-secondary mt-1 stage-custom-btn"
+                                   id="btn-download"
+                                   href="@Url.Action("MunicipalityApproval", "Renewal", new { area = "RenewalFlow", ContractId = contract?.ContractId, ContractNo = contract?.ContractNo, DueActionID = contract?.DueActionId, callingFrom = "Renewal" })">
+                                    Municipality Approval
+                                </a>
+                            }
+
+                            @* ----- Step guidance ----- *@
+                            <div class="guide-box">
+                                <div class="guide-content">
+                                    <i class="fa fa-info-circle" aria-hidden="true"></i>
+                                    <span>@GetStepGuide(contract?.IsAllPaid == 1 ? 51 : stageId)</span>
+                                </div>
+                            </div>
+
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @* ===== Video tutorial modal ===== *@
+            <div class="modal fade" id="VideoTutorialModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content rounded-3">
+                        <div class="modal-header border-0">
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <video class="w-100 rounded" controls>
+                                <source src="~/assets/Video/WithMunciplity.mp4" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card-header pb-0" style="height: 350px">
+            <center style="padding-top: 150px;">
+                <h4>@ViewBag.errorRenewalContract</h4>
+            </center>
+            <i class="fa fa-refresh" aria-hidden="true" style="padding-top: 5px; font-size: 18px; color: black;"
+               onclick="window.location.href = '@Url.Action("RenewalContracts", "Renewal", new { area = "RenewalFlow" })'"></i>
+        </div>
+    }
+
+    @* ===== Contract download loader ===== *@
+    <div id="contractDownloadfullPageLoader" style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 99999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 20px;
+            color: white;">
+        <div>
+            <div class="spinner-border text-light" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Generating contract information please wait ...</span>
+            </div>
+            <div style="margin-top: 15px;">Generating contract information please wait ...</div>
+        </div>
+    </div>
+
+    <script>
+        // ---------- Helpers ----------
+
+        // Safely parse a fetch Response body as JSON.
+        // Returns null if the body is empty or is not valid JSON, instead of throwing.
+        async function readSafeJson(response) {
+            try {
+                const text = await response.text();
+                return text ? JSON.parse(text) : null;
+            } catch (e) {
+                console.error('Invalid JSON response:', e);
+                return null;
+            }
+        }
+
+        function showLoader() {
+            const loader = document.getElementById('contractDownloadfullPageLoader');
+            if (loader) loader.style.display = 'flex';
+        }
+
+        function hideLoader() {
+            const loader = document.getElementById('contractDownloadfullPageLoader');
+            if (loader) loader.style.display = 'none';
+        }
+
+        function showVidoTutorail() {
+            var videoModal = new bootstrap.Modal(document.getElementById('VideoTutorialModal'));
+            videoModal.show();
+        }
+
+        function downloadPdf(base64StringFromAPI) {
+            const base64String = base64StringFromAPI;
+            const byteCharacters = atob(base64String);
+            const byteNumbers = Array.from(byteCharacters, c => c.charCodeAt(0));
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: 'application/pdf' });
+
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'file.pdf';
+            link.click();
+
+            URL.revokeObjectURL(link.href);
+        }
+
+        // ---------- Stepper ----------
+
+        function handleStepClick(stageId, stepNumber, label, caseNo, contractId, contractNo, dueActionId) {
+            if (stageId == 2 && label == "Upload Docs") {
+                const url = `/ServiceRequests/ServiceRequest/ServiceRequestDetailN?caseNo=${caseNo}&tab=2&callingFrom=Renewal`;
+                window.location.href = url;
+                alert("Stage ID: " + stageId + "\nStep No: " + stepNumber + "\nLabel: " + label + "\nCaseID: " + caseNo);
+            }
+            else if (stageId == 3 && label == "Documents Submitted") {
+                const url = `/ServiceRequests/ServiceRequest/ServiceRequestDetailN?caseNo=${caseNo}&tab=2&callingFrom=Renewal`;
+                window.location.href = url;
+                alert("Stage ID: " + stageId + "\nStep No: " + stepNumber + "\nLabel: " + label + "\nCaseID: " + caseNo);
+            }
+            else if (stageId == 4 && label == "Docs Approved") {
+                const url = `/ServiceRequests/ServiceRequest/ServiceRequestDetailN?caseNo=${caseNo}&tab=2&callingFrom=Renewal`;
+                window.location.href = url;
+                alert("Stage ID: " + stageId + "\nStep No: " + stepNumber + "\nLabel: " + label);
+            }
+            else if (stageId == 5 && label == "Make Payment") {
+                const baseUrl = '@Url.Action("OutStandingPayments", "Renewal", new { area = "RenewalFlow" })';
+                const url = `${baseUrl}&ContractId=${contractId}&ContractNo=${contractNo}`;
+                window.location.href = url;
+                alert("Stage ID: " + stageId + "\nStep No: " + stepNumber + "\nLabel: " + label);
+            }
+            else if (stageId == 6 && label == "Sign Contract") {
+                DownloadContract(contractNo, contractId, dueActionId, caseNo);
+                alert("Stage ID: " + stageId + "\nStep No: " + stepNumber + "\nLabel: " + label);
+            }
+            else if (stageId == 7 && label == "Contract Signed") {
+                alert("Stage ID: " + stageId + "\nStep No: " + stepNumber + "\nLabel: " + label);
+            }
+            else if (stageId == 8 && label == "Municipal Approval") {
+                const baseUrl = '@Url.Action("MunicipalityApproval", "Renewal", new { area = "RenewalFlow" })';
+                const url = `${baseUrl}&ContractId=${contractId}&ContractNo=${contractNo}`;
+                window.location.href = url;
+                alert("Stage ID: " + stageId + "\nStep No: " + stepNumber + "\nLabel: " + label);
+            }
+            else {
+                alert("Stage ID: " + stageId + "\nStep No: " + stepNumber + "\nLabel: " + label);
+            }
+        }
+
+        // ---------- Renew ----------
+
+        async function ContractRenew(ContractNo, ContractID, DueActionID) {
+            try {
+                btnshowLoader(`btn-renew-${ContractID}`);
+                const data = {
+                    ContractId: ContractID.toString(),
+                    ContractNo: ContractNo.toString(),
+                    DueActionID: DueActionID.toString()
+                };
+                const response = await fetch('/RenewalFlow/Renewal/ContractRenewFunction', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    btnhideLoader(`btn-renew-${ContractID}`);
+                    const res = await readSafeJson(response);
+
+                    if (!res || res.success == false) {
+                        toastr.error("Something went wrong");
+                        btnhideLoader(`btn-renew-${ContractID}`);
+                    } else {
+                        window.location.href = res.redirectUrl;
+                        btnhideLoader(`btn-renew-${ContractID}`);
+                    }
+                } else {
+                    btnhideLoader(`btn-renew-${ContractID}`);
+                    console.error('Error in response:', response.status);
+                }
+            } catch (error) {
+                btnhideLoader(`btn-renew-${ContractID}`);
+                console.error('Error:', error);
+            }
+        }
+
+        // ---------- Extend ----------
+
+        async function ContractExtend(ContractNo, ContractID, DueActionID) {
+            try {
+                btnshowLoader(`btn-extend-${ContractID}`);
+                const data = {
+                    ContractId: ContractID.toString(),
+                    ContractNo: ContractNo.toString(),
+                    DueActionID: DueActionID.toString()
+                };
+                const response = await fetch('/RenewalFlow/Renewal/ContractExtendFunction', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    const res = await readSafeJson(response);
+
+                    if (!res || res.success == false) {
+                        btnhideLoader(`btn-extend-${ContractID}`);
+                        toastr.error("Something went wrong");
+                    } else {
+                        window.location.href = res.redirectUrl;
+                        btnhideLoader(`btn-extend-${ContractID}`);
+                    }
+                } else {
+                    btnhideLoader(`btn-extend-${ContractID}`);
+                    console.error('Error in response:', response.status);
+                }
+            } catch (error) {
+                btnhideLoader(`btn-extend-${ContractID}`);
+                console.error('Error:', error);
+            }
+        }
+
+        // ---------- Vacate ----------
+
+        async function ContractTerminate(ContractNo, ContractID, DueActionID) {
+            try {
+                btnshowLoader(`btn-vacate-${ContractID}`);
+                const data = {
+                    ContractId: ContractID.toString(),
+                    ContractNo: ContractNo.toString(),
+                    DueActionID: DueActionID.toString()
+                };
+                const response = await fetch('/RenewalFlow/Renewal/ContractVacateFunction', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    const res = await readSafeJson(response);
+
+                    if (!res || res.success == false) {
+                        toastr.error("Something went wrong");
+                        btnhideLoader(`btn-vacate-${ContractID}`);
+                    } else {
+                        window.location.href = res.redirectUrl;
+                        btnhideLoader(`btn-vacate-${ContractID}`);
+                    }
+                } else {
+                    btnhideLoader(`btn-vacate-${ContractID}`);
+                    console.error('Error in response:', response.status);
+                }
+            } catch (error) {
+                btnhideLoader(`btn-vacate-${ContractID}`);
+                console.error('Error:', error);
+            }
+        }
+
+        // ---------- Offer letter ----------
+
+        async function OfferLetter(ContractId) {
+            try {
+                btnshowLoader(`btn-offerletter-${ContractId}`);
+                const response = await fetch('/RenewalFlow/Renewal/OfferLetterDownload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ContractId: ContractId.toString() })
+                });
+
+                if (response.ok) {
+                    const jsonResponse = await readSafeJson(response);
+
+                    if (jsonResponse?.path) {
+                        downloadPdf(jsonResponse.path);
+                    } else {
+                        alert("Download failed: contract not found");
+                    }
+                    btnhideLoader(`btn-offerletter-${ContractId}`);
+                } else {
+                    btnhideLoader(`btn-offerletter-${ContractId}`);
+                    console.error('Error in response:', response.status);
+                }
+            } catch (error) {
+                btnhideLoader(`btn-offerletter-${ContractId}`);
+                console.error('Error:', error);
+            }
+        }
+
+        // ---------- Sign contract ----------
+
+        async function DownloadContract(ContractNo, ContractID, DueActionID, CaseNO, StageId) {
+            showLoader();
+            var id = "btn-download-" + ContractNo;
+            try {
+                btnshowLoader(id);
+                const data = {
+                    ContractId: ContractID.toString(),
+                    ContractNo: ContractNo.toString(),
+                    DueActionID: DueActionID.toString(),
+                    CaseNo: CaseNO.toString(),
+                    StageID: StageId.toString(),
+                };
+                const response = await fetch('/RenewalFlow/Renewal/ContractDownload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    const res = await readSafeJson(response);
+
+                    if (res?.success == true) {
+                        if (res.redirectUrl != "") {
+                            window.location.href = res.redirectUrl;
+                        } else {
+                            toastr.error("Something went wrong");
+                        }
+                    } else {
+                        toastr.error("Something went wrong");
+                    }
+                } else {
+                    console.error('Error in response:', response.status);
+                    toastr.error("Error in response:" + response.status);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                toastr.error("Error:" + error);
+            } finally {
+                hideLoader();
+                btnhideLoader(id);
+            }
+        }
+    </script>
+</div>
+
+@functions {
+    public string GetStepGuide(int? stageId)
+    {
+        return stageId switch
+        {
+            1 => "-For annual contract renewal, press “Renew”",
+            2 => "Please upload the required documents to proceed with your Renewal Request.",
+            3 => "The documents have been successfully submitted. You will be notified within 2 working days once the verification is completed by the FABP team.",
+            4 => "Your documents have been approved by FAB Properties and the renewal process has been initiated. You can expect the details of the new contract to be shared within 1 to 2 working days.",
+            5 => "The first rental installment and all other charges must be paid through “Online”. The remaining rental installments can be paid by cheques (made out to FAB Properties) which can be submitted through the Aramex service (at no additional cost) initiated by FABP.",
+            51 => "Thanks for making the Payment. Once online payment is acknowledged or physical cheque copies are received, you will be notified to “Sign Tenancy Contract",
+            52 => "Payment completed. Once online payment is acknowledged or physical cheque copies are received, you will be notified to \'Sign Tenancy Contract\'",
+            6 => "Your tenancy contract is available to sign.",
+            7 => "Your signed contract is under review with our team. We will notify you of the next step within 1 to 2 working days.",
+            8 => "Your contract requires municipality processing from your side, please click on the link on the municipality tab to complete the required process and confirm.",
+            81 => "Please click on the Login To Tawtheeq link to complete the municipality process.",
+            _ => "Dear Tenant, Thanks for choosing FABP as your real estate service provider, your contract will be ready to download within 1 to 2 working days."
+        };
+    }
+}

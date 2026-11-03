@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/UBSAIAgent/UBSAIAgent.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/UBSAIAgent.Integration/UBSAIAgent.Integration.csproj" />
+  </Folder>
+</Solution>

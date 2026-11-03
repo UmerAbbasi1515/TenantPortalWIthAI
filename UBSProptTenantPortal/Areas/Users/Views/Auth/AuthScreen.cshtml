@@ -1,0 +1,1559 @@
+﻿@using UBSProptTenantPortal
+@inject IHttpContextAccessor accessor
+@{
+    ViewData["Title"] = "Login";
+    Layout = "";
+    var companyName = accessor.HttpContext?.Session.GetString("CompanyName") ?? "UBSPropt";
+}
+
+
+@{
+    var languageList = new List<String>
+{
+        AuthLabelsPortal.select,
+        AuthLabelsPortal.english,
+        AuthLabelsPortal.arabic
+        };
+    var countryCodeListCode = new List<String>
+{
+        "","+971","+92"
+        };
+    var countryCodeListName = new List<string>
+{
+        AuthLabelsPortal.selectaCountry,
+        AuthLabelsPortal.unitedArabEmirate971,
+        AuthLabelsPortal.pakistan92,
+        };
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+          content="Edmin admin is super flexible, powerful, clean &amp; modern responsive bootstrap admin template with unlimited possibilities.">
+    <meta name="keywords"
+          content="admin template, Edmin admin template, best javascript admin, dashboard template, bootstrap admin template, responsive admin template, web app">
+    <meta name="author" content="pixelstrap">
+    <title>@ViewData["Title"] - Tenant Portal - @companyName</title>
+    <!-- Favicon icon-->
+    <link rel="icon" href="../assets/images/favicon/Propt-Favicon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="../assets/images/favicon/Propt-Favicon.png" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com/">
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;300;400;500;600;700;800;900&amp;display=swap"
+          rel="stylesheet">
+    <!-- Font awesome icon css -->
+    <link rel="stylesheet" href="../assets/css/vendors/%40fortawesome/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/vendors/%40fortawesome/fontawesome-free/css/fontawesome.css">
+    <link rel="stylesheet" href="../assets/css/vendors/%40fortawesome/fontawesome-free/css/brands.css">
+    <link rel="stylesheet" href="../assets/css/vendors/%40fortawesome/fontawesome-free/css/solid.css">
+    <link rel="stylesheet" href="../assets/css/vendors/%40fortawesome/fontawesome-free/css/regular.css">
+    <!-- Ico Icon css -->
+    <link rel="stylesheet" type="text/css" href="../assets/css/vendors/%40icon/icofont/icofont.css">
+    <!-- Flag Icon css -->
+    <link rel="stylesheet" type="text/css" href="../assets/css/vendors/flag-icon.css">
+    <!-- Themify Icon css -->
+    <link rel="stylesheet" type="text/css" href="../assets/css/vendors/themify-icons/themify-icons/css/themify.css">
+    <!-- Animation css -->
+    <link rel="stylesheet" type="text/css" href="../assets/css/vendors/animate.css/animate.css">
+    <!-- Whether Icon css-->
+    <link rel="stylesheet" type="text/css" href="../assets/css/vendors/weather-icons/css/weather-icons.min.css">
+    <!-- App css-->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link id="color" rel="stylesheet" href="../assets/css/color-1.css" media="screen">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        .pin-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 0px !important;
+            padding-top: 0px !important;
+        }
+
+        .pin-input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            margin: 0 5px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+        }
+
+            .pin-input:focus {
+                outline: none;
+                border-color: #43B9B2;
+            }
+
+        .mpin-input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            margin: 0 5px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+        }
+
+            .mpin-input:focus {
+                outline: none;
+                border-color: #43B9B2;
+            }
+
+
+        .new-mpin-input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            margin: 0 5px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+        }
+
+            .new-mpin-input:focus {
+                outline: none;
+                border-color: #43B9B2;
+            }
+
+        .confirm-mpin-input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            margin: 0 5px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+        }
+
+            .confirm-mpin-input:focus {
+                outline: none;
+                border-color: #43B9B2;
+            }
+
+        .circle {
+            border-radius: 50%;
+            height: 10px;
+            width: 10px;
+            margin-right: 10px;
+            margin-top: 6px;
+            background-color: red;
+            /* Default color */
+        }
+
+        .hint {
+            display: flex;
+            align-items: start;
+            padding-left: 10px;
+            padding-right: 10px;
+            color: red;
+        }
+
+            .hint.valid {
+                color: green;
+            }
+
+            .hint .circle.valid {
+                background-color: green;
+            }
+    </style>
+</head>
+
+
+<body>
+    <div class="container-fluid p-0">
+        <div class="row englishlanguage" id="mainLeft">
+            <div class="col-xl-7 login_one_image"></div>
+            <div class="col-xl-5 p-0">
+                <div class="login-card login-dark login-bg">
+                    <div>
+
+                        <!-- logo start -->
+                        <div>
+                            <a class="logo" href="/dashboard">
+                                <img class="img-fluid for-light" src="/assets/images/login/logo2.png"
+                                     alt="looginpage">
+                            </a>
+                        </div>
+                        <!-- logo end -->
+                        <center>
+                            <div class="loader-wrapper-custom" id="loadingIndicator" style="display: none;">
+                                <div class="loader"></div>
+                            </div>
+                        </center>
+                        @if (ViewBag.errorAuthScreen != null)
+                        {
+                            <center>
+
+                                <center style="padding-top: 20px;">
+                                    <div>@ViewBag.errorAuthScreen</div>
+                                </center>
+
+                            </center>
+                        }
+
+                        @* WITH FIREBASE *@
+                        @*Phone Number Field*@
+                        <div class=" login-main login-dark login-bg" id="divPhoneNumberValidation" style="display: block; padding: 20px;">
+                            <div>
+                                <form class="theme-form">
+                                    <h2 class="text-center">@AuthLabelsPortal.login</h2>
+                                    <p class="text-center">
+                                        @AuthLabelsPortal.oneTimePassword
+                                    </p>
+                                    <div class="form-group" id="divCountryCode">
+                                        <label class="col-form-label" for="country">@AuthLabelsPortal.countryCode</label>
+                                        <select class="form-control" id="country" onclick="clearErrorMessages(divCountryCode)" name="country" required>
+                                            @for (int i = 0; i < countryCodeListCode.Count; i++)
+                                            {
+                                                <option value="@countryCodeListCode[i]">
+                                                    @(@countryCodeListName[i])
+                                                </option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <div id="recaptcha-container" style="display: none;"></div>
+                                    <!-- Hidden for invisible reCAPTCHA -->
+                                    <div class="form-group" id="divPhoneNumber">
+                                        <label class="col-form-label" for="phone">@AuthLabelsPortal.mobileNumber</label>
+                                        <input class="form-control" type="tel" id="phone" name="phone" onchange="clearErrorMessages(divPhoneNumber)"
+                                               placeholder="" required oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                    </div>
+                                    <div class="form-group mb-0 checkbox-checked">
+                                        <div class="text-end mt-4 pb-5">
+                                            <a class="btn btn-primary btn-block w-100 text-white" href="#" id="btngetOTPID"
+                                               onclick="getPhoneNumberValidation('False')">@AuthLabelsPortal.getOtp</a>
+                                        </div>
+
+                                    </div>
+
+                                </form>
+
+                            </div>
+                        </div>
+
+                        @* OTP DIV *@
+                        <div class="login-main login-dark login-bg" id="divOTPValidation" style="display: none; padding: 20px;">
+                            <div>
+                                <form class="theme-form" style="padding-top:60px">
+                                    <h2 class="text-center">@AuthLabelsPortal.otpVerification</h2>
+                                    <div style="padding-top:5px"></div>
+                                    <p class="text-center">
+                                        @AuthLabelsPortal.enterTheCode<span id="phoneNumberDisplay"></span>
+                                    </p>
+                                    <div id="otpByPhone" style="text-align: center;">
+                                        <div class="pin-container" style="display: flex;">
+                                            <input type="text" inputmode="numeric" maxlength="1" class="pin-input" oninput="moveToNext(this)">
+                                            <input type="text" inputmode="numeric" maxlength="1" class="pin-input" oninput="moveToNext(this)">
+                                            <input type="text" inputmode="numeric" maxlength="1" class="pin-input" oninput="moveToNext(this)">
+                                            <input type="text" inputmode="numeric" maxlength="1" class="pin-input" oninput="moveToNext(this)">
+                                            <input type="text" inputmode="numeric" maxlength="1" class="pin-input" oninput="moveToNext(this)">
+                                            <input type="text" inputmode="numeric" maxlength="1" class="pin-input" oninput="moveToNext(this)">
+                                        </div>
+                                    </div>
+                                    <div class="form-group mb-2 checkbox-checked">
+                                        <div class="text-end mt-4 pb-5">
+                                            <a class="btn btn-primary btn-block w-100 text-white" href="#"
+                                               id="VerifyOtpButtonByPhone" style="display: block;margin-top: 4px;"
+                                               onclick="verifyOTPValidation()">@AuthLabelsPortal.verify</a>
+                                        </div>
+                                    </div>
+                                </form>
+
+                                <center>
+                                    <a href="#" onclick="cancelOTPVerifyByPhone()"
+                                       style="text-decoration: underline;">@AuthLabelsPortal.cancel</a>
+                                </center>
+                            </div>
+                        </div>
+
+
+                        @* USER ROLES *@
+                        <div class="login-main login-dark login-bg" id="divSelectRole"
+                             style="display: none; padding: 20px;">
+                            <div>
+                                <form class="theme-form" style="padding-top:65px">
+                                    <h4 class="text-center" id="userNameField">@AuthLabelsPortal.userNameEng</h4>
+                                    <p class="text-center">@AuthLabelsPortal.selectRole</p>
+                                    <div id="divSelectRoleErr">
+                                        <div class="listScroll" id="roleContainer"></div>
+                                    </div>
+                                    <div class="form-group mb-0 checkbox-checked">
+                                        <div class="text-end mt-4 pb-5">
+                                            <a class="btn btn-primary btn-block w-100 text-white" href="#"
+                                               id="resetUserRoleButton" style="display: bloc;"
+                                               onclick="restGetUserRole()">@AuthLabelsPortal.reset</a>
+                                        </div>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+
+                        @* MPIN *@
+                        <div class="login-main login-dark login-bg" id="divmpin" style="display: none;padding: 20px;">
+                            <div>
+
+                                <form class="theme-form">
+                                    <p id="roleID" style="display:none"></p>
+                                    <h2 class="text-center">@AuthLabelsPortal.mpinVerification</h2>
+                                    <p class="text-center">@AuthLabelsPortal.enterYourmPin</p>
+                                    <div id="divmpinOTP" style="text-align: center;">
+                                        <div class="pin-container" style="display: flex">
+                                            <input type="text" inputmode="numeric" maxlength="1" class="mpin-input" oninput="moveToNext(this)">
+                                            <input type="text" inputmode="numeric" maxlength="1" class="mpin-input" oninput="moveToNext(this)">
+                                            <input type="text" inputmode="numeric" maxlength="1" class="mpin-input" oninput="moveToNext(this)">
+                                            <input type="text" inputmode="numeric" maxlength="1" class="mpin-input" oninput="moveToNext(this)">
+                                            <input type="text" inputmode="numeric" maxlength="1" class="mpin-input" oninput="moveToNext(this)">
+                                            <input type="text" inputmode="numeric" maxlength="1" class="mpin-input" oninput="moveToNext(this)">
+                                        </div>
+                                    </div>
+                                    <div class="form-group mb-0 checkbox-checked">
+                                        <p style="text-align: center; padding-top: 5px;">
+                                            @AuthLabelsPortal.personalDataDisclaimerShare
+                                        </p>
+                                        <div class="text-end mt-4 pb-5">
+                                            <a class="btn btn-primary btn-block w-100 text-white" href="#"
+                                               id="VerifymPinBtnButton" style="display: bloc;"
+                                               onclick="ValidateRoleByMPIN()">@AuthLabelsPortal.login</a>
+                                        </div>
+
+                                    </div>
+                                    <center>
+                                        <a href="#" onclick="getPhoneNumberValidation('True')"
+                                           style="text-decoration: underline; color: #43B9B2" id="btnforgotMpin">@AuthLabelsPortal.forgotMpin</a>
+
+                                    </center>
+                                    <center>
+                                        <a href="#" onclick="cancelMpin()"
+                                           style="text-decoration: underline;">@AuthLabelsPortal.cancel</a>
+                                    </center>
+                                </form>
+
+                            </div>
+                        </div>
+
+
+                        @* Reset MPIN *@
+
+                        @*New For MPIN*@
+                        <input id="isForgotMpin" type="hidden" />
+                        @*END*@
+
+                        <div class="login-main login-dark login-bg" id="divSetNewMpin" style="display: none;padding: 20px;">
+                            <div>
+                                <div id="" style="display:block; text-align:center;">
+
+                                    <!-- Enter New MPIN -->
+                                    <h2 class="text-center" style="margin-bottom: 1px !important;">Set your MPIN</h2>
+                                    <p class="text-center" style=" margin-bottom: 1px !important;">Enter a six digit MPIN</p>
+                                    <div id="divResetmpinOTP" style="text-align: center;">
+                                        <div class="pin-container" style="display:flex; justify-content:center;">
+                                            <input type="text" inputmode="numeric" maxlength="1" class="new-mpin-input" oninput="moveToNext(this)">
+                                            <input type="text" inputmode="numeric" maxlength="1" class="new-mpin-input" oninput="moveToNext(this)">
+                                            <input type="text" inputmode="numeric" maxlength="1" class="new-mpin-input" oninput="moveToNext(this)">
+                                            <input type="text" inputmode="numeric" maxlength="1" class="new-mpin-input" oninput="moveToNext(this)">
+                                            <input type="text" inputmode="numeric" maxlength="1" class="new-mpin-input" oninput="moveToNext(this)">
+                                            <input type="text" inputmode="numeric" maxlength="1" class="new-mpin-input" oninput="moveToNext(this)">
+                                        </div>
+
+                                        <br />
+
+                                        <!-- Re-Enter MPIN -->
+                                        <p class="text-center" style=" margin-bottom: 1px !important;">Re-Enter a six digit MPIN</p>
+                                        <div class="pin-container" style="display:flex; direction:ltr; justify-content:center;">
+                                            <input type="text" inputmode="numeric" maxlength="1" class="confirm-mpin-input" oninput="moveToNext(this)">
+                                            <input type="text" inputmode="numeric" maxlength="1" class="confirm-mpin-input" oninput="moveToNext(this)">
+                                            <input type="text" inputmode="numeric" maxlength="1" class="confirm-mpin-input" oninput="moveToNext(this)">
+                                            <input type="text" inputmode="numeric" maxlength="1" class="confirm-mpin-input" oninput="moveToNext(this)">
+                                            <input type="text" inputmode="numeric" maxlength="1" class="confirm-mpin-input" oninput="moveToNext(this)">
+                                            <input type="text" inputmode="numeric" maxlength="1" class="confirm-mpin-input" oninput="moveToNext(this)">
+                                        </div>
+                                    </div>
+
+                                    <center>
+                                        <div class="text-end mt-4 pb-2">
+                                            <a class="btn btn-primary btn-block w-100 text-white" href="#"
+                                               id="resetMpinButton" style="display: block;"
+                                               onclick="SaveNewMpin()">Save MPIN</a>
+                                        </div>
+                                    </center>
+
+                                    <center>
+                                        <a href="#" onclick="cancelResetMpin()"
+                                           style="text-decoration: underline;">@AuthLabelsPortal.cancel</a>
+                                    </center>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Grid system xl col 5 and padding 0 end BASICALLY right DIV -->
+            </div>
+            <!-- row class end -->
+        </div>
+        <div id="fullPageLoader" style="
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0,0,0,0.5);
+                    z-index: 99999;
+                    display: none;
+                    justify-content: center;
+                    align-items: center;
+                    text-align: center;
+                    font-size: 20px;
+                    color: white;
+                ">
+            <div>
+                <div class="spinner-border text-light" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <div style="margin-top: 15px;">Loading...</div>
+            </div>
+        </div>
+
+        @* =====================================================================
+            MAIN SCRIPT (phone OTP, roles, MPIN, email flow, UI helpers)
+            ===================================================================== *@
+        <script>
+            // =====================================================================
+            // Safe JSON helper
+            // Reads the response body once and never throws on empty / non-JSON bodies.
+            // =====================================================================
+            async function readJson(response, fallback = {}) {
+                try {
+                    const text = await response.text();
+                    return text ? JSON.parse(text) : fallback;
+                } catch (error) {
+                    console.error('Invalid JSON response:', error);
+                    return fallback;
+                }
+            }
+
+            // Kept so every existing safeJson(...) call keeps working unchanged
+            function safeJson(response, fallback = {}) {
+                return readJson(response, fallback);
+            }
+
+            // =====================================================================
+            // Phone / OTP flow
+            // =====================================================================
+            function getPhoneNumber() {
+                const countryCode = document.getElementById("country").value;
+                const phoneInput = document.getElementById("phone").value;
+                return countryCode + phoneInput;
+            }
+
+            function verifyOTPValidation() {
+                showLoader();
+                btnshowLoader("VerifyOtpButtonByPhone");
+
+                clearErrorMessages(otpByPhone);
+
+                let pin = '';
+                document.querySelectorAll('.pin-input').forEach(input => pin += input.value);
+
+                if (!pin) {
+                    btnhideLoader("VerifyOtpButtonByPhone");
+                    showErrorMessage(otpByPhone, "   Please enter the OTP sent to your Mobile Number");
+                    hideLoader();
+                    return;
+                }
+                if (pin.length !== 6) {
+                    btnhideLoader("VerifyOtpButtonByPhone");
+                    showErrorMessage(otpByPhone, "   Please enter the valid OTP sent to your Mobile Number");
+                    hideLoader();
+                    return;
+                }
+
+                const confirmationResult = window.confirmationResult;
+
+                if (!confirmationResult) {
+                    btnhideLoader("VerifyOtpButtonByPhone");
+                    showErrorMessage(otpByPhone, "   Confirmation result is not defined. Please request a new OTP.");
+                    hideLoader();
+                    return;
+                }
+
+                confirmationResult.confirm(pin)
+                    .then(async () => {
+                        btnhideLoader("VerifyOtpButtonByPhone");
+                        hideLoader();
+                        await ValidateUserAndGeneratToken(pin);
+                    })
+                    .catch((error) => {
+                        btnhideLoader("VerifyOtpButtonByPhone");
+                        showErrorMessage(otpByPhone, "   Invalid OTP. Please try again with the correct OTP.");
+                        console.error(error);
+                        hideLoader();
+                    });
+            }
+
+            // Call backend API to validate user and generate token
+            async function ValidateUserAndGeneratToken(pin) {
+                showLoader();
+                btnshowLoader("VerifyOtpButtonByPhone");
+                try {
+                    const phoneNumber = getPhoneNumber();
+                    document.cookie = "phoneNumber=" + encodeURIComponent(phoneNumber) + "; path=/";
+
+                    const response = await fetch('/Users/Auth/GenerateFirbaseUserToken', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            Mobile: phoneNumber,
+                            OTP: pin,
+                            otpCode: pin,
+                            OTPStatus: true
+                        })
+                    });
+
+                    if (response.ok) {
+                        btnhideLoader("VerifyOtpButtonByPhone");
+                        const jsonResponse = await safeJson(response);
+                        const token = jsonResponse.token;
+                        const mpinSet = jsonResponse.mpinSet;
+                        const isForgotMpin = document.getElementById('isForgotMpin').value;
+
+                        if (mpinSet == "False") {
+                            document.getElementById("divSetNewMpin").style.display = "block";
+                            document.getElementById("divOTPValidation").style.display = 'none';
+                            return;
+                        } else if (isForgotMpin == 'True') {
+                            clearPins("#divSetNewMpin .confirm-mpin-input");
+                            clearPins("#divSetNewMpin .new-mpin-input");
+                            document.getElementById("divSetNewMpin").style.display = "block";
+                            document.getElementById("divOTPValidation").style.display = 'none';
+                            return;
+                        } else {
+                            GetUserRole(token);
+                        }
+                    } else {
+                        btnhideLoader("VerifyOtpButtonByPhone");
+                        console.error('Error in response:', response.status);
+                        showErrorMessage(otpByPhone, "   An error occurred while generating token. Please try again.");
+                    }
+                } catch (error) {
+                    btnhideLoader("VerifyOtpButtonByPhone");
+                    showErrorMessage(otpByPhone, "   Something went wrong. Please try again.");
+                } finally {
+                    hideLoader();
+                }
+            }
+
+            // Refresh token (called on page load)
+            async function refreshToken() {
+                try {
+                    const phoneNumber = getPhoneNumber();
+                    if (!phoneNumber) { hideLoader(); return; }
+
+                    const response = await fetch('/Users/Auth/RefreshToken', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ Mobile: phoneNumber })
+                    });
+
+                    if (response.ok) {
+                        const jsonResponse = await safeJson(response);
+                        const token = jsonResponse.token;
+                        await GetUserRole(token);
+                        hideLoader();
+                    } else {
+                        hideLoader();
+                        toastr.error('Error', "Something went wrong");
+                        console.error('Error in response:', response.status);
+                        showErrorMessage(otpByPhone, "   An error occurred while generating new token. Please try again.");
+                    }
+                } catch (error) {
+                    hideLoader();
+                    console.error('Error:', error);
+                    showErrorMessage(otpByPhone, "   Something went wrong. Please try again.");
+                }
+            }
+
+            // =====================================================================
+            // Roles
+            // =====================================================================
+            async function GetUserRole(token) {
+                showLoader();
+                btnshowLoader("VerifyOtpButtonByPhone");
+                btnshowLoader("resetMpinButton");
+                try {
+                    const response = await fetch('/Users/Auth/GetUserRoles', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({})
+                    });
+
+                    if (response.ok) {
+                        btnhideLoader("VerifyOtpButtonByPhone");
+                        btnhideLoader("resetMpinButton");
+                        const jsonResponse = await safeJson(response);
+
+                        document.getElementById('divSetNewMpin').style.display = 'none';
+                        document.getElementById("divPhoneNumberValidation").style.display = 'none';
+                        document.getElementById("divOTPValidation").style.display = 'none';
+                        document.getElementById("divSelectRole").style.display = 'block';
+
+                        const container = document.getElementById('roleContainer');
+                        container.innerHTML = '';
+
+                        if (jsonResponse.data && jsonResponse.data.length > 0) {
+                            document.getElementById('userNameField').textContent = jsonResponse.userName;
+                            jsonResponse.data.forEach(roleP => {
+                                container.innerHTML += `
+                                    <div style="display: flex; justify-content: space-between; align-items: center;
+                                                padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin: 5px 0;
+                                                cursor: pointer; transition: background-color 0.2s ease;"
+                                         onClick="ProceedToLogin(${roleP.roleId})"
+                                         onmouseover="this.style.backgroundColor='#f9f9f9'"
+                                         onmouseout="this.style.backgroundColor='white'">
+                                        <div style="display: flex; align-items: center; padding-right: 10px;">
+                                            <i class="fa fa-home" style="padding-left: 5px;"></i>
+                                            <div style="text-align: left; padding-left: 25px;">
+                                                ${roleP.roleName}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <i class="material-icons" style="margin-left: 8px;">keyboard_arrow_right</i>
+                                        </div>
+                                    </div>`;
+                            });
+                        } else {
+                            container.innerHTML = "<center><p><b>No roles found.</b></p></center>";
+                        }
+                    } else {
+                        btnhideLoader("VerifyOtpButtonByPhone");
+                        btnhideLoader("resetMpinButton");
+                        console.error('Error in response:', response.status);
+                        showErrorMessage(otpByPhone, "   An error occurred while getting user roles. Please try again.");
+                    }
+                } catch (error) {
+                    btnhideLoader("VerifyOtpButtonByPhone");
+                    btnhideLoader("resetMpinButton");
+                    showErrorMessage(otpByPhone, "   Something went wrong. Please try again.");
+                } finally {
+                    hideLoader();
+                }
+            }
+
+            // Submit selected role ID and navigate to MPIN entry
+            async function ProceedToLogin(id) {
+                showLoader();
+                try {
+                    const response = await fetch('/Users/Auth/ProceedToLogin', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ UserRole: id.toString() })
+                    });
+                    clearErrorMessages(divSelectRoleErr);
+
+                    if (response.ok) {
+                        if (id.toString() == "4") {
+                            await ValidatePublicRole(id.toString());
+                            return;
+                        }
+
+                        document.getElementById('roleID').textContent = id.toString();
+                        document.getElementById("divPhoneNumberValidation").style.display = 'none';
+                        document.getElementById("divOTPValidation").style.display = 'none';
+                        document.getElementById("divSelectRole").style.display = 'none';
+                        clearErrorMessages(divmpinOTP);
+                        document.getElementById("divmpin").style.display = 'block';
+                        clearPins("#divmpin .mpin-input");
+                    } else {
+                        console.error('Error in response:', response.status);
+                        showErrorMessage(divSelectRoleErr, "Something went wrong. Please try again.");
+                    }
+                } catch (error) {
+                    showErrorMessage(divSelectRoleErr, "Something went wrong. Please try again.");
+                } finally {
+                    // Role 4 keeps the loader visible while redirecting
+                    if (id.toString() != "4") {
+                        hideLoader();
+                    }
+                }
+            }
+
+            async function ValidatePublicRole(id) {
+                try {
+                    showLoader();
+                    const response = await fetch('/Users/Auth/ValidatePublicRole', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ roleId: id.toString() })
+                    });
+                    clearErrorMessages(divSelectRoleErr);
+
+                    if (response.ok) {
+                        const result = await safeJson(response);
+
+                        if (result.statusCode === "200") {
+                            const redirectUrl =
+                                result.redirectUrl +
+                                "?tokenParam=" + encodeURIComponent(result.jwtToken) +
+                                "&companyName=" + encodeURIComponent(result.companyName) +
+                                "&userNameEng=" + encodeURIComponent(result.userNameEng) +
+                                "&email=" + encodeURIComponent(result.email);
+                            window.location.replace(redirectUrl);
+                        } else {
+                            hideLoader();
+                            btnhideLoader("VerifymPinBtnButton");
+                            showErrorMessage(divmpinOTP, "Please enter the valid MPIN");
+                        }
+                    } else {
+                        hideLoader();
+                        btnhideLoader("VerifymPinBtnButton");
+                        console.error('Error in response:', response.status);
+                        showErrorMessage(divSelectRoleErr, "Something went wrong. Please try again.");
+                    }
+                } catch (error) {
+                    hideLoader();
+                    btnhideLoader("VerifymPinBtnButton");
+                    showErrorMessage(divSelectRoleErr, "Something went wrong. Please try again.");
+                }
+            }
+
+            // =====================================================================
+            // MPIN
+            // =====================================================================
+            async function ValidateRoleByMPIN() {
+                showLoader();
+                try {
+                    btnshowLoader("VerifymPinBtnButton");
+                    clearErrorMessages(divmpinOTP);
+
+                    let pin = '';
+                    document.querySelectorAll('.mpin-input').forEach(input => pin += input.value);
+
+                    if (!pin) {
+                        hideLoader();
+                        btnhideLoader("VerifymPinBtnButton");
+                        showErrorMessage(divmpinOTP, "Please enter your MPIN");
+                        return;
+                    }
+                    if (pin.length !== 6) {
+                        hideLoader();
+                        btnhideLoader("VerifymPinBtnButton");
+                        showErrorMessage(divmpinOTP, "Please enter your valid MPIN");
+                        return;
+                    }
+
+                    const roleID = document.getElementById('roleID').textContent;
+
+                    const response = await fetch('/Users/Auth/ValidateRoleByMpin', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            MPIN: pin,
+                            RoleId: roleID.toString()
+                        })
+                    });
+
+                    if (response.ok) {
+                        window.location.href = "@Url.Action("MainDashboard", "TenantDashboard", new { area = "Dashboard" })";
+                    } else {
+                        btnhideLoader("VerifymPinBtnButton");
+                        console.error('Error in response:', response.status);
+                        showErrorMessage(divmpinOTP, "Please enter the valid MPIN");
+                    }
+                } catch (error) {
+                    hideLoader();
+                    btnhideLoader("VerifymPinBtnButton");
+                    showErrorMessage(divmpinOTP, "Something went wrong.Please try again.");
+                } finally {
+                    btnhideLoader("VerifymPinBtnButton");
+                }
+            }
+
+            function SaveNewMpin() {
+                const divResetmpinOTP = document.getElementById("divResetmpinOTP");
+                clearErrorMessages(divResetmpinOTP);
+
+                let newMpin = '';
+                let confirmMpin = '';
+                document.querySelectorAll('.new-mpin-input').forEach(input => newMpin += input.value);
+                document.querySelectorAll('.confirm-mpin-input').forEach(input => confirmMpin += input.value);
+
+                if (newMpin.length !== 6 || confirmMpin.length !== 6) {
+                    showErrorMessage(divResetmpinOTP, "Please enter complete 6 digit MPIN.");
+                    return;
+                }
+                if (newMpin !== confirmMpin) {
+                    showErrorMessage(divResetmpinOTP, "MPIN does not match.");
+                    return;
+                }
+                SaveNewMpinFunction(newMpin);
+            }
+
+            async function SaveNewMpinFunction(mpinParam) {
+                clearErrorMessages(divResetmpinOTP);
+                showLoader();
+                try {
+                    const response = await fetch('/Users/Auth/SaveNewMpin', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ mpin: mpinParam })
+                    });
+
+                    const jsonResponse = await safeJson(response);
+
+                    if (response.ok) {
+                        if (jsonResponse.statusVal == "ok") {
+                            GetUserRole(jsonResponse.token);
+                        } else {
+                            showErrorMessage(divResetmpinOTP, jsonResponse.message);
+                        }
+                    } else {
+                        btnhideLoader("resetMpinButton");
+                        console.error('Error in response:', response.status);
+                        showErrorMessage(divResetmpinOTP, jsonResponse.message || "Something went wrong. Please try again.");
+                    }
+                } catch (error) {
+                    btnhideLoader("resetMpinButton");
+                    showErrorMessage(divResetmpinOTP, error);
+                } finally {
+                    btnhideLoader("resetMpinButton");
+                    hideLoader();
+                }
+            }
+
+            // =====================================================================
+            // Navigation helpers
+            // =====================================================================
+            function enableLoginWithEmail() {
+                isFirebaseOTPEnable = true;
+                const divPhoneNumberValidation = document.getElementById('divPhoneNumberValidation');
+                const validateEmail = document.getElementById('divValidateEmail');
+
+                if (divPhoneNumberValidation && validateEmail) {
+                    divPhoneNumberValidation.style.display = 'none';
+                    validateEmail.style.display = 'block';
+                }
+            }
+
+            window.enablePhoneLogin = function () {
+                isFirebaseOTPEnable = true;
+                const divPhoneNumberValidation = document.getElementById('divPhoneNumberValidation');
+                const validateEmail = document.getElementById('divValidateEmail');
+
+                if (divPhoneNumberValidation && validateEmail) {
+                    divPhoneNumberValidation.style.display = 'block';
+                    validateEmail.style.display = 'none';
+                }
+            };
+
+            // Cancel OTP verification and go back
+            function cancelOTPVerifyByPhone() {
+                const isForgotMpin = document.getElementById("isForgotMpin").value;
+                if (isForgotMpin == 'True') {
+                    document.getElementById("divmpin").style.display = 'block';
+                    document.getElementById("divOTPValidation").style.display = 'none';
+                } else {
+                    btnhideLoader("btngetOTPID");
+                    document.getElementById("divPhoneNumberValidation").style.display = 'block';
+                    document.getElementById("divOTPValidation").style.display = 'none';
+                }
+            }
+
+            // Reset role selection and return to phone input
+            function restGetUserRole() {
+                btnshowLoader("resetUserRoleButton");
+                document.getElementById("phone").value = '';
+                document.getElementById("isForgotMpin").value = '';
+                document.getElementById("btngetOTPID").innerText = 'Get OTP';
+                document.getElementById("divPhoneNumberValidation").style.display = 'block';
+                document.getElementById("divSelectRole").style.display = 'none';
+                btnhideLoader("resetUserRoleButton");
+            }
+
+            function clearPins(selector) {
+                const inputs = document.querySelectorAll(selector);
+                inputs.forEach(input => { input.value = ""; });
+
+                // focus first box
+                if (inputs.length > 0) {
+                    inputs[0].focus();
+                }
+            }
+
+            // Cancel MPIN input and return to role selection
+            function cancelMpin() {
+                document.getElementById("divSelectRole").style.display = 'block';
+                document.getElementById("divmpin").style.display = 'none';
+            }
+
+            // Cancel set-MPIN and return to role selection
+            function cancelResetMpin() {
+                document.getElementById("divSelectRole").style.display = 'block';
+                document.getElementById("divSetNewMpin").style.display = 'none';
+            }
+
+            function forgotMpin() {
+                document.getElementById("divSelectRole").style.display = 'block';
+                document.getElementById("divmpin").style.display = 'none';
+            }
+
+            // =====================================================================
+            // Email flow
+            // =====================================================================
+            async function getEmailValidation() {
+                const emailInput = document.getElementById("validateEmailField");
+                const divEmail = document.getElementById("divEmail");
+
+                clearErrorMessages(divEmail);
+
+                if (!emailInput || !emailInput.value.trim()) {
+                    showErrorMessage(divEmail, '@AuthLabelsPortal.pleaseEnterEmailAddressFirst');
+                    return;
+                }
+
+                const isValid = await validateEmailRegex(emailInput.value);
+
+                if (isValid) {
+                    getEmailValidationFunction(emailInput.value);
+                } else {
+                    showErrorMessage(divEmail, '@AuthLabelsPortal.pleaseEnterValidEmailAddress');
+                }
+            }
+
+            async function validateEmailRegex(email) {
+                showLoader();
+                try {
+                    const response = await fetch('/Users/Auth/IsValidEmailAjax', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email })
+                    });
+
+                    const result = await safeJson(response);
+                    return result.isValid;
+                } catch (error) {
+                    console.error('Regex validation error:', error);
+                    return false;
+                } finally {
+                    hideLoader();
+                }
+            }
+
+            async function getEmailValidationFunction(email) {
+                const divEmail = document.getElementById("divEmail");
+                showLoader();
+                try {
+                    btnshowLoader("handleValidateEmailbtn");
+
+                    const response = await fetch('/Users/Auth/validateUserByEmail', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email })
+                    });
+
+                    if (response.ok) {
+                        const jsonResponse = await safeJson(response);
+
+                        if (jsonResponse.message === "@AuthLabelsPortal.userNotFound") {
+                            showErrorMessage(divEmail, "@AuthLabelsPortal.userDoesNotExist");
+                        } else if (jsonResponse.isPasswordSet.trim().toLowerCase() === "true") {
+                            document.getElementById('email').innerText = email;
+                            showPasswordByEmailDiv();
+                        } else {
+                            document.getElementById('emailMask').textContent = email;
+                            clearPins("#OTPDivByEmail .pin-input");
+                            showOTPByEmailDiv();
+                        }
+                    } else {
+                        showErrorMessage(divEmail, '@AuthLabelsPortal.AnyError');
+                    }
+                } catch (error) {
+                    console.error('Validation Error:', error);
+                    showErrorMessage(divEmail, '@AuthLabelsPortal.AnyError');
+                } finally {
+                    btnhideLoader("handleValidateEmailbtn");
+                    hideLoader();
+                }
+            }
+
+            function showPasswordByEmailDiv() {
+                clearErrorMessages(divPassword);
+                document.getElementById('divValidateEmail').style.display = 'none';
+                document.getElementById('divEmailAndPassword').style.display = 'block';
+            }
+
+            function showOTPByEmailDiv() {
+                document.getElementById('divValidateEmail').style.display = 'none';
+                document.getElementById('OTPDivByEmail').style.display = 'block';
+            }
+
+            async function forgotPasswordByEmail() {
+                const email = document.getElementById('email').innerText;
+                const divEmail = document.getElementById("divEmail");
+                showLoader();
+                try {
+                    btnshowLoader("forgotBtnID");
+
+                    const response = await fetch('/Users/Auth/ForgetPasswordByEmail', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email })
+                    });
+
+                    if (response.ok) {
+                        const jsonResponse = await safeJson(response);
+
+                        if (jsonResponse.message.trim().toLowerCase() === "otp sent successfully" &&
+                            jsonResponse.statusCode === "200") {
+                            clearPins("#OTPDivByEmail .pin-input");
+                            document.getElementById('OtpCodeFromBackend').value = jsonResponse.otpCode;
+                            document.getElementById('emailMask').textContent = email;
+                            document.getElementById('divValidateEmail').style.display = 'none';
+                            document.getElementById('divEmailAndPassword').style.display = 'none';
+                            document.getElementById('OTPDivByEmail').style.display = 'block';
+                        } else if (jsonResponse.message != "") {
+                            showErrorMessage(divEmail, jsonResponse.message);
+                        }
+                    } else {
+                        showErrorMessage(divEmail, '@AuthLabelsPortal.AnyError');
+                    }
+                } catch (error) {
+                    console.error('Forgot Password Error:', error);
+                    showErrorMessage(divEmail, '@AuthLabelsPortal.AnyError');
+                } finally {
+                    btnhideLoader("forgotBtnID");
+                    hideLoader();
+                }
+            }
+
+            function otpVerifyByEmail() {
+                const pin = Array.from(document.querySelectorAll('.pin-input')).map(i => i.value).join('');
+
+                clearErrorMessages(divOTPByEmail);
+                if (!pin || pin.length !== 6) {
+                    showErrorMessage(divOTPByEmail, '@AuthLabelsPortal.enterOtpSentOnEmail');
+                    return;
+                }
+
+                const otp = document.getElementById('OtpCodeFromBackend').value;
+                const email = document.getElementById("validateEmailField").value;
+
+                otpVerifyByEmailFunction(email, otp);
+            }
+
+            async function otpVerifyByEmailFunction(email, otp) {
+                showLoader();
+                try {
+                    btnshowLoader("VerifyOtpButtonByEmail");
+
+                    const response = await fetch('/Users/Auth/verifyOTPByEmail', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ OTP: otp, Email: email })
+                    });
+
+                    if (response.ok) {
+                        btnhideLoader("VerifyOtpButtonByEmail");
+                        const jsonResponse = await safeJson(response);
+
+                        if (jsonResponse.message.trim().toLowerCase() === "user exist" &&
+                            jsonResponse.statusCode === "200") {
+                            document.getElementById('OTPDivByEmail').style.display = 'none';
+                            document.getElementById('divSetPassword').style.display = 'block';
+                        } else if (jsonResponse.message != "") {
+                            showErrorMessage(divOTPByEmail, jsonResponse.message);
+                        } else {
+                            showErrorMessage(divOTPByEmail, '@AuthLabelsPortal.invalidOTP');
+                        }
+                    }
+                } catch (error) {
+                    btnhideLoader("VerifyOtpButtonByEmail");
+                    showErrorMessage(divOTPByEmail, error);
+                    console.error('OTP Error:', error);
+                } finally {
+                    hideLoader();
+                    btnhideLoader("VerifyOtpButtonByEmail");
+                }
+            }
+
+            function resetPasswordByEmail() {
+                const password = document.getElementById("resetPassword").value;
+                const confirmPassword = document.getElementById("confirmPassword").value;
+                const divResetPassword = document.getElementById("divResetPassword");
+                const divConfirmPassword = document.getElementById("divConfirmPassword");
+
+                clearErrorMessages(divResetPassword);
+                clearErrorMessages(divConfirmPassword);
+
+                if (!password) {
+                    showErrorMessage(divResetPassword, '@AuthLabelsPortal.pleaseEnterPassword');
+                    return;
+                }
+                if (!confirmPassword) {
+                    showErrorMessage(divConfirmPassword, '@AuthLabelsPortal.pleaseEnterConfirmPassword');
+                    return;
+                }
+                if (password !== confirmPassword) {
+                    showErrorMessage(divConfirmPassword, '@AuthLabelsPortal.passwordDoesNotMatch');
+                    return;
+                }
+                if (!isStrongPassword(password)) {
+                    showErrorMessage(divConfirmPassword, '@AuthLabelsPortal.passwordMustbeStrong');
+                    return;
+                }
+
+                const email = document.getElementById("validateEmailField").value;
+                resetPasswordByEmailFunction(password, email);
+            }
+
+            async function resetPasswordByEmailFunction(password, email) {
+                try {
+                    btnshowLoader("resetPasswordbtn");
+                    showLoader();
+
+                    const response = await fetch('/Users/Auth/savePasswordByEmail', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ Password: password, Email: email })
+                    });
+
+                    if (response.ok) {
+                        const jsonResponse = await safeJson(response);
+
+                        if (jsonResponse.message.trim().toLowerCase() === "password updated successfully." &&
+                            jsonResponse.statusCode === "200") {
+                            window.location.href = '@Url.Action("AuthScreen", "Auth")';
+                        } else {
+                            showErrorMessage(divOTPByEmail, '@AuthLabelsPortal.invalidOTP');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Reset Password Error:', error);
+                } finally {
+                    hideLoader();
+                    btnhideLoader("resetPasswordbtn");
+                }
+            }
+
+            function isStrongPassword(password) {
+                return password.length >= 8 &&
+                       /\d/.test(password) &&
+                       /[^\w\s]/.test(password) &&
+                       /[a-z]/.test(password) &&
+                       /[A-Z]/.test(password);
+            }
+
+            function togglePasswordVisibility(inputId, toggleId) {
+                const input = document.getElementById(inputId);
+                const toggle = document.getElementById(toggleId);
+                const isVisible = input.type === "text";
+
+                input.type = isVisible ? "password" : "text";
+                toggle.classList.toggle('show', isVisible);
+                toggle.classList.toggle('hide', !isVisible);
+            }
+
+            function passwordHints() {
+                const password = document.getElementById('resetPassword').value;
+                updateHint('hintLength', 'circleLength', password.length >= 8);
+                updateHint('hintNumber', 'circleNumber', /\d/.test(password));
+                updateHint('hintSpecial', 'circleSpecial', /[^\w\s]/.test(password));
+                updateHint('hintCase', 'circleCase', /[a-z]/.test(password) && /[A-Z]/.test(password));
+            }
+
+            function updateHint(hintId, circleId, isValid) {
+                document.getElementById(hintId).classList.toggle('valid', isValid);
+                document.getElementById(circleId).classList.toggle('valid', isValid);
+            }
+
+            function validatePasswordByEmail() {
+                const email = document.getElementById("validateEmailField").value;
+                const password = document.getElementById("password").value;
+                const divEmail = document.getElementById("divEmail");
+                const divPassword = document.getElementById("divPassword");
+
+                clearErrorMessages(divEmail);
+                clearErrorMessages(divPassword);
+
+                if (!password) {
+                    showErrorMessage(divPassword, '@AuthLabelsPortal.pleaseEnterPasswordFirst');
+                    return;
+                }
+
+                validatePasswordByEmailFunction(email, password);
+            }
+
+            async function validatePasswordByEmailFunction(email, password) {
+                try {
+                    btnshowLoader("handleSignInClickForEmailPasswordbtn");
+                    showLoader();
+
+                    const response = await fetch('/Users/Auth/validatePasswordByEmail', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ Email: email, Password: password })
+                    });
+
+                    // Body is read once only (the original read it twice)
+                    const jsonResponse = await safeJson(response);
+
+                    if (response.ok) {
+                        if (jsonResponse.message.trim().toLowerCase() === "token generated successfully" &&
+                            jsonResponse.statusCode.trim().toLowerCase() === "200") {
+                            window.location.href = '@Url.Action("Operational", "Home")';
+                        } else {
+                            showErrorMessage(divPassword, '@AuthLabelsPortal.incorrectCredentials');
+                        }
+                    }
+                } catch (error) {
+                    hideLoader();
+                    btnhideLoader("handleSignInClickForEmailPasswordbtn");
+                    showErrorMessage(document.getElementById("divPassword"), '@AuthLabelsPortal.AnyError');
+                }
+            }
+
+            function handleBackValidateEmailDivClick() {
+                document.getElementById('div1').style.display = 'block';
+                document.getElementById('divValidateEmail').style.display = 'none';
+                document.getElementById('divSetPassword').style.display = 'none';
+            }
+
+            function backByEmailFromdivSetPassword() {
+                document.getElementById('divValidateEmail').style.display = 'block';
+                document.getElementById('divEmailAndPassword').style.display = 'none';
+                document.getElementById('OTPDivByEmail').style.display = 'none';
+                document.getElementById('divSetPassword').style.display = 'none';
+            }
+
+            function backByEmailFromdivEmailAndPassword() {
+                document.getElementById('divValidateEmail').style.display = 'block';
+                document.getElementById('divEmailAndPassword').style.display = 'none';
+                document.getElementById('divSetPassword').style.display = 'none';
+                document.getElementById('OTPDivByEmail').style.display = 'none';
+            }
+
+            function cancelOTPVerifyByEmail() {
+                document.getElementById("divValidateEmail").style.display = 'block';
+                document.getElementById("OTPDivByEmail").style.display = 'none';
+            }
+
+            // =====================================================================
+            // Page lifecycle
+            // =====================================================================
+            window.onload = async function () {
+                try {
+                    showLoader();
+                    document.getElementById("country").value = '+971';
+                    document.getElementById("phone").value = '566778893';
+                    await refreshToken();
+                } catch (err) {
+                    console.error("Error:", err);
+                }
+            };
+
+            // Clear the email field when the page is restored from cache / back navigation
+            window.addEventListener("pageshow", function () {
+                const emailField = document.getElementById("validateEmailField");
+                if (emailField) emailField.value = "";
+            });
+
+            // =====================================================================
+            // Button loader / language / cookies
+            // =====================================================================
+            let $htmlOld = "";
+
+            function btnshowLoader(btnId) {
+                const currentLanguage = "@AuthLabelsPortal.language";
+                $htmlOld = $("#" + btnId).html();
+                $("#" + btnId).prop('disabled', true);
+
+                const loadingText = currentLanguage === "English" ? 'Loading...' : 'تحميل...';
+                $("#" + btnId).html(`<i class="fa fa-spinner fa-spin" style="font-size:20px"></i>${loadingText}`);
+
+                $("button").prop('disabled', true);
+                $("a").prop('disabled', true);
+            }
+
+            function btnhideLoader(btnId) {
+                $("#" + btnId).html($htmlOld);
+                $("#" + btnId).prop('disabled', false);
+                $("button").prop('disabled', false);
+                $("a").prop('disabled', false);
+            }
+
+            function onChangelanguage() {
+                const dropDown = document.getElementById("languageID");
+                const selectedLanguage = dropDown.options[dropDown.selectedIndex].value;
+                document.cookie = "selectedLanguage=" + encodeURIComponent(selectedLanguage) + "; path=/";
+
+                const mainLeft = document.getElementById("mainLeft");
+                if (selectedLanguage === "English") {
+                    mainLeft.classList.remove('arabiclanguage');
+                    mainLeft.classList.add('englishlanguage');
+                    dropDown.classList.remove('rtl');
+                    dropDown.classList.add('ltr');
+                } else {
+                    mainLeft.classList.remove('englishlanguage');
+                    mainLeft.classList.add('arabiclanguage');
+                    dropDown.classList.remove('ltr');
+                    dropDown.classList.add('rtl');
+                }
+
+                // Refresh the page to apply the new language
+                location.reload();
+            }
+
+            function getCookie(name) {
+                const cookieName = name + "=";
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.indexOf(cookieName) === 0) {
+                        return decodeURIComponent(cookie.substring(cookieName.length));
+                    }
+                }
+                return null;
+            }
+
+            // =====================================================================
+            // UI helpers
+            // =====================================================================
+            function showErrorMessage(div, message) {
+                const errorMessage = document.createElement('p');
+                errorMessage.textContent = message;
+                errorMessage.style.color = 'red';
+                div.appendChild(errorMessage);
+            }
+
+            function clearErrorMessages(div) {
+                const existingError = div.querySelector('p');
+                if (existingError) {
+                    div.removeChild(existingError);
+                }
+            }
+
+            function showLoader() {
+                const loader = document.getElementById('fullPageLoader');
+                if (loader) loader.style.display = 'flex';
+            }
+
+            function hideLoader() {
+                const loader = document.getElementById('fullPageLoader');
+                if (loader) loader.style.display = 'none';
+            }
+
+            // =====================================================================
+            // PIN inputs (OTP, MPIN, new MPIN, confirm MPIN)
+            // =====================================================================
+            function moveToNext(current) {
+                if (current.value.length === 1) {
+                    const next = current.nextElementSibling;
+                    if (next) next.focus();
+                }
+                if (current.value.length === 0) {
+                    const prev = current.previousElementSibling;
+                    if (prev) prev.focus();
+                }
+            }
+
+            function bindPinInputs(selector) {
+                const inputs = document.querySelectorAll(selector);
+
+                inputs.forEach((input, index) => {
+                    input.addEventListener("input", function () {
+                        // Keep only numbers
+                        this.value = this.value.replace(/[^0-9]/g, '');
+
+                        // Move to next input if a number is entered
+                        if (this.value.length === 1 && index < inputs.length - 1) {
+                            inputs[index + 1].focus();
+                        } else {
+                            // Non-numeric input keeps focus here
+                            this.focus();
+                        }
+                    });
+
+                    input.addEventListener("keydown", function (e) {
+                        // Backspace on an empty box goes to the previous one
+                        if (e.key === "Backspace" && this.value === "" && index > 0) {
+                            inputs[index - 1].focus();
+                        }
+                    });
+                });
+            }
+
+            ['.pin-input', '.mpin-input', '.new-mpin-input', '.confirm-mpin-input'].forEach(bindPinInputs);
+        </script>
+
+        @* =====================================================================
+            FIREBASE (module script)
+            ===================================================================== *@
+        <script type="module">
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+            import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+
+            const firebaseConfig = {
+                apiKey: "AIzaSyD3kNXIpTAJnU8O7rahVDv_XZTKBvfyTqY",
+                authDomain: "landlorddotnetcore.firebaseapp.com",
+                projectId: "landlorddotnetcore",
+                storageBucket: "landlorddotnetcore.appspot.com",
+                messagingSenderId: "604232761436",
+                appId: "1:604232761436:web:a5101607951001ecd22699",
+                measurementId: "G-DVB5WX138B"
+            };
+
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+
+            const appVerifier = new RecaptchaVerifier("recaptcha-container", {
+                size: 'invisible',
+                callback: () => { /* reCAPTCHA solved */ },
+                'expired-callback': () => {
+                    btnhideLoader("btngetOTPID");
+                    hideLoader();
+                },
+                'error-callback': () => {
+                    btnhideLoader("btngetOTPID");
+                    hideLoader();
+                }
+            }, auth);
+
+            function maskPhoneNumber(phoneNumber) {
+                const countryCode = phoneNumber.substring(0, 4);
+                const firstDigit = phoneNumber[4];
+                const last4Digits = phoneNumber.slice(-4);
+                return countryCode + firstDigit + '****' + last4Digits;
+            }
+
+            // Resets the "Forgot MPIN" button / verify button state
+            function resetForgotMpinState(isForgotMpin) {
+                if (isForgotMpin == "True") {
+                    clearErrorMessages(divmpinOTP);
+                    btnhideLoader("btnforgotMpin");
+                    document.getElementById('VerifyOtpButtonByPhone').innerText = "@AuthLabelsPortal.verify";
+                }
+            }
+
+            function signInWithPhone(phoneNumber, isForgotMpin) {
+                showLoader();
+                btnshowLoader("btngetOTPID");
+
+                // Safety timer: if the user dismisses reCAPTCHA and Firebase hangs
+                const safetyTimer = setTimeout(() => {
+                    btnhideLoader("btngetOTPID");
+                    hideLoader();
+                    resetForgotMpinState(isForgotMpin);
+                    showErrorMessage(document.getElementById("divPhoneNumber"), "reCAPTCHA timed out. Please try again.");
+                }, 10000);
+
+                signInWithPhoneNumber(auth, phoneNumber, appVerifier)
+                    .then((confirmationResult) => {
+                        clearTimeout(safetyTimer);
+                        btnhideLoader("btngetOTPID");
+                        hideLoader();
+                        resetForgotMpinState(isForgotMpin);
+
+                        document.querySelectorAll("#pin-container .pin-input").forEach(input => {
+                            input.value = "";
+                        });
+
+                        document.cookie = "maskedPhoneNumber=" + encodeURIComponent(maskPhoneNumber(phoneNumber)) + "; path=/";
+                        window.confirmationResult = confirmationResult;
+
+                        if (isForgotMpin == "True") {
+                            document.getElementById('isForgotMpin').value = isForgotMpin;
+                            document.getElementById("divmpin").style.display = 'none';
+                        }
+
+                        clearPins("#divOTPValidation .pin-input");
+                        document.getElementById("divPhoneNumberValidation").style.display = 'none';
+                        clearErrorMessages(otpByPhone);
+                        document.getElementById('VerifyOtpButtonByPhone').innerText = "@AuthLabelsPortal.verify";
+                        document.getElementById("divOTPValidation").style.display = 'block';
+                    })
+                    .catch((error) => {
+                        clearTimeout(safetyTimer);
+                        btnhideLoader("btngetOTPID");
+                        hideLoader();
+                        resetForgotMpinState(isForgotMpin);
+                        handleFirebaseError(error);
+                    });
+            }
+
+            function handleFirebaseError(error) {
+                btnhideLoader("btngetOTPID");
+                hideLoader();
+
+                let errorMessage = 'Error: ' + error.message;
+                switch (error.code) {
+                    case 'auth/invalid-phone-number':
+                        errorMessage = 'The Mobile Number is not valid. Please enter a valid Mobile Number';
+                        break;
+                    case 'auth/missing-verify-code':
+                        errorMessage = 'Verification code is missing.';
+                        break;
+                    case 'auth/quota-exceeded':
+                        errorMessage = 'SMS quota exceeded. Please try again later.';
+                        break;
+                    case 'auth/too-many-requests':
+                        errorMessage = 'Too many requests. Please try again later.';
+                        break;
+                    case 'auth/network-request-failed':
+                        errorMessage = 'Network request failed. Please check your internet connection.';
+                        break;
+                }
+                console.error(errorMessage, error);
+
+                showErrorMessage(document.getElementById("divPhoneNumber"), '@AuthLabelsPortal.pleaseEnterValidEPhone');
+            }
+
+            // Get OTP / Forgot MPIN button handler
+            window.getPhoneNumberValidation = function (isForgotMpin) {
+                btnshowLoader("btngetOTPID");
+                if (isForgotMpin == "True") {
+                    clearErrorMessages(divmpinOTP);
+                    btnshowLoader("btnforgotMpin");
+                    document.getElementById('VerifyOtpButtonByPhone').innerText = "@AuthLabelsPortal.verify";
+                }
+
+                const countryCode = document.getElementById("country").value;
+                const phoneInput = document.getElementById("phone").value;
+                clearErrorMessages(divCountryCode);
+                clearErrorMessages(divPhoneNumber);
+
+                if (!countryCode || !phoneInput) {
+                    if (!countryCode) {
+                        btnhideLoader("btngetOTPID");
+                        resetForgotMpinState(isForgotMpin);
+                        showErrorMessage(divCountryCode, '@AuthLabelsPortal.pleaseSelectCountryCode');
+                    }
+                    if (!phoneInput) {
+                        btnhideLoader("btngetOTPID");
+                        resetForgotMpinState(isForgotMpin);
+                        showErrorMessage(divPhoneNumber, '@AuthLabelsPortal.pleaseEnterPhoneNoFirst');
+                    }
+                    return;
+                }
+
+                btnhideLoader("btngetOTPID");
+                resetForgotMpinState(isForgotMpin);
+
+                signInWithPhone(countryCode + phoneInput, isForgotMpin);
+            };
+        </script>
+
+        @* Vendor scripts *@
+        <script src="../assets/js/vendors/jquery/dist/jquery.min.js"></script>
+        <script src="../assets/js/vendors/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="../assets/js/config.js"></script>
+        <script src="../assets/js/password.js"></script>
+        <script src="../assets/js/script.js"></script>
+    </div>
+    @* body End *@
+</body>
+<!-- Mirrored from admin.pixelstrap.net/edmin/template/login.html by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 07 Jul 2024 13:15:52 GMT -->
+
+</html>

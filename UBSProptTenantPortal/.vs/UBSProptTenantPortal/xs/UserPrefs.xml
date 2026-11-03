@@ -1,0 +1,35 @@
+﻿<Properties StartupConfiguration="{4BFAF9A4-A630-42F0-9789-748DF2F216D6}|https">
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.Workbench ActiveDocument="../../../../../../../usr/local/share/dotnet/sdk/8.0.408/Sdks/Microsoft.NET.Sdk/targets/Microsoft.NET.Sdk.targets">
+    <Files>
+      <File FileName="Controllers/AIAssistantController.cs" />
+      <File FileName="../AIServices/AIServiceExtensions.cs" />
+      <File FileName="Controllers/BaseController.cs" />
+      <File FileName="Program.cs" />
+      <File FileName="wwwroot/assets/css/chat.css" />
+      <File FileName="wwwroot/assets/css/ai-assistant.css" />
+      <File FileName="wwwroot/assets/css/assistant.css" />
+      <File FileName="wwwroot/assets/css/custom.css" />
+      <File FileName="wwwroot/assets/css/style.css" />
+      <File FileName="wwwroot/assets/css/reportstyle.css" />
+      <File FileName="wwwroot/assets/css/printunitstatus.css" />
+      <File FileName="Views/Shared/_Layout.cshtml" />
+      <File FileName="Views/Shared/_DashboardLayout.cshtml" />
+      <File FileName="appsettings.json" />
+      <File FileName="../../../../../../../usr/local/share/dotnet/sdk/8.0.408/Sdks/Microsoft.NET.Sdk/targets/Microsoft.NET.Sdk.targets" Line="284" Column="5" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="UBSProptTenantPortal" expanded="True" />
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MultiItemStartupConfigurations />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.ItemProperties.UBSProptTenantPortal PreferredExecutionTarget="/Applications/Google Chrome.app" />
+</Properties>

@@ -1,0 +1,95 @@
+﻿@model OfferResponse
+
+@{
+    ViewData["Title"] = "Offer ";
+    Layout = "~/Views/Shared/_Profilelayout.cshtml";
+}
+
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="~/css/site.css"> <!-- Link to your CSS file -->
+    <style>
+        .list-group-item {
+            transition: background-color 0.3s ease;
+            /* Smooth transition for background color */
+        }
+
+            .list-group-item:hover {
+                background-color: #bfd1ec;
+                /* Change to your desired hover color */
+            }
+
+        .list-group-item-custom {
+            margin-top: 4px;
+            margin-bottom: 4px;
+            position: relative;
+            display: block;
+            padding: var(--bs-list-group-item-padding-y) var(--bs-list-group-item-padding-x);
+            color: var(--bs-list-group-color);
+            text-decoration: none;
+            background-color: var(--bs-list-group-bg);
+            border: var(--bs-list-group-border-width) solid var(--bs-list-group-border-color);
+        }
+    </style>
+</head>
+<div class="card pageheader" style="margin-bottom: 0px !important;">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-sm-6">
+                <h4><i class="fa fa-hashtag"></i> Offer</h4>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card">
+    @if (!string.IsNullOrEmpty(ViewBag.errorGetOffer))
+        {
+        <div class="card-header pb-0" style="height: 350px;text-align: center;">
+            <center style="padding-top: 150px;">
+
+                @if (@ViewBag.errorGetOffer == "")
+                    {
+                    <h4>No Data Found</h4>
+                    }
+                    else
+                    {
+                    <h4>@ViewBag.errorGetOffer</h4>
+                    }
+
+            </center>
+            <i class="fa fa-refresh" aria-hidden="true" style="padding-top: 5px; font-size: 18px; color: black;"
+               onclick="window.location.href = '@Url.Action("Offers", "Offer", new { area = "Offers" })'"></i>
+        </div>
+        }
+        else
+        {
+        <div class="table-responsive">
+            <table class="table mb-0" style="table-layout: fixed; margin-top: 0px !important;">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">S No</th>
+                        <th style="text-align: left;">Title</th>
+                        <th style="width: 100px; text-align: center;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < (Model.Record?.Count ?? 0); i++)
+                        {
+                            var rowClass = (i % 2 == 0) ? "even" : "odd";
+                            var offer = Model.Record?[i];
+                        <tr class="@rowClass">
+                            <td>@(i + 1)</td>
+                            <td style="text-align: left;">@offer?.Title</td>
+                            <td style="text-align: center;">
+                                <a href="@Url.Action("OffersDetail", "Offer", new { area = "Offers", offerId = offer?.OfferId })"
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="material-icons">keyboard_arrow_right</i>
+                                </a>
+                            </td>
+                        </tr>
+                        }
+                </tbody>
+            </table>
+        </div>
+        }
+    </div>

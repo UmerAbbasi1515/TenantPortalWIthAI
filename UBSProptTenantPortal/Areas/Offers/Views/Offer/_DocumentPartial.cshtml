@@ -1,0 +1,110 @@
+﻿@model OfferDocsResponse
+
+@{
+    string status = (ViewBag.status ?? "").ToString().Trim().ToLower();
+
+    var ServiceRequestNo = ViewBag.ServiceRequestNo;
+
+    // Only slots that really have a document (empty "Pending" slots are dropped)
+    var docs = (Model?.record ?? new List<OfferDocRecord>())
+                .Where(d => !string.IsNullOrEmpty(d.originalFiles))
+                .ToList();
+    var offerName = ViewBag.offerName;
+    int newIndex = docs.Count;   // index of the single upload card (always the last one)
+}
+
+@if (!string.IsNullOrEmpty(Model?.errorMessage))
+{
+    <div class="card-header pb-0" style="flex-shrink: 0;">
+        <center style="padding-top: 50px;">
+            <h4>Documents</h4>
+            <p style="padding-top: 5px; padding-bottom: 60px;">@Model.errorMessage</p>
+        </center>
+        <center>
+            <i class="fa fa-refresh" aria-hidden="true"
+               style="padding-top: 5px; padding-bottom: 50px; font-size: 18px; color: black; cursor: pointer;"
+               onclick="loadDocuments()"></i>
+        </center>
+    </div>
+}
+else
+{
+    <div class="row g-3" style="min-height: 365px;">
+
+        @for (int i = 0; i < docs.Count; i++)
+        {
+            var doc = docs[i];
+            var ext = doc.GetExtension();
+
+            <input type="hidden" id="isUploaded_@i" value="True" />
+
+            <div class="col-md-3">
+                <div class="card d-flex" style="border:1px solid #eaeaea; border-radius:12px; height:350px; box-shadow:0 0 5px rgba(0,0,0,0.05);">
+
+                    <div class="uploadDocN uploaded-card position-relative">
+                        <div class="preview-box" style="position: relative; background-color:@(ext == "pdf" ? "white" : "") !important">
+
+
+
+                            <!-- Hover Actions -->
+                            <div class="overlay">
+
+
+                                <button class="btn btn-light btn-sm btn-download" style="margin-right:10px" id="btnDownload_@i"
+                                        onclick="downloadDocument('@doc.documentID','@ext',@i)">
+                                    Download
+                                </button>
+
+                            </div>
+                        </div>
+
+                       
+                       
+                        <div class="doc-footer d-flex justify-content-between align-items-center">
+                            <div class="col d-flex flex-column text-start">
+                                <small class="text-muted">
+                                    Offer Name:
+                                    <span style="font-weight:600">@offerName</span>
+                                </small>
+                                <small class="text-muted">
+                                    Uploaded Date:
+                                    <span style="font-weight:600">@doc.addedDate?.ToString("dd MMM yyyy")</span>
+                                </small>
+                            </div>
+                            <span class="badge bg-success">Uploaded</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @* ===== Exactly ONE upload card, always the last index ===== *@
+        <input type="hidden" id="isUploaded_@newIndex" value="False" />
+
+        <div class="col-md-3">
+            <div class="card d-flex" style="border:1px solid #eaeaea; border-radius:12px; height:350px; box-shadow:0 0 5px rgba(0,0,0,0.05);">
+
+                  <div id="uploadView_@newIndex">
+                        <div class="text-center">
+                            <div class="uploadDoc" id="uploadBox_@newIndex">
+                                <a onclick="openUploadModal(@newIndex , '@offerName')">
+                                    <div style="padding-top:215px;">
+                                        <label class="form-label fw-semibold mb-1" style="font-size:16px;">Click to Upload</label>
+                                        <p class="text-muted">Max 10MB (JPG, PNG, PDF)</p>
+                                    </div>
+                                </a>
+                            </div>
+
+                            <div class="doc-footer" style="padding-top:10px;">
+                                <span><strong>Document @(newIndex + 1)</strong></span>
+                                <span class="badge bg-danger">Pending</span>
+                            </div>
+                        </div>
+                    </div>
+               
+            </div>
+        </div>
+    </div>
+
+    <div style="height:20px"></div>
+}

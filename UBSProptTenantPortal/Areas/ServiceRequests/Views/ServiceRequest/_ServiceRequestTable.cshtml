@@ -1,0 +1,101 @@
+﻿
+@using UBSProptTenantPortal
+@model List<ServiceRequest>
+@{
+    var tabName = ViewBag.TabName;
+}
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="~/css/site.css"> <!-- Link to your CSS file -->
+    <style>
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background-color: white;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .table-container {
+            margin: 20px;
+        }
+
+        .table thead {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<div class="text-center">
+    <div class="col-md-12 col-lg-12 col-xl-12 d-flex">
+        <div class="card invoice-card mb-0 w-100" style="display: flex; flex-direction: column; height: 100%;">
+            <div class="card-body d-flex flex-column" style="flex-grow: 1;">
+                
+                @if (Model.Count == 0)
+                    {<div class="card-header pb-0" style="height: 350px">
+    <center style="padding-top: 150px;">
+
+        @if (@ViewBag.errorGetServiceReqPMFM == "")
+        {
+            <h4>No Data Found</h4>
+        }
+        else
+        {
+            <h4>@ViewBag.errorGetServiceReqPMFM</h4>
+        }
+
+    </center>
+    <i class="fa fa-refresh" aria-hidden="true" style="padding-top: 5px; font-size: 18px; color: black;"
+       onclick="window.location.href = '@Url.Action("ServiceRequests", "ServiceRequest", new { area = "ServiceRequests", tab = tabName })'"></i>
+           
+    </div>
+                }  else
+                    {
+                        <div class="table-responsive">
+                            <table class="table mb-0 datatable-table" id="contract-table" tabindex="2" style="table-layout: fixed; margin-top: 0px !important;">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 70px;">S No</th>
+                                        <th style="text-align: left; padding-left: 10px;">Request No</th>
+
+                                        <th style="text-align: center;">Property</th>
+                                        <th style="text-align: center;">Category</th>
+                                        <th style="text-align: center;">Sub Category</th>
+                                        <th style="text-align: center;">Date</th>
+                                        <th style="text-align: center;">Status</th>
+                                    </tr>
+                                </thead>
+                           
+                                <tbody>
+                                    @for (int i = 0; i < Model.Count; i++)
+                                    {
+                                        var request = Model[i];
+                                        string statusClass = LabelsTenantPortal.GetStatusCssClass(request?.Status ?? "");
+
+                                        int index = @i + 1;
+                                        <tr>
+                                            <td style="text-align: left; padding-left: 20px;">
+                                                @index
+                                            </td>
+                                            <td style="text-align: left; padding-left: 10px;">
+                                                <a href="@Url.Action("ServiceRequestDetailN", "ServiceRequest", new { area = "ServiceRequests",caseNo = request?.RequestNo, tab = request?.tabName,callingFrom = "ServiceRequests"  })">
+                                                    <h6 class="f-w-500" style="color: #198754; padding-left: 20px;">@request?.RequestNo</h6>
+                                                </a>
+                                            </td>
+                                            <td style="text-align: center;">@request?.PropertyName</td>
+                                            <td style="text-align: center;">@request?.Category</td>
+                                            <td style="text-align: center;">@request?.SubCategory</td>
+                                            <td style="text-align: center;">@request?.Date</td>
+                                            <td style="text-align: center;">
+                                                <span class="status-custom @statusClass">@request?.Status</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+        </div>
+    </div>
+</div>
+

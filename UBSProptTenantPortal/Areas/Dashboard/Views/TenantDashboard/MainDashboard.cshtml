@@ -1,0 +1,483 @@
+﻿@using UBSProptTenantPortal
+@model DashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard ";
+    var directionClass = LabelsTenantPortal._language == "English" ? "ltr" : "rtl";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    var notification = Model?.PopUp?.Notifications;
+}
+<style>
+    i {
+        cursor: pointer;
+        transition: transform 0.2s ease-in-out, color 0.2s ease-in-out;
+    }
+
+        i:hover {
+            color: #007bff;
+            transform: scale(1.2);
+        }
+
+        i:active {
+            transform: scale(1);
+            color: #0056b3;
+        }
+
+    .row.g-2.mt-0 {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: stretch;
+    }
+
+    .invoice-card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .th-custom {
+        font-weight: 600 !important;
+        color: black !important
+    }
+</style>
+
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-dataLabelsTenantPortal"></script>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <style>
+        .table tbody tr {
+        }
+    </style>
+</head>
+
+<div class="card pageheader">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-sm-6">
+                <h4 style=" margin-top: 0px !important;">
+                    <i class="fa fa-home"></i> Dashboard
+                </h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Popup*@
+<!-- Modal -->
+<div class="modal fade" id="notificationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <!-- Header -->
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Notification</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <!-- Body -->
+            <div class="modal-body" id="notificationBody">
+                <!-- Content will be set dynamically -->
+            </div>
+            <!-- Footer -->
+            <div class="modal-footer">
+                <span id="paginationLabel" class="me-auto"></span>
+                <button id="prevBtn" class="btn btn-secondary">Previous</button>
+                <button id="nextBtn" class="btn btn-primary">Next</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Embed All Notifications into HTML Elements -->
+@for (int i = 0; i < notification?.Count; i++)
+{
+    <div id="notification-@i" class="d-none notification-data"
+         data-title="@notification?[i].Title"
+         data-id="@notification?[i].NotificationId"
+         data-description="@Html.Raw(notification?[i].Description)">
+    </div>
+}
+
+
+<div class="row g-2 mt-0">
+    <!-- First Card -->
+    @* Data *@
+    <div class="col-md-6 col-lg-6 col-xl-6 mt-2 d-flex" style="">
+        <div class="card invoice-card mb-0 w-100" style="display: flex; flex-direction: column; height: 100%;">
+            @if (ViewBag.errorGetData != "")
+            {
+                <div class="card-header pb-0" style="margin: 0px; flex-shrink: 0;">
+                    <h4 style="text-align: left;">
+                        <span>
+                            <i class="fa fa-file-signature" style="font-size: 17px;"></i>  @LabelsTenantPortal.getData
+                        </span>
+                    </h4>
+                </div>
+                <div class="card-header pb-0" style="flex-shrink: 0; height: 350px">
+                    <center style="padding-top: 150px; ">
+                        <h4 style="padding-top: 5px;">@ViewBag.errorGetData</h4>
+                    </center>
+                    <center>
+                        <i class="fa fa-refresh" aria-hidden="true" style="padding-top: 5px; font-size: 18px; color: black;"
+                           onclick="window.location.href = '@Url.Action("MainDashboard", "TenantDashboard" , new { area = "Dashboard" })';"></i>
+                    </center>
+                </div>
+                <div class="card-body" style="flex-grow: 1;"></div>
+            }
+            else
+            {
+                <div class="card-header pb-0" style="flex-shrink: 0; display: flex; flex-direction: row; justify-content: space-between;padding-top: 10px">
+                    <p style="text-align: left;">OUTSTANDING AMOUNT (INCLUDING CHARGES)</p>
+                    <p style="text-align: left;">Next 30 Days</p>
+                </div>
+                <div class="card-body" style=" margin-left: 10px; flex-grow: 1; display: flex; flex-direction: column;">
+                    <div class="row" style="padding-bottom: 0px;">
+                        <ul class="d-flex" style="width: 100%; padding-left: 0;">
+                            <div style="display: flex; justify-content: space-between; width: 100%;">
+                                <div style="flex-direction: column; flex: 1; min-width: 200px; margin-right: 10px; padding:0px; text-align: left;">
+                                    <p style="color: var(--light-font); font-weight: 500;"></p>
+                                    <h4>AED @Model?.GetData?.rentOutstanding?.ToString("N2")</h4>
+                                </div>
+                                <hr class="hr-custom" />
+                                <div style="flex-direction: column; flex: 1; text-align: right;">
+                                    <p><strong>@Model?.GetData?.Dashboard?.ContractExpiringIn30Days</strong> Contract expiring</p>
+                                    <p><strong>@Model?.GetData?.Dashboard?.CheckDueIn30Days</strong> Cheque due</p>
+                                </div>
+                            </div>
+                        </ul>
+                    </div>
+                    <hr class="hr-custom" />
+                    <div style="display: flex; flex-direction: row; flex-wrap: wrap; justify-content: space-between; padding-top: 10px;">
+
+                        <!-- Donut Chart Section -->
+                        <div style="flex: 1 1 240px; max-width: 100%; text-align: center;">
+                            <div style="max-width: 100%; height: 280px;">
+                                <canvas id="myDonutChart" style="max-width: 100%; height: auto;"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Stats Section -->
+                        <div style="flex: 1 1 320px; max-width: 100%; margin-top: 85px;">
+                            <!-- Row 1 -->
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                <div style="width: 10px; height: 10px; background-color: rgba(0, 150, 0, 1); border-radius: 50%; margin-right: 10px;"></div>
+                                <div style="flex: 1;"><p style="margin: 0;">Active Contract</p></div>
+                                <div><p style="margin: 0;"><strong>@Model?.GetData?.Dashboard?.ActiveContracts</strong></p></div>
+                            </div>
+
+                            <!-- Row 2 -->
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                <div style="width: 10px; height: 10px; background-color: rgb(49, 140, 236); border-radius: 50%; margin-right: 10px;"></div>
+                                <div style="flex: 1;"><p style="margin: 0;">Rental Values</p></div>
+                                <div><p style="margin: 0;"><strong>AED @Model?.GetData?.rentalVal?.ToString("N2")</strong></p></div>
+                            </div>
+
+                            <!-- Row 3 -->
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div style="width: 10px; height: 10px; background-color: rgba(255, 179, 0, 1); border-radius: 50%; margin-right: 10px;"></div>
+                                <div style="flex: 1;"><p style="margin: 0;">Outstanding Values</p></div>
+                                <div><p style="margin: 0;"><strong>AED @Model?.GetData?.rentOutstanding?.ToString("N2")</strong></p></div>
+                            </div>
+                            @if (Model?.GetData?.ContractRenewalAction > 0)
+                            {
+                                <button class="marquee-button" onclick="window.location.href='@Url.Action("ContractAction", "Renewal", new { area = "RenewalFlow" , tab = "RCF"  })'">
+                                    <span class="marquee-text">                                  Click here to renew contract</span>
+                                </button>
+
+                                @*<button class="marquee-button" onclick="window.location.href='@Url.Action("RenewalContracts", "Renewal", new { area = "RenewalFlow" })'">
+                                    <span class="marquee-text">                                  Click here to renew contract</span>
+                                </button>*@
+
+                            }
+                        </div>
+                    </div>
+
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Second Card -->
+    @* Contracts *@
+    <div class="col-md-6 col-lg-6 col-xl-6 mt-2 d-flex"style="">
+        <div class="card invoice-card mb-0 w-100" style="display: flex; flex-direction: column; height: 100%;">
+            @if (ViewBag.errorGetContracts != "")
+            {
+                <div class="card-header pb-0" style="margin: 0px; flex-shrink: 0;">
+                    <h4 style="text-align: left;">
+                        <span>
+                            <i class="fa fa-file-signature" style="font-size: 17px;"></i>  @LabelsTenantPortal.tenancyContracts
+                        </span>
+                    </h4>
+                </div>
+                <div class="card-header pb-0" style="flex-shrink: 0; height: 350px">
+                    <center style="padding-top: 150px; ">
+                        <h4>@ViewBag.errorGetContracts</h4>
+                    </center>
+                    <center>
+                        <i class="fa fa-refresh" aria-hidden="true" style="padding-top: 5px; font-size: 18px; color: black;"
+                           onclick="window.location.href = '@Url.Action("MainDashboard", "TenantDashboard" , new { area = "Dashboard" })'"></i>
+                    </center>
+                </div>
+                <div class="card-body" style="flex-grow: 1;"></div>
+            }
+            else
+            {
+                <div class="card-header pb-0" style="margin: 0px; flex-shrink: 0;">
+                    <h4 style="text-align: left;">
+                        <span>
+                            <i class="fa fa-file-signature" style="font-size: 17px;"></i>  @LabelsTenantPortal.tenancyContracts
+                        </span>
+                    </h4>
+                </div>
+                <div class="card-body invoice-table d-flex flex-column" style="flex-grow: 1;">
+                    <div class="table-responsive">
+                        <div class="datatable-wrapper datatable-loading no-footer searchable fixed-columns">
+                            <div class="datatable-container" style="padding:0px">
+                                <table class="table mb-0 datatable-table" id="contract-table" tabindex="2" style="table-layout: fixed;">
+                                    <thead>
+                                        <tr>
+                                            <th class="th-custom" style="text-align: left; padding-left: 10px;">@LabelsTenantPortal.contractNo</th>
+                                            <th class="th-custom" style="text-align: center;">@LabelsTenantPortal.propertyName</th>
+                                            <th class="th-custom" style="text-align: center;">@LabelsTenantPortal.unitNo</th>
+                                            <th class="th-custom" style="text-align: center;">@LabelsTenantPortal.status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="tblbody">
+                                        @{
+                                            var contractsToShow = Model?.Contracts?.data?.Take(4).ToList();
+                                        }
+                                        @for (int i = 0; i < contractsToShow?.Count; i++)
+                                        {
+                                            var contract = contractsToShow[i];
+                                            string statusClass = @LabelsTenantPortal.GetStatusCssClass(contract?.ContractStatus ?? "");
+
+                                            <tr>
+                                                <td style="text-align: left; padding-left: 10px;">
+                                                    <a href="@Url.Action("ContractDetails", "Contract", new { area = "Contracts", contractID = contract?.ContractID })">
+                                                        <h6 class="f-w-500" style="color: #198754;padding-left: 12px">@contract?.Contractno</h6>
+                                                    </a>
+                                                </td>
+                                                <td style="text-align: center;">@contract?.PropertyName</td>
+                                                <td style="text-align: center;">@contract?.UnitRefNo</td>
+                                                <td style="text-align: center;">
+                                                    <span class="status-custom @statusClass">@contract?.ContractStatus</span>
+                                                </td>
+
+
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                                @if (Model?.Contracts?.data?.Count > 5)
+                                {
+                                    <div style="display: flex; flex-direction: row; justify-content: space-between; padding-top: 10px;">
+                                        <div></div>
+                                        <a class="sidebar-link" href="@Url.Action("ContractsN", "Contract", new { area = "Contracts"})"
+                                           style="color: #198754;">@LabelsTenantPortal.viewAll</a>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+<div class="row g-2 mt-0">
+    <!-- Third Card -->
+    @* Service Request *@
+    <div class="col-md-6 col-lg-6 col-xl-6 mt-2"style="">
+        <div class="card invoice-card mb-0">
+            <div class="card invoice-card mb-0 w-100" style="height: 100%; display: flex; flex-direction: column;">
+                @if (ViewBag.errorGetServiceRequest != "")
+                {
+                    <div class="card-header pb-0" style="margin: 0px; flex-shrink: 0;">
+                        <h4 style="text-align: left;">
+                            <span>
+                                <i class="fa fa-file-signature" style="font-size: 17px;"></i>  Service Requests
+                            </span>
+                        </h4>
+                    </div>
+                    <div class="card-header pb-0" style="flex-shrink: 0; height: 350px">
+                        <center style="padding-top: 150px;">
+                            <h4 style="padding-top: 5px;">@ViewBag.errorGetServiceRequest</h4>
+                        </center>
+                        <center>
+                            <i class="fa fa-refresh" aria-hidden="true" style="padding-top: 5px; font-size: 18px; color: black;"
+                               onclick="window.location.href = '@Url.Action("MainDashboard", "TenantDashboard" , new { area = "Dashboard" })'"></i>
+                        </center>
+                    </div>
+                    <div class="card-body" style="flex-grow: 1;"></div>
+                }
+                else
+                {
+                    <div class="card-header pb-0" style="margin: 0px;">
+                        <h4 style="text-align: left;"><span><i class="fa fa-scribd" style="font-size: 17px;"></i>  Service Requests</span></h4>
+                    </div>
+                    <div class="card-body invoice-table d-flex flex-column justify-content-between" style="min-height: 280px;">
+                        <div class="table-responsive">
+                            <div class="datatable-wrapper datatable-loading no-footer searchable fixed-columns">
+                                <div class="datatable-container">
+                                    <table class="table mb-0 datatable-table" id="all-properties" tabindex="2" style="table-layout: fixed;">
+                                        <thead>
+                                            <tr>
+                                                <th class="th-custom" style="text-align: left; padding-left: 10px;">Request No</th>
+                                                <th class="th-custom" style="text-align: center;">Proprty</th>
+                                                <th class="th-custom" style="text-align: center;">Category</th>
+                                                <th class="th-custom" style="text-align: center;">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="tblbody">
+                                            @{
+                                                var requestsToShow = Model?.ServiceRequest?.ServiceRequests?.Take(4).ToList();
+
+                                            }
+                                            @for (int i = 0; i < requestsToShow?.Count; i++)
+                                            {
+                                                var request = requestsToShow[i];
+                                                string statusClass = @LabelsTenantPortal.GetStatusCssClass(request?.Status ?? "");
+
+                                                <tr>
+                                                    <td style="text-align: left; padding-left: 10px;">
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <div class="flex-grow-1">
+                                                                <a href="@Url.Action("ServiceRequestDetailN", "ServiceRequest", new { area = "ServiceRequests",caseNo = request?.RequestNo, tab = request?.tabName  })">
+                                                                    <h6 class="f-w-500" style="color: #198754;padding-left: 12px">@request?.RequestNo</h6>
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td style="text-align: center;">@request?.PropertyName</td>
+                                                    <td style="text-align: center;">@request?.Category</td>
+                                                    <td style="text-align: center;">
+                                                        <span class="status-custom @statusClass">@request?.Status</span>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                    @if (Model?.ServiceRequest?.ServiceRequests?.Count > 1)
+                                    {
+                                        <div style="display: flex; flex-direction: row; justify-content: space-between; padding-top: 10px;">
+                                            <div></div>
+                                            <a class="sidebar-link" href="@Url.Action("ServiceRequests", "ServiceRequest", new { area = "ServiceRequests", tab = "FM" })"
+                                               style="color: #198754">@LabelsTenantPortal.viewAll</a>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Fourth Card -->
+    @* Payments *@
+    <div class="col-md-6 col-lg-6 col-xl-6 mt-2" style=" ">
+        <div class="card invoice-card mb-0">
+            <div class="card invoice-card mb-0 w-100" style="height: 100%; display: flex; flex-direction: column;">
+                @if (ViewBag.errorGetPayments != "")
+                {
+                    <div class="card-header pb-0" style="margin: 0px; flex-shrink: 0;">
+                        <h4 style="text-align: left;">
+                            <span>
+                                <i class="fa fa-file-signature" style="font-size: 17px;"></i>  Payments
+                            </span>
+                        </h4>
+                    </div>
+                    <div class="card-header pb-0" style="flex-shrink: 0; height: 350px">
+                        <center style="padding-top: 150px;">
+                            <h4 style="padding-top: 5px;">@ViewBag.errorGetPayments</h4>
+                        </center>
+                        <center>
+                            <i class="fa fa-refresh" aria-hidden="true" style="padding-top: 5px; font-size: 18px; color: black;"
+                               onclick="window.location.href = '@Url.Action("MainDashboard", "TenantDashboard" , new { area = "Dashboard" })'"></i>
+                        </center>
+                    </div>
+                    <div class="card-body" style="flex-grow: 1;"></div>
+                }
+                else
+                {
+                    <div class="card-header pb-0" style="margin: 0px;">
+                        <h4 style="text-align: left;"><span><i class="fa-solid fa-file-invoice-dollar" style="font-size: 17px;"></i> Payments</span></h4>
+                    </div>
+                    <div class="card-body invoice-table d-flex flex-column justify-content-between" style="min-height: 280px;">
+                        <div class="table-responsive">
+                            <div class="datatable-wrapper datatable-loading no-footer searchable fixed-columns">
+                                <div class="datatable-container" style="padding:0px">
+                                    <table class="table mb-0 datatable-table" id="all-invoice" tabindex="2" style="table-layout: fixed;">
+                                        <thead>
+                                            <tr>
+                                                <th class="th-custom" style="text-align: left; padding-left: 10px;">Receipt No</th>
+                                                <th class="th-custom" style="text-align: center;">Payment Type</th>
+                                                <th class="th-custom" style="text-align: center;">Payment For</th>
+                                                <th class="th-custom" style="text-align: center;">Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="tblbody">
+                                            @{
+                                                var paymentsToShow = Model?.Payments?.Payments?.Take(4).ToList();
+                                            }
+                                            @for (int i = 0; i < paymentsToShow?.Count; i++)
+                                            {
+                                                var payment = paymentsToShow[i];
+                                                var values = $"{payment?.Amount} | {payment?.PaymentFor} | {payment?.PaymentDate} | {payment?.PaymentType} | {payment?.TransactionId} | {payment?.ReceiptNo}";
+                                                <tr>
+                                                    <td style="text-align: left; padding-left: 10px;">
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <div class="flex-grow-1">
+                                                                <a href="@Url.Action("PaymentDetail", "Payment", new { area = "Payments",  values = values })">
+                                                                    <h6 class="f-w-500" style="color:#198754;padding-left: 12px">@payment?.ReceiptNo</h6>
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td style="text-align: center;">@payment?.PaymentType</td>
+                                                    <td style="text-align: center;">@payment?.PaymentFor</td>
+                                                    <td style="text-align: center;">AED @payment?.Amount?.ToString("N2")</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                    @if (Model?.Payments?.Payments!.Count >= 3)
+                                    {
+                                        <div style="display: flex; flex-direction: row; justify-content: space-between; padding-top: 15px;">
+                                            <div></div>
+                                            <a class="sidebar-link" href="@Url.Action("Payments", "Payment", new { area = "Payments" })"
+                                               style="color: #198754; padding-right: 0px;">@LabelsTenantPortal.viewAll</a>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    window.dashboardMainConfig = {
+        showPopUp: @Json.Serialize(ViewBag.ShowPopUp ?? false),
+        totalNotifications: @notification?.Count ?? 0,
+        notifications: @Html.Raw(Json.Serialize(Model)),
+        rentalVal: @Model?.GetData?.rentalVal ?? 0,
+        rentOutstanding: @Model?.GetData?.rentOutstanding ?? 0,
+        authScreenUrl: @Json.Serialize(Url.Action("AuthScreen", "Auth")),
+        mainDashboardUrl: @Json.Serialize(Url.Action("MainDashboard", "TenantDashboard", new { area = "Dashboard" }))
+    };
+</script>
+<script src="~/js/dashboard-main.js" asp-append-version="true"></script>
+
+
+
+
+
+
+
+

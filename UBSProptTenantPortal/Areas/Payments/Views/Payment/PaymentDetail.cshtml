@@ -1,0 +1,289 @@
+﻿@model PaymentsViewModel
+@{
+    var receiptNo = @ViewData["ReceiptNo"];
+    ViewData["Title"] = $"Receipt No. {receiptNo}";
+    var directionClass = LabelsLandlordPortal._language == "English" ? "ltr" : "rtl";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="~/css/site.css"> <!-- Link to your CSS file -->
+    <style>
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background-color: white;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .table-container {
+            margin: 20px;
+        }
+
+        .table thead {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<div class="text-center" style="height: 100vh;">
+    <div class="card pageheader">
+        <div class="card-header">
+            <div class="row align-items-center justify-content-between">
+                <div class="col text-start">
+                    <a class="sidebar-link" href="@Url.Action("Payments", "Payment", new { area = "Payments" })">
+                        <h4><i class="fa fa-arrow-left"></i> Receipt No. @receiptNo</h4>
+                    </a>
+                </div>
+
+                <div class="col-auto text-end">
+                    <a href="#" onclick="ChequesDownload(@Model?.paymentDetail?.TransactionId)"
+                       class="btn btn-outline-primary animate-download"
+                       title="Download Receipt">
+                        <i class="fa fa-download"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="display: flex; flex-direction: row; width: 100%;">
+        @if (ViewBag.errorGetPaymentDetail != "")
+        {
+            <div class="card-header pb-0" style="height: 350px">
+                <center style="padding-top: 150px;">
+
+                    @if (@ViewBag.errorGetPaymentDetail == "")
+                    {
+                        <h4>No Data Found</h4>
+                    }
+                    else
+                    {
+                        <h4>@ViewBag.errorGetPaymentDetail</h4>
+                    }
+
+                </center>
+                <i class="fa fa-refresh" aria-hidden="true" style="padding-top: 5px; font-size: 18px; color: black;"
+                   onclick="window.location.href = '@Url.Action("Payments", "Payment" , new { area = "Payments" })'"></i>
+            </div>
+        }
+        else
+        {
+            @* Payment Detail *@
+            <div class="card-body" style="background: white;padding: 10px;">
+                <div class="row alert alert-light-primary  subtitle" role="alert" style="margin: 1px;">
+                    <div class="col-sm-6">
+                        <h5 style=" text-align: left; padding-left: 20px;">Receipt Info</h5>
+                    </div>
+
+                    <div class="col-sm-6 text-end">
+                        <input type="hidden" class="AllowMultipleChargeTypeWithVatPayments" value="1">
+                    </div>
+                </div>
+                <div class="row" style=" padding: 10px;">
+                    <div class="col-md-2 col-lg-2 col-xl-2" style="margin-left: 20px;">
+                        <div style="display: flex;align-items: center;gap: 6px;">
+                            <i class="fa-solid fa-user" aria-hidden="true"></i>
+                            <span> Receipt No:</span>
+                        </div>
+                        <p class="p-style" style=" display: flex;padding-left: 18px;">
+                            <strong>@Model?.paymentDetail?.ReceiptNo</strong>
+                        </p>
+                    </div>
+                    <div class="col-md-2 col-lg-2 col-xl-2" style="margin-left: 20px;">
+                        <div style="display: flex;align-items: center;gap: 6px;">
+                            <i class="fa-solid fa-user" aria-hidden="true"></i>
+                            <span> Payment For:</span>
+                        </div>
+                        <p class="p-style" style=" display: flex;padding-left: 18px;">
+                            <strong>@Model?.paymentDetail?.PaymentFor</strong>
+                        </p>
+                    </div>
+                    <div class="col-md-2 col-lg-2 col-xl-2" style="margin-left: 20px;">
+                        <div style="display: flex;align-items: center;gap: 6px;">
+                            <i class="fa-solid fa-user" aria-hidden="true"></i>
+                            <span> Payment Type:</span>
+                        </div>
+                        <p class="p-style" style=" display: flex;padding-left: 18px;">
+                            <strong>@Model?.paymentDetail?.PaymentType</strong>
+                        </p>
+                    </div>
+                    <div class="col-md-2 col-lg-2 col-xl-2" style="margin-left: 20px;">
+                        <div style="display: flex;align-items: center;gap: 6px;">
+                            <i class="fa-solid fa-user" aria-hidden="true"></i>
+                            <span> Amount:</span>
+                        </div>
+                        <p class="p-style" style=" display: flex;padding-left: 18px;">
+                            <strong>AED @Model?.paymentDetail?.Amount</strong>
+                        </p>
+                    </div>
+                    <div class="col-md-2 col-lg-2 col-xl-2" style="margin-left: 20px;">
+                        <div style="display: flex;align-items: center;gap: 6px;">
+                            <i class="fa-solid fa-user" aria-hidden="true"></i>
+                            <span> Payment Date:</span>
+                        </div>
+                        <p class="p-style" style=" display: flex;padding-left: 18px;">
+                            <strong>AED @Model?.paymentDetail?.PaymentDate</strong>
+                        </p>
+                    </div>
+                </div>
+                <div class="row alert alert-light-primary  subtitle" role="alert" style="margin: 1px;">
+                    <div class="col-sm-6">
+                        <h5 style=" text-align: left; padding-left: 20px;">Cheque Details</h5>
+                    </div>
+                    <div class="col-sm-6 text-end">
+                        <input type="hidden" class="AllowMultipleChargeTypeWithVatPayments" value="1">
+                    </div>
+                </div>
+                @for (int i = 0; i < Model?.Cheques?.TransactionCheque?.Count(); i++)
+                {
+                    string status = @Model?.Cheques.TransactionCheque[i]?.ChequeStatus?.ToLower() ?? "";
+                    string statusColor = status switch
+                    {
+                        "active" => "rgba(0, 150, 0, 0.35)",
+                        "cancelled" or "rejected" => "rgba(244, 67, 54, 0.35)",
+                        "ended" or "terminated" or "cancelled" => "rgba(158, 158, 158, 0.35)",
+                        "received" or "draft" => "rgba(255, 171, 0, 0.35)",
+                        _ => "rgba(255, 171, 0, 0.35)"
+                    };
+                    <div class="row" style="border-bottom: 1px solid #dad4d4;padding: 10px;">
+                        <div class="col-md-2 col-lg-2 col-xl-2" style="">
+                            <div style="display: flex;align-items: center;gap: 6px;">
+                                <i class="fa-solid fa-hashtag" aria-hidden="true"></i>
+                                <span> Transaction Id:</span>
+                            </div>
+                            <p class="p-style" style=" display: flex;padding-left: 18px;">
+                                <strong>@Model?.Cheques.TransactionCheque[i].TransactionId</strong>
+                            </p>
+                        </div>
+                        <div class="col-md-2 col-lg-2 col-xl-2" style="">
+                            <div style="display: flex;align-items: center;gap: 6px;">
+                                <i class="fa-solid fa-money-check" aria-hidden="true"></i>
+                                <span> Cheque Number:</span>
+                            </div>
+                            <p class="p-style" style=" display: flex;padding-left: 18px;">
+                                <strong>@Model?.Cheques.TransactionCheque[i].ChequeNo</strong>
+                            </p>
+                        </div>
+                        <div class="col-md-2 col-lg-2 col-xl-2" style="">
+                            <div style="display: flex;align-items: center;gap: 6px;">
+                                <i class="fa-solid fa-building-columns" aria-hidden="true"></i>
+                                <span> Cheque Issuer Bank:</span>
+                            </div>
+                            <p class="p-style" style=" display: flex;padding-left: 18px;">
+                                <strong>@Model?.Cheques.TransactionCheque[i].BankName</strong>
+                            </p>
+                        </div>
+                        <div class="col-md-2 col-lg-2 col-xl-2" style="">
+                            <div style="display: flex;align-items: center;gap: 6px;">
+                                <i class="fa fa-money-bill" aria-hidden="true"></i>
+                                <span> Amount:</span>
+                            </div>
+                            <p class="p-style" style=" display: flex;padding-left: 18px;">
+                                <strong>AED @Model?.Cheques.TransactionCheque[i].ChequeAmount</strong>
+                            </p>
+                        </div>
+                        <div class="col-md-2 col-lg-2 col-xl-2" style="">
+                            <div style="display: flex;align-items: center;gap: 6px;">
+                                <i class="fa fa-calendar" aria-hidden="true"></i>
+                                <span> Date:</span>
+                            </div>
+                            <p class="p-style" style=" display: flex;padding-left: 18px;">
+                                <strong>AED @Model?.Cheques.TransactionCheque[i].ChequeDate</strong>
+                            </p>
+                        </div>
+                        <div class="col-md-2 col-lg-2 col-xl-2 text-start" style="">
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <i class="fa fa-sync" aria-hidden="true"></i>
+                                <span>Status of Cheque:</span>
+                            </div>
+                            <label style=" margin-left: 19px; border-radius: 5px; background-color: @statusColor; display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; margin-left: 19px; white-space: nowrap; color: white; padding: 5px;">
+                                @Model?.Cheques.TransactionCheque[i].ChequeStatus
+                            </label>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+    <div id="fullPageLoader" style="
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0,0,0,0.5);
+                    z-index: 99999;
+                    display: none;
+                    justify-content: center;
+                    align-items: center;
+                    text-align: center;
+                    font-size: 20px;
+                    color: white;
+                ">
+        <div>
+            <div class="spinner-border text-light" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <div style="margin-top: 15px;">Loading...</div>
+        </div>
+    </div>
+</div>
+<script src="~/toaster/toaster.js"></script>
+<script>
+    async function ChequesDownload(id) {
+        showLoader();
+        debugger;
+        if (id == "" || id == null) {
+            toastr.error("Error", "Transaction Id is empty");
+            return;
+        }
+        try {
+            const response = await fetch('/Payments/Payment/PaymentDetailDownloadReceipt', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ transactionid: id.toString() })
+            });
+            debugger;
+            if (response.ok) {
+                const data = await response.json(); // ✅ parse JSON
+                if (data.path) {
+                    downloadPdf(data.path); // ✅ use parsed data
+                } else {
+                    toastr.error("Download failed: base64 path not found");
+                }
+            } else {
+                toastr.error("Download failed:", response.message);
+            }
+        } catch (error) {
+            toastr.error("Download failed:", error);
+        } finally {
+
+            hideLoader();
+        }
+    }
+    
+    function downloadPdf(base64StringFromAPI) {
+        const base64String = base64StringFromAPI; // Your base64 string
+        const byteCharacters = atob(base64String);
+        const byteNumbers = Array.from(byteCharacters, c => c.charCodeAt(0));
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'file.pdf';
+        link.click();
+
+        URL.revokeObjectURL(link.href);
+    }
+    function showLoader() {
+        const loader = document.getElementById('fullPageLoader');
+        if (loader) loader.style.display = 'flex';
+    }
+
+    function hideLoader() {
+        const loader = document.getElementById('fullPageLoader');
+        if (loader) loader.style.display = 'none';
+    }
+</script>

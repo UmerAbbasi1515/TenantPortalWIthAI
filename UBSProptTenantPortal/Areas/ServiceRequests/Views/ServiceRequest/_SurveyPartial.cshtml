@@ -1,0 +1,351 @@
+﻿@model SurveyQuestions
+
+@{
+    // ---------------------------------------------------------------------
+    // View data (computed once, instead of repeating null-checks everywhere)
+    // ---------------------------------------------------------------------
+    var currentQuestion = Model?.currentQuestion ?? 0;
+    var questions = Model?.FaqQuestion;
+    var totalQuestions = questions?.Count ?? 0;
+    var reqNo = ViewBag.caseNo;
+
+    var question = (questions != null && currentQuestion >= 0 && currentQuestion < totalQuestions)
+        ? questions[currentQuestion]
+        : null;
+
+    var options = question?.Answers?.FaqOptions;
+    var hasOptions = options != null && options.Any();
+
+    var progressPercent = question?.Answers?.Progress * 100;
+
+    // Same for every option of the current question
+    var answerId = question?.AnswerId;
+    var isCompleted = currentQuestion == totalQuestions - 1 ? 1 : 0;
+    var nextQuestionId = -1;
+    if (currentQuestion != totalQuestions - 1)
+    {
+        nextQuestionId = questions?[currentQuestion + 1]?.QuestionId ?? -1;
+    }
+}
+
+<style>
+    :root {
+        --blue-color: #003DA6;
+        --blue-color2: #E3EFFF;
+        --grey-color: #6C757D;
+    }
+
+    /* ---------- Containers ---------- */
+    .survey-section {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-top: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .survey-header-info {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .request-info {
+        display: flex;
+        justify-content: space-between;
+        color: #333;
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    /* ---------- Progress ---------- */
+    .progress-section {
+        padding-top: 15px;
+    }
+
+    .progress-text {
+        text-align: center;
+        margin-bottom: 10px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .survey-progress {
+        height: 10px;
+        border-radius: 5px;
+        background-color: #98f4ee;
+        overflow: hidden;
+    }
+
+    .survey-progress-bar {
+        height: 100%;
+        background-color: #43B9B2;
+        border-radius: 5px;
+        transition: width 0.3s ease;
+    }
+
+    /* ---------- Question card ---------- */
+    .question-card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        min-height: 400px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .question-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 25px;
+    }
+
+    .answers-container {
+        flex: 1;
+        overflow-y: auto;
+        margin-bottom: 20px;
+        max-height: 400px;
+    }
+
+    /* ---------- Answer options ---------- */
+    .answer-option {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        background-color: #f8f9fa;
+    }
+
+        .answer-option:hover,
+        .answer-option.selected {
+            background-color: #43B9B2;
+        }
+
+        .answer-option.selected {
+            border-color: #43B9B2;
+        }
+
+        .answer-option input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 15px;
+            accent-color: #43B9B2;
+            cursor: pointer;
+        }
+
+        .answer-option label {
+            margin: 0;
+            cursor: pointer;
+            flex: 1;
+            font-size: 14px;
+            user-select: none;
+        }
+
+    [dir="rtl"] .answer-option input[type="radio"] {
+        margin-right: 0;
+        margin-left: 15px;
+    }
+
+    /* ---------- Buttons ---------- */
+    .btn-survey-next {
+        background-color: #43B9B2;
+        color: white;
+        padding: 12px 50px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: block;
+        margin: 0 auto;
+    }
+
+        .btn-survey-next:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 61, 166, 0.3);
+        }
+
+        .btn-survey-next:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+    .btn-done-survey {
+        background-color: #43B9B2;
+        color: white;
+        padding: 12px 60px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    /* ---------- Loading / messages ---------- */
+    .loading-spinner-survey {
+        text-align: center;
+        padding: 50px;
+    }
+
+    .spinner-survey {
+        border: 4px solid #43B9B2;
+        border-top: 4px solid var(--blue-color);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .error-message-survey {
+        background-color: #43B9B2;
+        color: #721c24;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        margin: 20px 0;
+    }
+
+    .no-survey-message {
+        text-align: center;
+        padding: 40px;
+        color: var(--grey-color);
+    }
+
+    /* ---------- Success modal ---------- */
+    .success-modal-survey {
+        text-align: center;
+        padding: 30px;
+    }
+
+    .success-icon-survey {
+        color: #43B9B2;
+        font-size: 80px;
+        margin-bottom: 20px;
+    }
+
+    .success-title-survey {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: #333;
+    }
+
+    .success-message-survey {
+        color: var(--grey-color);
+        margin-bottom: 30px;
+        font-size: 14px;
+    }
+</style>
+
+@if (!string.IsNullOrEmpty(ViewBag.errorMainInfoSurvey))
+{
+    @if (ViewBag.errorMainInfoSurvey != "No more questions")
+    {
+        <div class="survey-section">
+            <div class="error-message-survey" style="color: white">
+                @ViewBag.errorMainInfoSurvey
+            </div>
+        </div>
+    }
+}
+else if (totalQuestions == 0)
+{
+    <div class="survey-section">
+        <div class="no-survey-message">
+            <i class="fas fa-clipboard-list" style="font-size: 60px; margin-bottom: 20px; color: #ccc;"></i>
+            <p style="color: white">"No survey available at this time."</p>
+        </div>
+    </div>
+}
+else
+{
+    <div>
+        @* ---------- Header + progress ---------- *@
+        <div class="survey-header-info">
+            <div class="request-info">
+                <span>Please complete all question by choosing correct answers</span>
+            </div>
+
+            <div class="progress-section">
+                <div class="progress-text">
+                    <span id="questionCounter">@(currentQuestion + 1)</span>/@totalQuestions
+                </div>
+                <div class="survey-progress">
+                    <div class="survey-progress-bar" id="surveyProgressBar" style="width: @(progressPercent)%"></div>
+                </div>
+            </div>
+        </div>
+
+        @* ---------- Question card ---------- *@
+        <div class="question-card" id="surveyQuestionCard">
+            <div class="question-title" id="surveyQuestionTitle">@question?.Title</div>
+
+            <div class="answers-container" id="surveyAnswersContainer">
+                @if (hasOptions)
+                {
+                    for (int i = 0; i < options.Count; i++)
+                    {
+                        var option = options[i];
+
+                        <div class="answer-option"
+                             onclick="selectSurveyAnswer('@answerId','@option?.OptionId','@nextQuestionId','@isCompleted')">
+                            <input type="radio"
+                                   name="surveyAnswer"
+                                   id="surveyAnswer@(i)"
+                                   value="@option?.OptionId">
+                            <label for="surveyAnswer@(i)">@option?.OptionTitle</label>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="loading-spinner-survey">
+                        <div class="spinner-survey"></div>
+                        <p style="margin-top: 15px;">Loading answers...</p>
+                    </div>
+                }
+            </div>
+
+            @* ---------- Actions ---------- *@
+            <div class="row justify-content-center">
+                <button onclick="hideSurvey()" class="btn btn-danger" style="width: 300px">Cancel</button>
+                <div style="width: 70px"></div>
+                <button type="submit" class="btn btn-primary" style="width: 300px"
+                        onclick="nextSurveyQuestion()" disabled="@(Model?.selectedAnswer == -1)">
+                    Next
+                </button>
+            </div>
+
+            @* Hidden fields to store selected values (ids are used by the survey JS) *@
+            <input type="hidden" id="answerId" />
+            <input type="hidden" id="customerChoice" />
+            <input type="hidden" id="descriptionInput" value="desc" />
+            <input type="hidden" id="questionIDInut" />
+            <input type="hidden" id="isCompletedIDInut" />
+            <input type="hidden" id="isLastQuestion" value="0" />
+        </div>
+    </div>
+}

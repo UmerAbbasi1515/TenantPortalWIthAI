@@ -1,0 +1,287 @@
+﻿.mg-4 {
+    margin-top: 4px;
+}
+
+
+.pagination-right {
+    float: right !important;
+}
+
+.page-link {
+    cursor: pointer;
+}
+
+.fa-pencil {
+    cursor: pointer;
+}
+
+.fa-trash {
+    cursor: pointer;
+}
+
+th {
+    white-space: nowrap;
+}
+
+.activebutton {
+    background: rgba(67, 185, 178, 0.1);
+    color: var(--theme-default) !important;
+    box-shadow: none;
+    border: 1px dashed rgba(106, 113, 133, 0.3) !important;
+}
+
+.paginate_button hclass:hover {
+    border: 1px dashed rgba(106, 113, 133, 0.3) !important;
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #585858), color-stop(100%, #111)); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, #585858 0%, #111 100%); /* Chrome10+,Safari5.1+ */
+    background: -moz-linear-gradient(top, #585858 0%, #111 100%); /* FF3.6+ */
+    background: -ms-linear-gradient(top, #585858 0%, #111 100%); /* IE10+ */
+    background: -o-linear-gradient(top, #585858 0%, #111 100%); /* Opera 11.10+ */
+    background: linear-gradient(to bottom, #585858 0%, #111 100%); /* W3C */
+}
+
+.hide {
+    display: none;
+}
+
+.listScroll {
+    overflow-y: auto;
+    height: 450px;
+}
+
+.width200 {
+    width: 200px
+}
+
+.width50 {
+    width: 50px
+}
+
+.width130 {
+    width: 130px
+}
+
+.odd {
+    background-color: #f9f9f9;
+}
+
+.eve {
+    background-color: #ffffff;
+}
+
+
+.pageheader {
+    margin-top: 6px;
+}
+
+
+.content-wrapper {
+    height: calc(17vh - 14px);
+    overflow: auto;
+}
+
+.div-stickToBottom {
+    position: absolute !important;
+    bottom: 0;
+    width: 100%;
+}
+
+.table-pagination-wrapper {
+    height: 1000px; /* or 70vh, or any other fixed height */
+    position: absolute !important;
+}
+
+/*.dataTables_paginate {
+    position: absolute !important;
+    bottom: 0;
+    right: 0;
+}*/
+
+.padding-bottom-5 {
+    padding-bottom: 5px;
+}
+
+.padding-bottom-8 {
+    padding-bottom: 8px;
+}
+
+.padding-bottom-10 {
+    padding-bottom: 10px;
+}
+
+.padding-top-5 {
+    padding-top: 5px;
+}
+
+.padding-top-10 {
+    padding-top: 10px;
+}
+
+.padding-top-8 {
+    padding-top: 8px;
+}
+
+.width-50 {
+    width: 50px;
+}
+
+.width-105 {
+    max-width: 105px;
+}
+
+.width-110 {
+    width: 110px;
+}
+
+.width-130 {
+    width: 130px;
+}
+
+.width-160 {
+    width: 160px;
+}
+
+.width-133 {
+    width: 133px;
+}
+
+.font-size-10 {
+    font-size: 10px !important;
+}
+
+.font-size-15 {
+    font-size: 15px !important;
+}
+
+.font-size-20 {
+    font-size: 20px !important;
+}
+
+.font-size-25 {
+    font-size: 25px !important;
+}
+
+
+.font-size-40 {
+    font-size: 40px !important;
+}
+
+.pt-10 {
+    padding-top: 10px !important;
+}
+
+.inline {
+    display: inline-block;
+}
+
+.margin-right-10 {
+    margin-right: 10px;
+}
+
+
+.padding-right-15 {
+    padding-right: 15px;
+}
+
+.large-radio {
+    transform: scale(1.5);
+}
+
+/*.select2-dropdown-smooth-scroll .select2-results__options {*/
+/*-webkit-overflow-scrolling: touch;*/
+
+/*background-color: royalblue !important;
+    overflow-y: auto;*/ /* Add a vertical scrollbar */
+/*}*/
+
+
+
+
+.seelct2Dropdown::-webkit-scrollbar {
+    width: 6px; /* Set the width of the scrollbar */
+}
+
+.seelct2Dropdown::-webkit-scrollbar-thumb {
+    background-color: #ccc; /* Set the color of the scrollbar thumb */
+    border-radius: 10px; /* Round the corners of the scrollbar thumb */
+}
+
+    .seelct2Dropdown::-webkit-scrollbar-thumb:hover {
+        background-color: #aaa; /* Set the hover color of the scrollbar thumb */
+    }
+
+
+.select2-dropdown-scroll {
+    height: 200px; /* Adjust the height as needed */
+    overflow-y: auto; /* Add a vertical scrollbar */
+}
+
+
+.btn-custom-warningLight {
+    color: black !important;
+    background-color: #f4c37d !important;
+}
+
+.view-icon {
+    position: relative;
+}
+
+    .view-icon i {
+        position: absolute;
+        top: -20px;
+        /* left: 50px; */
+    }
+
+    .view-icon:hover {
+        text-decoration: underline;
+    }
+
+.text-danger {
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+}
+
+.padding-5 {
+    padding: 5px;
+}
+
+
+/* Change the background color of the selected item */
+select option:checked {
+    background-color: #43B9B2;
+    color: #fff;
+}
+
+/* Optionally, change the hover effect */
+select option:hover {
+    background-color: #43B9B2;
+    color: #fff;
+}
+
+.asterisk {
+    color: #DC3545 !important
+}
+
+.pageLoader {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.fa {
+    width: 1.28571429em;
+    text-align: center;
+    /*margin-right: 0.5rem !important;*/
+}
+
+.bold {
+    font-weight: bold;
+}
+table .dropdown-menu a {
+    text-wrap:nowrap;
+}
+
+table .dropdown-menu a i {
+    margin-right: 0.5rem;
+}

@@ -1,0 +1,213 @@
+﻿@using UBSProptTenantPortal
+@model ContractRenewInfo
+@{
+    ViewData["Title"] = "Renew";
+    var ContractNo = ViewBag.ContractNo;
+    var dueActionID = ViewBag.DueActionID;
+    var ContractID = ViewBag.ContractID;
+    var directionClass = LabelsLandlordPortal._language == "English" ? "ltr" : "rtl";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var model = Model;
+}
+
+@* =====================================================================
+     STYLES / VENDOR RESOURCES
+    ===================================================================== *@
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="~/css/site.css">
+
+    <style>
+        .guide-box {
+            background-color: rgba(67, 185, 178, 0.1) !important;
+            color: #43B9B2 !important;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .guide-content {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #333;
+        }
+
+            .guide-content i {
+                color: #43B9B2;
+                font-size: 16px;
+            }
+    </style>
+</head>
+
+<div class="text-center" style="height: 100vh; ">
+
+    @* ---------- Page header ---------- *@
+    <div class="card pageheader sticky-header">
+        <div class="card-header">
+            <div class="row">
+                <div class="col-12 text-start">
+                    <h4>
+                        <a href="@Url.Action("RenewalContracts", "Renewal", new { area = "RenewalFlow" })"
+                           class="text-dark text-decoration-none fw-bold"
+                           style="font-size: 1.25rem;">
+                            <i class="fa fa-arrow-left me-2"></i> Contract No. @ContractNo
+                        </a>
+                    </h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-12 col-lg-12 col-xl-12 mt-2 d-flex">
+        <div style="display: flex; flex-direction: row;">
+            <div class="card-body">
+
+                @* ---------- Title ---------- *@
+                <div class="row alert alert-light-primary  subtitle" role="alert" style="margin-left: 2px; margin-right: 2px;">
+                    <div class="col-sm-12">
+                        <h5 style=" text-align: left; padding-left: 20px;">Renewal Request</h5>
+                    </div>
+                </div>
+
+                @* ---------- Renewal details ---------- *@
+                <div class="row">
+                    <div class="col-sm-3">
+                        <label><b>Start Date: </b></label><br><label>@Model?.Record?.AddNewDate</label>
+                    </div>
+                    <div class="col-sm-3">
+                        <label><b>End Date: </b></label><br><label>@Model?.Record?.EndNewDate</label>
+                    </div>
+                    <div class="col-sm-3">
+                        <label><b>No of Installments: </b></label><br><label>@Model?.Record?.Installments</label>
+                    </div>
+                    <div class="col-sm-3">
+                        <label>
+                            <b>Contract Amount: </b>
+                        </label><br><label>
+                            <span style="font-weight: 700;">AED @Model?.Record?.Amount</span>
+                        </label>
+                    </div>
+                </div>
+                <hr />
+
+                @* ---------- Step guidance ---------- *@
+                <div style="display:flex; flex-direction: row ; justify-content:space-around">
+
+                    <div class="col-sm-4" style="margin-left: 10px; margin-right: 10px; margin-top: 20px;">
+                        <div class="guide-box">
+                            <div class="guide-content">
+                                <i class="fa fa-info-circle" aria-hidden="true"></i>
+                                <span>@GetStepGuide(1)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-4" style="margin-left:10px; margin-right:10px">
+                        <div class="guide-box">
+                            <div class="guide-content">
+                                <i class="fa fa-info-circle" aria-hidden="true"></i>
+                                <span>@GetStepGuide(2)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* ---------- Submit ---------- *@
+                <div class="mt-4 pb-5">
+                    <a class="btn btn-primary btn-block text-white" href="#"
+                       id="btn-submit" style="display: bloc; width:50% !important"
+                       onclick="Submit(
+                            @dueActionID,
+                            @ContractID,
+                            '@(Model?.Record?.AddNewDate ?? "")',
+                            '@(Model?.Record?.EndNewDate ?? "")'
+                        )">Submit</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* =====================================================================
+         SCRIPTS
+        ===================================================================== *@
+    <script>
+        // =====================================================================
+        // Helpers
+        // =====================================================================
+
+        // Reads a fetch Response body once and never throws on empty / non-JSON bodies.
+        async function readJsonSafely(response, fallback = {}) {
+            try {
+                const text = await response.text();
+                return text ? JSON.parse(text) : fallback;
+            } catch (error) {
+                console.error('Invalid JSON response:', error);
+                return fallback;
+            }
+        }
+
+        // =====================================================================
+        // Submit renewal request
+        // =====================================================================
+        async function Submit(dueActionID, ContractID, startDate, endDate) {
+            debugger;
+            try {
+                btnshowLoader("btn-submit");
+                debugger;
+
+                const data = {
+                    contractId: ContractID.toString(),
+                    dueActionid: dueActionID.toString(),
+                    startDate: startDate.toString(),
+                    endDate: endDate.toString(),
+                    duration: "12 Month",
+                };
+
+                const response = await fetch('/RenewalFlow/Renewal/SubmitContractRenew', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    const res = await readJsonSafely(response);
+
+                    if (res.success == true) {
+                        btnhideLoader("btn-submit");
+                        toastr.success("Success", "Stage updated successfully");
+                        setTimeout(function () {
+                            btnhideLoader("btn-submit");
+                            window.location.href = '@Url.Action("RenewalContracts", "Renewal", new { area = "RenewalFlow" })';
+                        }, 1000);
+                    } else {
+                        btnhideLoader("btn-submit");
+                        toastr.error("Error", res.message);
+                    }
+
+                } else {
+                    btnhideLoader("btn-submit");
+                    toastr.error("Error", response.status);
+                }
+            } catch (error) {
+                btnhideLoader("btn-submit");
+                toastr.error("Error", error);
+            }
+        }
+    </script>
+
+    @functions {
+        public string GetStepGuide(int? id)
+        {
+            return id switch
+            {
+                1 => "You can use the communication tab to get more information after submitting.",
+                2 => "I understand that i need to share my Emirates ID, passport and any other related documents with FAB Properties as this is necessary for the renewal of my Tenancy agreement with Fab Properties.",
+                _ => "I understand that i need to share my Emirates ID, passport and any other related documents with FAB Properties as this is necessary for the renewal of my Tenancy agreement with Fab Properties."
+            };
+        }
+    }
+</div>

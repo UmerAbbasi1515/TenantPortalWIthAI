@@ -1,0 +1,177 @@
+﻿@model UploadDocResponse
+@{
+    var docs = Model?.Docs;
+    var dueActionID = Model?.CaseStageInfo?.DueActionId;
+    string stageIdStr = Model?.CaseStageInfo?.StageId ?? "";
+
+    int stageId = int.TryParse(stageIdStr, out var parsedStageId)
+        ? parsedStageId
+        : 0;
+
+    var ServiceRequestNo = ViewBag.ServiceRequestNo;
+    var isAllMandatoryDocUploadedCount = 0;
+}
+
+@if (docs == null || docs.Count == 0)
+{
+    <div class="card-header pb-80px" style="flex-shrink: 0;">
+        <center style="padding-top: 50px;">
+            <h4 style="padding-top: 5px; padding-bottom: 50px;">No Document Available</h4>
+        </center>
+    </div>
+}
+else if (ViewBag.errorDocuments != "")
+{
+    <div class="card-header pb-0" style="flex-shrink: 0;">
+        <center style="padding-top: 50px;">
+            <h4>Service Request</h4>
+            <p style="padding-top: 5px; padding-bottom: 60px;">@ViewBag.errorDocuments</p>
+        </center>
+        <i class="fa fa-refresh" aria-hidden="true" style="padding-top: 5px; padding-bottom: 50px; font-size: 18px; color: black;"
+           onclick="window.location.href = '@Url.Action("ServiceRequests", "ServiceRequest" , new { area = "ServiceRequests" })'"></i>
+    </div>
+}
+else
+{
+    <div class="row g-3" style="height: 365px;">
+        @for (int i = 0; i < docs?.Count; i++)
+        {
+            var doc = docs[i];
+            bool canUploadNew = doc?.Id == null || doc?.IsRejected == true;
+
+
+
+            <input type="hidden" id="isUploaded_@i" value="@((!canUploadNew).ToString())" />
+
+            <div class="col-md-3">
+                <div class="card d-flex" style="border:1px solid #eaeaea; border-radius:12px; height:350px; box-shadow:0 0 5px rgba(0,0,0,0.05);">
+
+                    @if (!canUploadNew)
+                    {
+                        if (i < 2)
+                        {
+                            isAllMandatoryDocUploadedCount++;
+                        }
+                        <div class="uploadDocN uploaded-card position-relative">
+                            <div class="preview-box" style="position: relative; background-color:@(doc?.Extentsion?.ToLower() == "pdf" ? "white" : "") !important">
+
+                                <!-- Icon Preview -->
+                                @if (doc?.Extentsion?.ToLower() == "jpg" || doc?.Extentsion?.ToLower() == "jpeg" || doc?.Extentsion?.ToLower() == "png")
+                                {
+                                    <i class="fa fa-file-image-o" style="color:#009688; font-size:18px;"></i>@doc?.Name
+                                }
+                                else if (doc?.Extentsion?.ToLower() == "pdf")
+                                {
+                                    <i class="fa fa-file-pdf-o" style="color:#e74c3c; font-size:18px;"></i>@doc?.Name
+                                }
+                                else
+                                {
+                                    <i class="bi bi-file-earmark doc-icon"></i>
+                                }
+
+                                <!-- Hover Actions -->
+                                <div class="overlay">
+                                    <button type="button" class="delete-icon"
+                                            onclick="DeleteDocument('@doc?.AttachmentId','@doc?.Name')">
+                                        <i class="far fa-trash-alt" style="background:white; padding:5px; border-radius:20px; color:red;"></i>
+                                    </button>
+
+                                    <button class="btn btn-light btn-sm btn-download" style="margin-right:10px" id="btnDownload_@i"
+                                            onclick="downloadDocument('@doc?.AttachmentId','@ServiceRequestNo','@doc?.Extentsion',@i)">
+                                        Download
+                                    </button>
+
+                                    @if (doc?.Name == "Emirate ID")
+                                    {
+                                        <button class="btn btn-teal btn-sm" onclick="openEMirateIDSample(@i, '@ServiceRequestNo', '@doc?.DocumentTypeId', '@doc?.AttachmentId' , 'Emirate ID', 'Replace', @(doc?.IsRejected == true ? "true" : "false"))">
+                                            Replace
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-teal btn-sm" onclick="openUploadModal(@i, '@ServiceRequestNo', '@doc?.DocumentTypeId',  '@doc?.AttachmentId' ,'@doc?.Name', 'Replace', @(doc?.IsRejected == true ? "true" : "false"))">
+                                            Replace
+                                        </button>
+                                    }
+
+                                </div>
+                            </div>
+
+
+                            <div class="doc-footer d-flex justify-content-between align-items-center">
+                                <div class="col d-flex flex-column text-start">
+                                    <span class="fw-bold">@doc?.Name</span>
+                                    <small class="text-muted">
+                                        Uploaded Date:
+                                        <span style="font-weight:600">@doc?.AttachmentDate</span>
+                                    </small>
+                                </div>
+                                <span class="badge bg-success">Uploaded</span>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div id="uploadView_@i">
+                            <div class="text-center">
+                                @if (doc?.IsRejected == true)
+                                {
+                                    <p>
+                                        <strong>
+                                            <span style="color: red;">Your </span>
+                                            <a id="btnDownload_@i" onclick="downloadDocument('@doc?.AttachmentId','@ServiceRequestNo','@doc?.Extentsion', @i)" style="cursor:pointer;">
+                                                <span style="color:#43b9b2;">@doc?.Name</span>
+                                            </a>
+                                            <span style="color:red;"> has been rejected, please upload again</span>
+                                        </strong>
+                                    </p>
+                                }
+
+
+                                @if (doc?.Name == "Emirate ID")
+                                {
+                                    <div class="uploadDoc" id="uploadBox_@i">
+                                        <a onclick="openEMirateIDSample(@i, '@ServiceRequestNo', '@doc?.DocumentTypeId', '@doc?.AttachmentId' ,'Emirate ID', '@(doc?.IsRejected == true ? "Replace" : "Upload")' , @(doc?.IsRejected == true ? "true" : "false"))">
+                                            <div style="padding-top:@(doc?.IsRejected==true ? "200px" : "215px");">
+                                                <label class="form-label fw-semibold mb-1" style="font-size:16px;">Click to Upload</label>
+                                                <p class="text-muted">Max 10MB (JPG, PNG, PDF)</p>
+                                            </div>
+                                        </a>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="uploadDoc" id="uploadBox_@i">
+                                        <a onclick="openUploadModal(@i, '@ServiceRequestNo', '@doc?.DocumentTypeId', '@doc?.AttachmentId' , '@doc?.Name', '@(doc?.IsRejected == true ? "Replace" : "Upload")'  , @(doc?.IsRejected == true ? "true" : "false") )">
+                                            <div style="padding-top:@(doc?.IsRejected==true ? "200px" : "215px");">
+                                                <label class="form-label fw-semibold mb-1" style="font-size:16px;">Click to Upload</label>
+                                                <p class="text-muted">Max 10MB (JPG, PNG, PDF)</p>
+                                            </div>
+                                        </a>
+                                    </div>
+                                }
+
+                                <div class="doc-footer" style="padding-top:10px;">
+                                    <span><strong>@doc?.Name</strong></span>
+                                    <span class="badge bg-danger">Pending</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                </div>
+            </div>
+        }
+    </div>
+    @if (stageId < 3)
+        {
+            <button id="btn-updateDocStage"
+                    onclick="UpdateDocumentStage('@dueActionID')"
+                    class="btn btn-primary w-50 mt-2 mb-5"
+                    @(isAllMandatoryDocUploadedCount == 2 ? "" : "disabled")>
+                Submit
+            </button>
+        }
+
+
+    }

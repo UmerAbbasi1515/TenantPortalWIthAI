@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "dgSpecHash": "2OtQOSf2D4bXneVAFDrysiIVroG/sumntd1lEWjsjBsxQx5Sk41hdZR5dqJV6LB3AR2PWXrEwTje7YNrAKQQ4g==",
+  "success": true,
+  "projectFilePath": "/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/AIServices/AIServices.csproj",
+  "expectedPackageFiles": [
+    "/Users/apple/.nuget/packages/documentformat.openxml/3.5.1/documentformat.openxml.3.5.1.nupkg.sha512",
+    "/Users/apple/.nuget/packages/documentformat.openxml.framework/3.5.1/documentformat.openxml.framework.3.5.1.nupkg.sha512",
+    "/Users/apple/.nuget/packages/google.protobuf/3.31.0/google.protobuf.3.31.0.nupkg.sha512",
+    "/Users/apple/.nuget/packages/grpc.core.api/2.71.0/grpc.core.api.2.71.0.nupkg.sha512",
+    "/Users/apple/.nuget/packages/grpc.net.client/2.71.0/grpc.net.client.2.71.0.nupkg.sha512",
+    "/Users/apple/.nuget/packages/grpc.net.common/2.71.0/grpc.net.common.2.71.0.nupkg.sha512",
+    "/Users/apple/.nuget/packages/microsoft.extensions.configuration/10.0.14/microsoft.extensions.configuration.10.0.14.nupkg.sha512",
+    "/Users/apple/.nuget/packages/microsoft.extensions.configuration.abstractions/10.0.14/microsoft.extensions.configuration.abstractions.10.0.14.nupkg.sha512",
+    "/Users/apple/.nuget/packages/microsoft.extensions.configuration.binder/10.0.14/microsoft.extensions.configuration.binder.10.0.14.nupkg.sha512",
+    "/Users/apple/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/9.0.0/microsoft.extensions.dependencyinjection.abstractions.9.0.0.nupkg.sha512",
+    "/Users/apple/.nuget/packages/microsoft.extensions.logging.abstractions/6.0.0/microsoft.extensions.logging.abstractions.6.0.0.nupkg.sha512",
+    "/Users/apple/.nuget/packages/microsoft.extensions.primitives/10.0.14/microsoft.extensions.primitives.10.0.14.nupkg.sha512",
+    "/Users/apple/.nuget/packages/qdrant.client/1.19.0/qdrant.client.1.19.0.nupkg.sha512",
+    "/Users/apple/.nuget/packages/system.io.packaging/8.0.1/system.io.packaging.8.0.1.nupkg.sha512"
+  ],
+  "logs": []
+}

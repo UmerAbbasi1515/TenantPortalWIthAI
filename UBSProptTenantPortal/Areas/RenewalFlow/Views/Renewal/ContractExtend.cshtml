@@ -1,0 +1,166 @@
+﻿@using UBSProptTenantPortal
+@model GetExtensionPeriodModel
+@{
+    ViewData["Title"] = "Extend";
+    var ContractNo = ViewBag.ContractNo;
+    var dueActionID = ViewBag.DueActionID;
+    var directionClass = LabelsLandlordPortal._language == "English" ? "ltr" : "rtl";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var firstPeriod = Model?.ExtensionPeriod?.FirstOrDefault();
+}
+
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="~/css/site.css">
+</head>
+
+<div class="text-center" style="height: 100vh;">
+
+    @* ===== Page header ===== *@
+    <div class="card pageheader sticky-header">
+        <div class="card-header">
+            <div class="row">
+                <div class="col-12 text-start">
+                    <h4>
+                        <a href="@Url.Action("RenewalContracts", "Renewal", new { area = "RenewalFlow" })"
+                           class="text-dark text-decoration-none fw-bold"
+                           style="font-size: 1.25rem;">
+                            <i class="fa fa-arrow-left me-2"></i> Contract No. @ContractNo
+                        </a>
+                    </h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ===== Content ===== *@
+    <div class="col-md-12 col-lg-12 col-xl-12 mt-2 d-flex">
+        <div style="width:100% !important">
+            <div class="card-body">
+
+                <div class="row alert alert-light-primary subtitle" role="alert" style="margin-left: 2px; margin-right: 2px;">
+                    <div class="col-sm-12">
+                        <h5 style="text-align: left; padding-left: 20px;">Extend Contracts</h5>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-3">
+                        <label><b>Select Extend Period: </b></label><br>
+                        <select class="form-control" name="entendPeriod" id="entendPeriodID" onchange="updatePeriodDetails()">
+                            @foreach (var item in Model?.ExtensionPeriod!)
+                            {
+                                <option value="@item.Duration"
+                                        data-start="@item?.ExtensionDetail?.AddNewDate"
+                                        data-end="@item?.ExtensionDetail?.EndNewDate"
+                                        data-amount="@item?.Amount">
+                                    @item?.Duration - @item?.ExtensionDetail?.AddNewDate to @item?.ExtensionDetail?.EndNewDate
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-sm-3 pt-3">
+                        <label><b>Start Date: </b></label><br>
+                        <label id="startDateLabel">@firstPeriod?.ExtensionDetail?.AddNewDate</label>
+                    </div>
+
+                    <div class="col-sm-3 pt-3">
+                        <label><b>End Date: </b></label><br>
+                        <label id="endDateLabel">@firstPeriod?.ExtensionDetail?.EndNewDate</label>
+                    </div>
+
+                    <div class="col-sm-3 pt-3">
+                        <label><b>Contract Amount: </b></label><br>
+                        <label><span id="amountLabel" style="font-weight: 700;">AED @firstPeriod?.Amount</span></label>
+                    </div>
+                </div>
+
+                <hr />
+
+                <div class="mt-4 pb-5">
+                    <a class="btn btn-primary btn-block text-white" href="#"
+                       id="btn-submit" style="width:50% !important"
+                       onclick="Submit(@firstPeriod?.ExtensionDetail?.ContractId)">Submit</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Safely parse a fetch Response body as JSON.
+        // Returns null if the body is empty or is not valid JSON, instead of throwing.
+        async function readSafeJson(response) {
+            try {
+                const text = await response.text();
+                return text ? JSON.parse(text) : null;
+            } catch (e) {
+                console.error('Invalid JSON response:', e);
+                return null;
+            }
+        }
+
+        function updatePeriodDetails() {
+            const select   = document.getElementById("entendPeriodID");
+            const selected = select.options[select.selectedIndex];
+
+            const startDate = selected.getAttribute("data-start");
+            const endDate   = selected.getAttribute("data-end");
+            const amount    = selected.getAttribute("data-amount");
+
+            document.getElementById("startDateLabel").innerText = startDate || "-";
+            document.getElementById("endDateLabel").innerText   = endDate || "-";
+            document.getElementById("amountLabel").innerText    = amount ? "AED " + amount : "-";
+        }
+
+        async function Submit(ContractID) {
+            try {
+                btnshowLoader("btn-submit");
+
+                const dueActionID = '@dueActionID';
+                const select      = document.getElementById("entendPeriodID");
+                const selected    = select.options[select.selectedIndex];
+
+                const data = {
+                    contractId:  ContractID.toString(),
+                    dueActionid: dueActionID.toString(),
+                    startDate:   selected.getAttribute("data-start")?.toString(),
+                    endDate:     selected.getAttribute("data-end")?.toString(),
+                    duration:    selected.value?.toString()
+                };
+
+                const response = await fetch('/RenewalFlow/Renewal/SubmitContractExtend', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    const res = await readSafeJson(response);
+
+                    if (res?.success === true) {
+                        btnhideLoader("btn-submit");
+                        toastr.success("Success", "Stage updated successfully");
+                        setTimeout(function () {
+                            btnhideLoader("btn-submit");
+                            window.location.href = '@Url.Action("RenewalContracts", "Renewal", new { area = "RenewalFlow" })';
+                        }, 1000);
+                    } else {
+                        btnhideLoader("btn-submit");
+                        console.error('Error in response:', res?.message);
+                    }
+                } else {
+                    btnhideLoader("btn-submit");
+                    console.error('Error in response:', response.status);
+                }
+            } catch (error) {
+                btnhideLoader("btn-submit");
+                console.error('Error:', error);
+            }
+        }
+    </script>
+}

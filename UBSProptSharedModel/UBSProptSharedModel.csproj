@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Labels\" />
+    <None Remove="Constant\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Labels\" />
+    <Folder Include="Constant\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="UBSProptSharedModel.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="UBSProptTenantPortal">
+      <HintPath>..\UBSProptTenantPortal\bin\Debug\net8.0\UBSProptTenantPortal.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

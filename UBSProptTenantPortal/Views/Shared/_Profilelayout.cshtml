@@ -1,0 +1,520 @@
+@using Microsoft.AspNetCore.Mvc;
+@using UBSProptTenantPortal;
+@inject IHttpContextAccessor accessor
+<!DOCTYPE html>
+<html lang="en" dir=@(AuthLabelsPortal.language == "English" ? "ltr" : "rtl") !important;>
+
+@{
+    var directionClass = AuthLabelsPortal.language == "English" ? "ltr" : "rtl";
+    var companyName = accessor.HttpContext?.Session?.GetString("CompanyName") ?? "UBSPropt";
+    var userNameEng = accessor.HttpContext?.Session?.GetString("userNameEng");
+    var email = accessor.HttpContext?.Session.GetString("email");
+    var unReadNotification = accessor.HttpContext?.Session.GetString("unReadNotification");
+    var isLoginFromAuth = accessor?.HttpContext?.Session.GetString("isLoginFromAuth");
+}
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+          content="Edmin admin is super flexible, powerful, clean &amp; modern responsive bootstrap admin template with unlimited possibilities.">
+    <meta name="keywords"
+          content="admin template, Edmin admin template, best javascript admin, dashboard template, bootstrap admin template, responsive admin template, web app">
+    <meta name="author" content="pixelstrap">
+    <title>@ViewData["Title"] - Tenant Portal - @companyName</title>
+
+    <!-- Favicon icon-->
+    <link rel="icon" href="/assets/images/favicon/Propt-Favicon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="/assets/images/favicon/Propt-Favicon.png" type="image/x-icon">
+
+    <!-- Google font-->
+    <link rel="preconnect" href="https://fonts.googleapis.com/">
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;300;400;500;600;700;800;900&amp;display=swap"
+          rel="stylesheet">
+    @* <link href="~/css/fonts.googleapis.css" rel="stylesheet" /> *@
+    <!-- Font awesome icon css -->
+    <link href="~/lib/font-awesome/css/all.min.css" rel="stylesheet" />
+    <!-- Ico Icon css -->
+    <link rel="stylesheet" href="/assets/css/vendors/%40icon/icofont/icofont.css">
+    <!-- Flag Icon css -->
+    <link rel="stylesheet" href="/assets/css/vendors/flag-icon.css">
+    <!-- Themify Icon css -->
+    <link rel="stylesheet" href="/assets/css/vendors/themify-icons/themify-icons/css/themify.css">
+    <!-- Animation css -->
+    <link rel="stylesheet" href="/assets/css/vendors/animate.css/animate.css">
+    <!-- Whether Icon css-->
+    <link rel="stylesheet" href="/assets/css/vendors/weather-icons/css/weather-icons.min.css">
+    <link rel="stylesheet" href="/assets/css/vendors/scrollbar.css">
+    <!-- Flatpicker css-->
+    <link rel="stylesheet" href="/assets/css/vendors/flatpickr/dist/flatpickr.min.css">
+    <!-- App css-->
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.2/dist/css/select2.min.css" rel="stylesheet" />
+
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.2/dist/js/select2.min.js"></script>
+
+    <link href="~/select2checkbox/multiple-select.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/assets/select2/select2.min.css">
+    <link href="~/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link id="color" rel="stylesheet" href="/assets/css/color-1.css" media="screen">
+    <link rel="stylesheet" href="~/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="~/toaster/toastr.css" rel="stylesheet" />
+    <link href="~/css/customStyle.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/assets/css/vendors/datatables.css">
+    <link href="~/css/customformstyle.css" rel="stylesheet" />
+    <link href="~/assets/css/custom.css" rel="stylesheet" asp-append-version="true" />
+
+    <style>
+        .maintitle {
+            font-size: 16px !important;
+            font-weight: 600 !important;
+            padding: 0 0px !important;
+            margin-bottom: -4px !important;
+            display: block;
+            text-transform: uppercase;
+            color: #43b9b2;
+        }
+
+        .sidebar-list a span {
+            display: inline-block;
+            @* max-width: 180px; *@
+            /* Adjust to your desired width */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- tap to top-->
+    <div class="tap-top hide" style="display:none">
+    </div>
+
+    <main class="page-wrapper compact-wrapper" id="pageWrapper">
+        <div style="direction: @(AuthLabelsPortal.language == "English" ? "ltr" : "rtl") !important;">
+
+            <!-- Page header start -->
+            <header class="page-header row main-header">
+                @* <header class="page-header row"> *@
+
+                <!-- Menu &# Close Button -->
+                <div class="logo-wrapper d-flex align-items-center col-auto">
+                    <img class="img-fluid for-light" src="/assets/images/login/logo2.png" alt="logo" style="height:40px !important;">
+
+                    <a class="close-btn" href="javascript:void(0)" id="close-btn">
+                        <div class="toggle-sidebar" id="toggle-sidebar">
+                            <div class="line"></div>
+                            <div class="line"></div>
+                            <div class="line"></div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Center empty div & profile-dropdown and notifications -->
+                <div class="page-main-header col">
+                    <!-- Search -->
+                    <div></div>
+                    <div class="nav-right">
+                        <ul class="header-right">
+                            <!-- Help  class="custom-dropdown"-->
+                            <li class="custom-dropdown custom-profile-dropdown-icon">
+                                <a href="@Url.Action("Help", "Help", new {area = "Help"})">
+                                    <i class="fa fa-info-circle" style="font-size: 16px;"></i>
+                                </a>
+                            </li>
+                            <!-- Notification menu class="custom-dropdown"-->
+                            <li class="custom-dropdown custom-profile-dropdown-icon">
+                                <a href="@Url.Action("NotificationsN", "Notification", new { area = "Notifications" })">
+                                    <i class="fa-regular fa-bell" style="font-size: 16px;"></i>
+                                </a>
+                                <span id="unreadNotificationBadge"  class="badge rounded-pill badge-secondary" style="color: white;background: #43B9B2;">@unReadNotification</span>
+                            </li>
+
+                            @if (AuthLabelsPortal.language != "English")
+                            {
+                                <li style="background-color: transparent; width: 0px;"></li>
+                            }
+                            <!-- Bookmark menu-->
+                            <li class="custom-dropdown" style="display:none;">
+                                <a href="javascript:void(0)" id="bookmarkId">
+                                    <i class="material-icons">bookmark</i>
+                                </a>
+                                <div class="custom-menu bookmark-dropdown py-0 overflow-hidden">
+                                    <h5 class="title bg-primary-light">@LabelsTenantPortal.bookmark</h5>
+                                    <ul>
+                                        <li>
+                                            <form class="mb-3">
+                                                <div class="input-group">
+                                                    <input class="form-control" type="text"
+                                                           placeholder="@LabelsTenantPortal.searchBookmark"><span class="input-group-text">
+                                                        <i class="fa-solid fa-magnifying-glass"></i>
+                                                    </span>
+                                                </div>
+                                            </form>
+                                        </li>
+                                        <li class="d-flex align-items-center bg-light-primary">
+                                            <div class="flex-shrink-0 me-2">
+                                                <a href="#">
+                                                    <i class="fa-solid fa-house"></i>
+                                                </a>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center w-100">
+                                                <a href="#">@LabelsTenantPortal.dashboard</a>
+                                                <i class="fa-regular fa-star"></i>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <!-- Message menu-->
+                            <li class="custom-dropdown" style="display:none;">
+                                <a href="javascript:void(0)" id="messageId">
+                                    <i class="material-icons">message</i>
+                                </a>
+                                <span class="badge rounded-pill badge-tertiary">3</span>
+                                <div class="custom-menu message-dropdown py-0">
+                                    <h5 class=" title bg-primary-light">@LabelsTenantPortal.message</h5>
+                                    <ul>
+                                        <li class="d-flex b-t-primary"
+                                            style="display: flex; justify-content: space-between;">
+                                            <div class="d-block">
+                                                <a href="#">
+                                                    <h5>Design meeting</h5>
+                                                </a>
+                                                <h6>
+                                                    <i class="fa-regular fa-clock"></i> <span>Just Now</span>
+                                                </h6>
+                                            </div>
+                                            <div class="badge-light-danger"
+                                                 style="padding-top: 5px; padding-left: 5px; padding-right:  5px;">
+                                                <i class="fa-regular fa-clock"></i> <span>Closed</span>
+                                            </div>
+                                        </li>
+                                        <li class="d-flex b-t-secondary"
+                                            style="display: flex; justify-content: space-between;">
+                                            <div class="d-block">
+                                                <a href="#">
+                                                    <h5>Weekly scurm Meeting</h5>
+                                                </a>
+                                                <h6>
+                                                    <i class="fa-regular fa-clock"></i> <span>1 Hour Ago</span>
+                                                </h6>
+                                            </div>
+                                            <div class="badge-light-danger"
+                                                 style="padding-top: 5px; padding-left: 5px; padding-right:  5px;">
+                                                <i class="fa-regular fa-clock"></i> <span>Open</span>
+                                            </div>
+                                        </li>
+                                        <li class="d-flex b-t-tertiary"
+                                            style="display: flex; justify-content: space-between;">
+                                            <div class="d-block">
+                                                <a href="#">
+                                                    <h5>Check your login page</h5>
+                                                </a>
+                                                <h6>
+                                                    <i class="fa-regular fa-clock"></i> <span>2 Hour Ago</span>
+                                                </h6>
+                                            </div>
+                                            <div class="badge-light-success"
+                                                 style="padding-top: 5px; padding-left: 5px; padding-right:  5px;">
+                                                <i class="fa-regular fa-clock"></i> <span>Closed</span>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <!-- Profile menu-->
+                            <li class="custom-dropdown profile-dropdown" style="">
+                                <div class="d-flex align-items-center">
+                                    <a href="javascript:void(0)" id="profileID">
+                                        <div class="flex-grow-1 @directionClass">
+                                            <h5>@userNameEng</h5>
+                                            <span>@email</span>
+                                        </div>
+                                    </a>
+                                </div>
+                                <div class=" custom-menu overflow-hidden">
+                                    <ul style="margin-right: 20px;">
+                                        <li style="align-items: left;">
+                                            <a class="ms-2"> <i class="fa fa-home" aria-hidden="true"></i></a>
+                                            <a class="ms-2" href="@Url.Action("MainDashboard", "TenantDashboard", new { area = "Dashboard" })">
+                                                <span style="padding-bottom: 3px;">@LabelsTenantPortal.dashboard</span>
+                                            </a>
+                                        </li>
+
+                                        <li style="align-items: center;">
+                                            <a class="ms-2"> <i class="fa fa-sign-out" aria-hidden="true"></i></a>
+                                            <a class="ms-2" href="#" onclick="LogoutNew('@isLoginFromAuth')">
+                                                <span style="padding-bottom: 3px;">@LabelsLandlordPortal.logout</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+            </header>
+            <!-- Page header end-->
+
+            <div class="page-body-wrapper">
+                <!-- Page sidebar start-->
+                <div class="overlay"></div>
+                <!-- Page sidebar start-->
+                <aside class="page-sidebar" data-sidebar-layout="stroke-svg">
+                    <div class="left-arrow" id="left-arrow"></div>
+                    @* <div class="left-arrow disabled" id="left-arrow"></div> *@
+
+                    <div id="sidebar-menu">
+                        <!-- SimpleBar should wrap the UL, not inject divs inside it in your markup -->
+                        <div id="simple-bar" data-simplebar>
+                            <ul class="sidebar-menu">
+                                <li class="pin-title sidebar-list p-0">
+                                    <h5 class="sidebar-main-title">Pinned</h5>
+                                </li>
+
+                                @* Dashboard *@
+                                <li class="sidebar-list">
+                                    <a class="sidebar-link @(ViewContext.RouteData?.Values?["action"]?.ToString() == "MainDashboard" ? "active" : "")"
+                                       href='@Url.Action("MainDashboard", "TenantDashboard", new { area = "Dashboard" })'>
+                                        <span title="Dashboard">
+                                            <i class="fa fa-home"></i>
+                                            <strong>@LabelsTenantPortal.dashboard</strong>
+                                        </span>
+                                    </a>
+                                </li>
+
+                                <li class="line"></li>
+
+                                @* Profile *@
+                                <li class="sidebar-main-title bg-light-primary p-2 ps-4" style="padding:0 0px">
+                                    <a class="sidebar-link" href="javascript:void(0)">
+                                        <b><span class="maintitle">Profile</span></b>
+                                    </a>
+                                </li>
+
+                                <li class="sidebar-list">
+                                    <a class="sidebar-link @(ViewContext.RouteData?.Values?["action"]?.ToString() == "Profile" ? "active" : "")"
+                                       href='@Url.Action("Profile", "Profile", new { area = "Profile" })'>
+                                        <span><i class="fa fa-user"></i> <strong>Profile</strong></span>
+                                    </a>
+                                </li>
+
+                                <li class="sidebar-list">
+                                    <a class="sidebar-link @(ViewContext.RouteData?.Values?["action"]?.ToString() == "NotificationsN" ? "active" : "")"
+                                       href='@Url.Action("NotificationsN", "Notification", new { area = "Notifications" })'>
+                                        <span><i class="fa fa-bell"></i> <strong>Notifications</strong></span>
+                                    </a>
+                                </li>
+
+                                <li class="sidebar-list">
+                                    <a class="sidebar-link @(ViewContext.RouteData?.Values?["action"]?.ToString() == "Faqs" ? "active" : "")"
+                                       href='@Url.Action("Faqs", "Faq", new { area = "Faqs" })'>
+                                        <span><i class="fa fa-info-circle"></i> <strong>FAQs</strong></span>
+                                    </a>
+                                </li>
+
+                                <li class="sidebar-list">
+                                    <a class="sidebar-link @(ViewContext.RouteData?.Values?["action"]?.ToString() == "Offers" ? "active" : "")"
+                                       href='@Url.Action("OffersN", "Offer", new { area = "Offers" })'>
+                                        <span><i class="fa fa-hashtag"></i> <strong>Offers</strong></span>
+                                    </a>
+                                </li>
+
+                                <li class="sidebar-list">
+                                    <a class="sidebar-link @(ViewContext.RouteData?.Values?["action"]?.ToString() == "Help" ? "active" : "")"
+                                       href='@Url.Action("Help", "Help", new { area = "Help" })'>
+                                        <span><i class="fa fa-question-circle"></i> <strong>Help</strong></span>
+                                    </a>
+                                </li>
+
+                                <li style="align-items: center;">
+                                    <a class="ms-2"> <i class="fa fa-sign-out" aria-hidden="true"></i></a>
+                                    <a class="ms-2" href="#" onclick="LogoutNew('@isLoginFromAuth')">
+                                        <span style="padding-bottom: 3px;">@LabelsLandlordPortal.logout</span>
+                                    </a>
+                                </li>
+
+                                <li class="line"></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="right-arrow" id="right-arrow"></div>
+                </aside>
+
+                <!-- Page sidebar end-->
+                <!-- Page Body start-->
+                <div class="page-body" style="margin-left: 0px; margin-top: 0px;margin-right: 0px;">
+                    <main role="main" class="pb-3">
+                        @RenderBody()
+                    </main>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- jquery-->
+    <script src="/assets/js/vendors/jquery/dist/jquery.min.js"></script>
+
+    <!-- bootstrap js-->
+    <script src="/assets/js/vendors/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="/assets/js/config.js"></script>
+    <!-- Sidebar js-->
+    <script src="/assets/js/sidebar.js"></script>
+
+    <script src="/assets/js/datepicker/custom-datepicker.js"></script>
+    <!-- Height-equal js-->
+    <script src="/assets/js/height-equal.js"></script>
+    <!-- scrollbar js-->
+    <script src="/assets/js/scrollbar/simplebar.js"></script>
+    <script src="/assets/js/scrollbar/custom.js"></script>
+    <!-- scrollable-->
+    <!-- Flatpicker js-->
+    <script src="/assets/js/vendors/flatpickr/dist/flatpickr.min.js"></script>
+    <script src="/assets/js/custom-flatpickr.js"></script>
+    <!-- custom script -->
+    <script src="/assets/js/script.js"></script>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/js/select2.min.js"></script>
+    <script src="~/toaster/toaster.js"></script>
+    <!-- customizer-->
+    <script src="/assets/js/theme-customizer/customizer.js" asp-append-version="true"></script>
+
+    <script src="~/assets/js/datatable/datatables/jquery.dataTables.min.js"></script>
+
+    <script src="~/js/custom.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/js/jquery.unobtrusive-ajax.js" type="text/javascript"></script>
+    <!-- Tooltip js-->
+    <script src="~/assets/js/tooltip-custom.js"></script>
+    <!-- custom validators js-->
+    <script src="~/js/customvalidators.js"></script>
+
+
+    @* All Scripts  *@
+    <script>
+        // Close/Open side menu 
+        document.addEventListener('DOMContentLoaded', () => {
+            const closeButton = document.getElementById('close-btn');
+            const mainBody = document.getElementById('mainBodyID');
+            const sidebar = document.getElementById('page-sidebar');
+            const menuBtn = document.getElementById('toggle-sidebar');
+
+            closeButton.addEventListener('click', () => {
+                sidebar.classList.toggle('hidden');
+                if (sidebar.classList.contains('hidden')) {
+                    // Sidebar is hidden, show menu icon and hide back arrow
+                    menuBtn.classList.add('close');
+                    var language = "{{@AuthLabelsPortal.language}}";
+                    if (language == "{{English}}") {
+                        mainBody.classList.add('sidemenuEnglish11');
+                        mainBody.classList.remove('sidemenuEnglish');
+                    } else {
+                        mainBody.classList.add('sidemenuArabicWithFullWidth');
+                        mainBody.classList.remove('sidemenuArabic');
+                    }
+
+                } else {
+                    // Sidebar is visible, show back arrow and hide menu icon
+                    menuBtn.classList.add('line');
+                    menuBtn.classList.add('line');
+                    menuBtn.classList.add('line');
+                    menuBtn.classList.remove('close');
+
+                    var language = "{{@AuthLabelsPortal.language}}";
+                    if (language == "{{English}}") {
+                        mainBody.classList.add('sidemenuEnglish');
+                        mainBody.classList.remove('sidemenuEnglish11');
+                    } else {
+                        mainBody.classList.add('sidemenuArabic');
+                        mainBody.classList.remove('sidemenuArabicWithFullWidth');
+                    }
+                }
+            });
+        });
+    </script>
+
+    <script>$htmlOld = "";
+        function btnshowLoader(btnId) {
+            $htmlOld = "";
+            $htmlOld = $("#" + btnId).html();
+            $("#" + btnId).prop('disabled', true);
+            $("#" + btnId).html('<i class="fa fa-spinner fa-spin"" style="font-size:20px"></i>Loading...');
+
+            $("button").prop('disabled', true);
+            $("a").prop('disabled', true);
+        }
+
+        function btnhideLoader(btnId) {
+            $("#" + btnId).html($htmlOld);
+            $("#" + btnId).prop('disabled', false);
+            $("button").prop('disabled', false);
+            $("a").prop('disabled', false);
+        }
+
+        function LogoutNew(isFromAuth) {
+            debugger;
+            fetch('/Users/Auth/LogoutSession', {
+                method: 'POST'
+            })
+                .then(() => {
+                    if (isFromAuth == "True") {
+                        window.location.replace("https://authportal.ubspropt.com/Users");
+                        //window.location.replace("https://localhost:7299/Users");
+                    } else {
+                        window.location.replace("https://tenantportal.ubspropt.com/Users");
+                        //window.location.replace("https://localhost:7276/Users");
+                    }
+                })
+                .catch(() => {
+                    if (isFromAuth == "True") {
+                        window.location.replace("https://authportal.ubspropt.com/Users");
+                        //window.location.replace("https://localhost:7299/Users");
+                    } else {
+                        window.location.replace("https://tenantportal.ubspropt.com/Users");
+                        //window.location.replace("https://localhost:7276/Users");
+                    }
+                });
+
+        }
+
+
+        $('.seelct2Dropdown').select2();
+        let lastOpenedDropdown = null;
+        $(document).on('select2:open', function (e) {
+            const targetId = e.target?.id;
+            if (targetId) {
+                const elementToFocus = document.querySelector(`[aria-controls="select2-${targetId}-results"]`);
+                if (elementToFocus) {
+                    elementToFocus.focus();
+                } else {
+                    console.warn(`Element with aria-controls="select2-${targetId}-results" not found.`);
+                }
+            } else {
+                console.warn('Event target ID is missing.');
+            }
+        });
+        //# DatePicker
+       /* flatpickr(".datepicker", {
+            enableTime: false,
+            dateFormat: 'd/m/Y'
+        });*/</script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+
+</html>

@@ -1,0 +1,67 @@
+﻿@model OfferDetailResponse
+
+@{
+    ViewData["Title"] = "Offer Detail";
+    Layout = "~/Views/Shared/_Profilelayout.cshtml";
+}
+
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="~/css/site.css"> <!-- Link to your CSS file -->
+</head>
+<div class="card pageheader" style="margin-bottom: 0px !important;">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-sm-6">
+                <a class="sidebar-link" href="@Url.Action("Offers", "Offer", new { area = "Offers" })">
+                    <h4><i class="fa fa-arrow-left"></i> Offer Detail</h4>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card">
+    @if (!string.IsNullOrEmpty(ViewBag.errorGetOfferDetail))
+        {
+        <div class="card-header pb-0" style="height: 350px;text-align: center;">
+            <center style="padding-top: 150px;">
+
+                @if (@ViewBag.errorGetOfferDetail == "")
+                    {
+                    <h4>No Data Found</h4>
+                    }
+                    else
+                    {
+                    <h4>@ViewBag.errorGetOfferDetail</h4>
+                    }
+
+            </center>
+            <i class="fa fa-refresh" aria-hidden="true" style="padding-top: 5px; font-size: 18px; color: black;"
+               onclick="window.location.href = '@Url.Action("Offers", "Offer", new { area = "Offers" })'"></i>
+        </div>
+        }
+        else
+        {
+        <div class="listScroll h-100">
+            <ul class="list-group ui-sortable">
+                <li class="list-group-item odd" style="border-color: #6a71854d !important; margin: 7px;">
+                    <div style="justify-content: space-between; display: flex; align-items: center;">
+                        <div style="text-align: left;">
+                            @Model.Record?.Title
+                        </div>
+                        <button type="button" class="btn btn-link p-0 toggle-description">
+                            <i class="material-icons" style="margin-left: 10px;">keyboard_arrow_down</i>
+                        </button>
+                    </div>
+
+                    <div class="descriptionDiv" style="display: none; margin-top: 8px;" id="descriptionDivID">
+                        <div style="text-align: left; font-weight: 100;">
+                            @Html.Raw(Model.Record?.Description)
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        }
+    </div>
+<script src="~/js/profile-page-scripts.js"></script>

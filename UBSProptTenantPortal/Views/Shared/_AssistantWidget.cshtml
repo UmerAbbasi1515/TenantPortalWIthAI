@@ -1,0 +1,65 @@
+﻿
+<div id="aiAssistant" class="ai-assistant">
+
+    <!-- Launcher Button -->
+    <a href="javascript:void(0)" id="aiAssistantLauncher" title="AI Assistant">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+    </a>
+
+    <!-- Chat Panel -->
+    <div id="aiAssistantPanel" class="ai-assistant__panel">
+
+        <!-- Header -->
+        <div class="ai-assistant__header">
+            <div class="d-flex align-items-center gap-2">
+                <div class="ai-assistant__avatar">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </div>
+                <div>
+                    <h2 class="mb-0">AI Assistant</h2>
+                    <p class="mb-0"><span class="ai-assistant__status-dot"></span>Online Test</p>
+                </div>
+            </div>
+            <div class="ai-assistant__header-actions">
+                <button id="aiAssistantClear" type="button" class="ai-assistant__clear d-none" title="New Session">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+                <a id="aiAssistantMaximize" href="/AIAssistant/Index" class="ai-assistant__maximize" title="Open Full Page">
+                    <i class="fa-solid fa-expand"></i>
+                </a>
+                <button id="aiAssistantClose" type="button" class="ai-assistant__close" title="Close">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Conversation Area -->
+        <div id="aiAssistantConversation" class="ai-assistant__conversation">
+            <div id="aiAssistantStarter" class="ai-assistant__starter">
+                <p class="mb-1">Try asking:</p>
+                <div id="aiAssistantQuestions" class="ai-assistant__questions">
+                    <span class="ai-assistant__loading">Loading suggestions...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Form -->
+        <div class="ai-assistant__form">
+            <form id="aiAssistantForm">
+                <div class="input-group">
+                    <textarea id="aiAssistantInput"
+                              class="form-control"
+                              rows="1"
+                              placeholder="Ask a question..."
+                              required></textarea>
+                    <button id="aiAssistantSend" type="submit" class="ai-assistant__send">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+            </form>
+            <p class="ai-assistant__disclaimer">
+                Answers are limited to properties assigned to your account.
+            </p>
+        </div>
+    </div>
+</div>

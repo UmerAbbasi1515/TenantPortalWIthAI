@@ -1,0 +1,535 @@
+﻿@using UBSProptTenantPortal
+@model GoToOnlinePaymentsModel
+@{
+    ViewData["Title"] = "Online Payments";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var ContractNo = ViewBag.ContractNo;
+    var ContractID = ViewBag.ContractID;
+    var callerFrom = ViewBag.callerFrom;
+
+    // Back link to the renewal flow list (RCF = renewal, NCF = new contract)
+    var backUrl = Url.Action("ContractAction", "Renewal", new { area = "RenewalFlow", tab = callerFrom == "Renewal" ? "RCF" : "NCF" });
+
+    // Terms / refund policy links
+    var termsUrl = Url.Action("TermsAndConditions", "Renewal",
+        new { area = "RenewalFlow", caller = callerFrom, dataType = callerFrom != "New" ? "RefundPolicy" : "RefundPolicyNewContract" });
+    var refundUrl = Url.Action("RefundAndReturnPolicy", "Renewal",
+        new { area = "RenewalFlow", caller = callerFrom, dataType = callerFrom != "New" ? "PrivacyPolicy" : "PrivacyPolicyNewContract" });
+
+    // Payment method tabs (Card / Bank Transfer).
+    // NOTE: the tabs render when EITHER method has payable installments
+    // (the Flutter app only shows them when BOTH have).
+    bool hasCardPayments = Model?.CardPaymentListLength != null && Model.CardPaymentListLength.Any();
+    bool hasBankTransferPayments = Model?.BankTransferListLength != null && Model.BankTransferListLength.Any();
+    bool showTabs = hasCardPayments || hasBankTransferPayments;
+
+    // Default tab, mirrors Flutter's _controller.isPayemntValue (1 = Card, 3 = Bank Transfer).
+    // If only one method exists, default straight to it.
+    int defaultTab = hasCardPayments ? 1 : 3;
+}
+
+@* =====================================================================
+     STYLES / VENDOR RESOURCES
+    ===================================================================== *@
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" href="~/css/site.css">
+
+<style>
+    .guide-box {
+        background-color: rgba(67, 185, 178, 0.1) !important;
+        color: #43B9B2 !important;
+        border-radius: 8px;
+        padding: 12px;
+        margin-top: 10px;
+        text-align: center;
+    }
+
+    .guide-content {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #333;
+    }
+
+        .guide-content i {
+            color: #43B9B2;
+            font-size: 16px;
+        }
+
+    .sticky-footer {
+        position: sticky;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #fff;
+        z-index: 1000;
+        padding: 10px 15px;
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Payment method tabs, mirroring the Flutter TextButton + underline indicator */
+    .payment-tab-row {
+        display: flex;
+        margin: 0 12px 10px 4px;
+        background-color: white;
+    }
+
+    .payment-tab {
+        flex: 1;
+        text-align: center;
+        padding: 12px 0 8px 0;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        color: #212529;
+        border: none;
+        background: transparent;
+    }
+
+        .payment-tab.active {
+            color: #0d6efd;
+        }
+
+    .payment-tab-underline {
+        height: 2px;
+        background-color: transparent;
+    }
+
+    .payment-tab.active + .payment-tab-underline,
+    .payment-tab-wrap.active .payment-tab-underline {
+        background-color: #0d6efd;
+    }
+
+    .payment-tab-wrap {
+        flex: 1;
+    }
+
+    .payment-record-hidden {
+        display: none !important;
+    }
+
+    .empty-tab-state {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 60px 20px;
+        text-align: center;
+        color: #6c757d;
+    }
+
+        .empty-tab-state.active {
+            display: flex;
+        }
+</style>
+
+<div class="text-center" style="height: 100vh; overflow-y: scroll;">
+
+    @* ---------- Page header ---------- *@
+    <div class="card pageheader sticky-header">
+        <div class="card-header">
+            <div class="row">
+                <div class="col-12 text-start" style="display:flex; flex-direction:row; justify-content:space-between">
+                    <h4>
+                        <a href="@backUrl"
+                           class="text-dark text-decoration-none fw-bold"
+                           style="font-size: 1.25rem;">
+                            <i class="fa fa-arrow-left me-2"></i>Contract No. @ContractNo
+                        </a>
+                    </h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-12 col-lg-12 col-xl-12 mt-2 d-flex" style="flex-direction:column; text-align:left;">
+
+        @if ((Model?.CardPaymentListLength == null || !Model.CardPaymentListLength.Any())
+         && (Model?.BankTransferListLength == null || !Model.BankTransferListLength.Any()))
+        {
+            @* ---------- Nothing to pay ---------- *@
+            <div style="height:400px; display:flex; align-items:center; justify-content:center; flex-direction:column; background-color: white; padding-top:50px">
+                <p style="margin-top:10px; text-align:center; color:black;">
+                    No pending payments were found.
+                </p>
+                <button class="btn btn-secondary mt-2"
+                        style="background-color: rgba(67, 185, 178, 0.1) !important; color: #43B9B2 !important;"
+                        onclick="window.location.href='@backUrl'">
+                    Back
+                </button>
+            </div>
+        }
+        else
+        {
+            @* Card Payment / Bank Transfer tabs, mirrors Flutter's isRadioButtonShow row *@
+            @if (showTabs)
+            {
+                <ul class="nav nav-tabs border-tab nav-info tab-container sticky-tabs" id="paymentMethodTabs" role="tablist"
+                    style="margin: 0 2px 3px 2px; margin-top: 5px; padding-top: 12px;">
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link nav-border font-info tab-info payment-tab-wrap @(defaultTab == 1 ? "active" : "")"
+                           id="tabWrap-1" href="#" role="tab" onclick="switchPaymentTab(1); return false;">
+                            <i class="fa-solid fa-credit-card"></i> Card Payment
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link nav-border font-info tab-info payment-tab-wrap @(defaultTab == 3 ? "active" : "")"
+                           id="tabWrap-3" href="#" role="tab" onclick="switchPaymentTab(3); return false;">
+                            <i class="fa-solid fa-building-columns"></i> Bank Transfer
+                        </a>
+                    </li>
+                </ul>
+            }
+
+            <div id="paymentRecordsContainer">
+
+                @* --- Rental Payments --- *@
+                @if (Model?.OnlinePaymentSummary?.TotalRentalPayment != "0.00")
+                {
+                    <div class="record-group-header" style="margin:20px 10px 10px 10px;">
+                        <span class="fw-semibold">Rental Payments</span>
+                    </div>
+                    <ul class="list-group record-group" style="background-color: white; margin-right: 12px; ">
+                        @foreach (var record in Model!.Record!.Where(r => r.Type == "Contract Payable"))
+                        {
+                            <li class="list-group-item payment-record" data-payment-method-id="@record.PaymentMethodId">
+                                @Html.Partial("_PaymentsListItem", record)
+                            </li>
+                        }
+                    </ul>
+                }
+
+                @* --- Additional Charges --- *@
+                @if (Model?.OnlinePaymentSummary?.TotalAdditionalCharges != "0.00")
+                {
+                    <div class="record-group-header" style="margin:20px 10px 10px 10px;">
+                        <span class="fw-semibold">Additional Charges</span>
+                    </div>
+                    <ul class="list-group record-group" style="background-color: white; margin-right: 12px;">
+                        @foreach (var record in Model!.Record!.Where(r => r.Type == "Additional Charges"))
+                        {
+                            <li class="list-group-item payment-record" data-payment-method-id="@record.PaymentMethodId">
+                                @Html.Partial("_PaymentsListItem", record)
+                            </li>
+                        }
+                    </ul>
+                }
+
+                @* --- VAT on Rent --- *@
+                @if (Model?.OnlinePaymentSummary?.TotalVatOnRent != "0.00")
+                {
+                    <div class="record-group-header" style="margin:20px 10px 10px 10px;">
+                        <span class="fw-semibold">Vat On Rent</span>
+                    </div>
+                    <ul class="list-group record-group" style="background-color: white; margin-right: 12px;">
+                        @foreach (var record in Model!.Record!.Where(r => r!.Type!.Equals("VAT On Rent", StringComparison.OrdinalIgnoreCase)))
+                        {
+                            <li class="list-group-item payment-record" data-payment-method-id="@record.PaymentMethodId">
+                                @Html.Partial("_PaymentsListItem", record)
+                            </li>
+                        }
+                    </ul>
+                }
+
+                @* --- VAT on Charges --- *@
+                @if (Model?.OnlinePaymentSummary?.TotalVatOnCharges != "0.00")
+                {
+                    <div class="record-group-header" style="margin:20px 10px 10px 10px;">
+                        <span class="fw-semibold">Vat On Charges</span>
+                    </div>
+                    <ul class="list-group record-group" style="background-color: white; margin-right: 12px;">
+                        @foreach (var record in Model!.Record!.Where(r => r!.Type!.Equals("Vat On Charges", StringComparison.OrdinalIgnoreCase)))
+                        {
+                            <li class="list-group-item payment-record" data-payment-method-id="@record.PaymentMethodId">
+                                @Html.Partial("_PaymentsListItem", record)
+                            </li>
+                        }
+                    </ul>
+                }
+
+                @* Empty state shown when the ACTIVE tab has no matching records,
+                    mirroring Flutter's per-tab "No payments found" SizedBox *@
+                <div class="empty-tab-state" id="emptyTabState">
+                    <img src="~/assets/images/no_payments_found.png"
+                         style="width:96px; height:96px; object-fit:contain;"
+                         onerror="this.style.display='none'" />
+                    <p style="margin-top:10px;">No pending payments were found</p>
+                    <button class="btn btn-secondary mt-2"
+                            style="background-color: rgba(67, 185, 178, 0.1) !important; color: #43B9B2 !important;"
+                            onclick="window.location.href='@backUrl'">
+                        Back
+                    </button>
+                </div>
+            </div>
+
+            @* ---------- Footer: total, logos, terms, proceed ---------- *@
+            <div class="list-group border" id="paymentFooter"
+                 style="background-color:white; padding-left: 15px; margin-left: 4px; margin-right: 12px; padding-right: 14px; margin-top: 15px; padding-top: 15px; padding-bottom: 10px;">
+
+                @* Amount row *@
+                <div class="d-flex justify-content-between align-items-center">
+                    <span><strong>Amount</strong></span>
+                    <span>
+                        <strong>
+                            AED <span id="totalAmount" style="font-weight: bolder;">0.00</span>
+                        </strong>
+                    </span>
+                </div>
+
+                @* Payment logos *@
+                <div style="width:100%; overflow:hidden; align-content: start;">
+                    <img src="/assets/images/payment.png" alt="Visa"
+                         style="height: 80px; width:100%; object-fit: contain; display:block; padding: 0px;">
+                </div>
+
+                @* Terms & refund *@
+                <ul class="list-unstyled text-start">
+                    <li class="d-flex align-items-center">
+                        <span style="font-size:20px; font-weight:bold; margin-right:6px;">•</span>
+                        <a href="@termsUrl"><span style="color:#43B9B2; font-size:16px;">Terms & Conditions</span></a>
+                    </li>
+                    <li class="d-flex align-items-center">
+                        <span style="font-size:20px; font-weight:bold; margin-right:6px;">•</span>
+                        <a href="@refundUrl"><span style="color:#43B9B2; font-size:16px;">Refund / Return Policy</span></a>
+                    </li>
+                </ul>
+
+                @* Proceed button *@
+                <div class="text-center" style="margin-top: 0px; margin-left: 30%; margin-right: 30%;">
+                    <a href="#"
+                       class="btn btn-primary w-100 text-white"
+                       id="btn-register"
+                       onclick='registerPayment()'>
+                        Proceed to Pay
+                    </a>
+                </div>
+                <div style="height:5px"></div>
+            </div>
+        }
+
+    </div>
+
+    @* =====================================================================
+         SCRIPTS
+        ===================================================================== *@
+    <script>
+        // =====================================================================
+        // Page data
+        // =====================================================================
+        const records = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model?.Record));
+
+        const contractID = "@ContractID";
+        const contractNo = "@ContractNo";
+
+        // Mirrors Flutter's _controller.isPayemntValue (1 = Card, 3 = Bank Transfer)
+        let activePaymentTab = @defaultTab;
+
+        // =====================================================================
+        // Helpers
+        // =====================================================================
+
+        // Reads a fetch Response body once and never throws on empty / non-JSON bodies.
+        async function readJsonSafely(response, fallback = {}) {
+            try {
+                const text = await response.text();
+                return text ? JSON.parse(text) : fallback;
+            } catch (error) {
+                console.error('Invalid JSON response:', error);
+                return fallback;
+            }
+        }
+
+        // =====================================================================
+        // Tab switching
+        // Mirrors Flutter's isPayemntValue toggle: filters which payment-method
+        // group is visible, shows the correct empty state, and recomputes the
+        // total from only the checkboxes inside the active tab.
+        // =====================================================================
+        function switchPaymentTab(tab) {
+            activePaymentTab = tab;
+
+            // Update tab button styling
+            document.querySelectorAll('.payment-tab-wrap').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.payment-tab').forEach(el => el.classList.remove('active'));
+
+            const wrap = document.getElementById(`tabWrap-${tab}`);
+            const btn = document.getElementById(`tabBtn-${tab}`);
+            if (wrap) wrap.classList.add('active');
+            if (btn) btn.classList.add('active');
+
+            applyTabFilter();
+        }
+
+        function applyTabFilter() {
+            const items = document.querySelectorAll('.payment-record');
+            let visibleCount = 0;
+
+            items.forEach(item => {
+                const methodId = parseInt(item.getAttribute('data-payment-method-id'), 10);
+
+                if (methodId === activePaymentTab) {
+                    item.classList.remove('payment-record-hidden');
+                    visibleCount++;
+                } else {
+                    item.classList.add('payment-record-hidden');
+                }
+            });
+
+            // Hide group headers whose entire group is empty for this tab
+            document.querySelectorAll('.record-group').forEach(group => {
+                const anyVisible = Array.from(group.querySelectorAll('.payment-record'))
+                    .some(li => !li.classList.contains('payment-record-hidden'));
+
+                group.style.display = anyVisible ? '' : 'none';
+
+                const header = group.previousElementSibling;
+                if (header && header.classList.contains('record-group-header')) {
+                    header.style.display = anyVisible ? '' : 'none';
+                }
+            });
+
+            const footer = document.getElementById('paymentFooter');
+            if (footer) {
+                footer.style.display = visibleCount === 0 ? 'none' : '';
+            }
+
+            const emptyState = document.getElementById('emptyTabState');
+            if (emptyState) {
+                emptyState.classList.toggle('active', visibleCount === 0);
+            }
+
+            updateTotal();
+        }
+
+        // =====================================================================
+        // Register payment
+        // =====================================================================
+        async function registerPayment() {
+            try {
+                btnshowLoader("btn-register");
+
+                var userID = "";
+                var detailList = [];
+                var detailList1 = [];
+
+                records.forEach(record => {
+                    // Only include records belonging to the ACTIVE tab, mirroring
+                    // Flutter's separate detailList per payment method.
+                    if (record.PaymentMethodId !== activePaymentTab) {
+                        return;
+                    }
+
+                    if (record.PaymentMode === "Card Payment") {
+                        if (record.IsChecked) {
+                            detailList.push({
+                                title: record.Title,
+                                description: record.Type,
+                                amount: record.Amount,
+                                paymentId: record.ContractPaymentId,
+                                chargeId: record.ContractChargeId,
+                                vatOnChargeId: record.VatOnChargeId,
+                                vatOnRentContractId: record.VatOnRentContractId,
+                                paymentSettingId: record.PaymentSettingId
+                            });
+                        }
+                    } else if (record.PaymentMode === "Cheque") {
+                        if (record.IsChecked) {
+                            detailList1.push({
+                                title: record.Title,
+                                description: record.Type,
+                                amount: record.Amount,
+                                paymentId: record.ContractPaymentId,
+                                chargeId: record.ContractChargeId,
+                                vatOnChargeId: record.VatOnChargeId,
+                                vatOnRentContractId: record.VatOnRentContractId,
+                                paymentSettingId: record.PaymentSettingId
+                            });
+                        }
+                    }
+                });
+
+                const totalAmount = document.getElementById("totalAmount").innerText;
+
+                const data = {
+                    totalAmount: totalAmount,
+                    contractId: contractID,
+                    contractNo: contractNo,
+                    userId: userID,
+                    detailList: detailList,
+                };
+
+                const response = await fetch('/RenewalFlow/Renewal/RegisterPayment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    btnhideLoader("btn-register");
+                    const jsonResponse = await readJsonSafely(response);
+
+                    if (jsonResponse.url == "" || jsonResponse.transactionId == "") {
+                        if (jsonResponse.status != "") {
+                            toastr.error("Error", "Response status code does not indicate success: 500(Internal Server Error)");
+                        } else {
+                            toastr.error("Error", "Error processing payment. Please try again later.");
+                        }
+                        return;
+                    }
+
+                    //window.location.href = res.redirectUrl;
+                } else {
+                    toastr.error("Error", response.message);
+                    btnhideLoader("btn-register");
+                    console.error('Error in response:', response.status);
+                }
+            } catch (error) {
+                btnhideLoader("btn-register");
+                console.error('Error:', error);
+            }
+        }
+
+        // =====================================================================
+        // Checkbox + total
+        // =====================================================================
+        function toggleRecordCheck(checkbox) {
+            const paymentId = parseInt(checkbox.getAttribute("data-id"));
+
+            // Find record in records array
+            const record = records.find(r => r.ContractPaymentId === paymentId);
+
+            if (record) {
+                record.IsChecked = checkbox.checked;
+            }
+
+            updateTotal();
+        }
+
+        // Only sums checkboxes that are both checked AND currently visible
+        // (i.e. belong to the active payment-method tab), mirroring Flutter's
+        // separate sumOfSelectedPayments / sumOfSelectedPayments1 per tab.
+        function updateTotal() {
+            let total = 0;
+
+            document.querySelectorAll('.payment-record:not(.payment-record-hidden) .payment-checkbox:checked').forEach(cb => {
+                const amt = parseFloat(cb.getAttribute("data-amount")) || 0;
+                total += amt;
+            });
+
+            document.getElementById("totalAmount").innerText = total.toFixed(2);
+        }
+
+        // Run once on page load: apply the default tab filter (if tabs exist)
+        // or just compute the total across all checkboxes (if only one method exists).
+        document.addEventListener("DOMContentLoaded", function () {
+            if (document.querySelector('.payment-record')) {
+                applyTabFilter();
+            } else {
+                updateTotal();
+            }
+        });
+    </script>
+</div>

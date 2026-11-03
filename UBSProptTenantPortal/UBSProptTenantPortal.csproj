@@ -1,0 +1,141 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'https' " />
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'http' " />
+  <ItemGroup>
+    <PackageReference Include="DocumentFormat.OpenXml" Version="3.5.1" />
+    <PackageReference Include="FirebaseAdmin" Version="3.2.0" />
+    <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Areas\" />
+    <None Remove="Areas\Auth\Controllers\" />
+    <None Remove="Areas\Auth\Views\" />
+    <None Remove="Areas\Auth\Views\Auth\" />
+    <None Remove="Controllers\Auth1\" />
+    <None Remove="Views\Auth1\" />
+    <None Remove="Areas\Dashboard\Views\TenantDashboard\" />
+    <None Remove="Areas\Users\" />
+    <None Remove="Areas\Faqs\Model\" />
+    <None Remove="Areas\Faqs\Controllers\" />
+    <None Remove="Areas\Faqs\Views\" />
+    <None Remove="Areas\Contracts\Controllers\" />
+    <None Remove="Areas\Contracts\Models\" />
+    <None Remove="Areas\Contracts\Views\" />
+    <None Remove="Areas\Contracts\Views\Contract\" />
+    <None Remove="Areas\Faqs\Views\Faq\" />
+    <None Remove="Areas\Profile\" />
+    <None Remove="Areas\Help\" />
+    <None Remove="Areas\Notifications\" />
+    <None Remove="Areas\Notifications\Controllers\" />
+    <None Remove="Areas\Notifications\Views\" />
+    <None Remove="Areas\Notifications\Models\" />
+    <None Remove="Areas\Help\Models\" />
+    <None Remove="Areas\Help\Controllers\" />
+    <None Remove="Areas\Help\Views\" />
+    <None Remove="Areas\Profile\Views\" />
+    <None Remove="Areas\Profile\Controllers\" />
+    <None Remove="Areas\Profile\Models\" />
+    <None Remove="Areas\Profile\Views\Profile\" />
+    <None Remove="Areas\Help\Views\Help\" />
+    <None Remove="Areas\Offers\" />
+    <None Remove="Areas\Offers\Controllers\" />
+    <None Remove="Areas\Offers\Model\" />
+    <None Remove="Areas\Offers\Views\" />
+    <None Remove="Areas\Offers\Views\Offer\" />
+    <None Remove="Areas\ServiceRequests\" />
+    <None Remove="Areas\ServiceRequests\Views\" />
+    <None Remove="Areas\Payments\" />
+    <None Remove="Areas\Payments\Models\" />
+    <None Remove="Areas\Payments\Controllers\" />
+    <None Remove="Areas\Payments\Views\" />
+    <None Remove="Areas\Payments\Views\Payment\" />
+    <None Remove="Areas\Notifications\Views\Notification\" />
+    <None Remove="Areas\RenewalFlow\" />
+    <None Remove="Areas\RenewalFlow\Controllers\" />
+    <None Remove="Areas\RenewalFlow\Views\" />
+    <None Remove="Areas\RenewalFlow\Models\" />
+    <None Remove="Areas\RenewalFlow\Views\Renewal\" />
+    <None Remove="Areas\ServiceRequests\Views\ServiceRequest\" />
+    <None Remove="DLL\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Areas\" />
+    <Folder Include="Areas\Users\Controllers\" />
+    <Folder Include="Areas\Users\Views\" />
+    <Folder Include="Areas\Users\Views\Auth\" />
+    <Folder Include="Controllers\Auth1\" />
+    <Folder Include="Views\Auth1\" />
+    <Folder Include="Areas\Dashboard\Views\TenantDashboard\" />
+    <Folder Include="Areas\Users\" />
+    <Folder Include="Areas\Faqs\Model\" />
+    <Folder Include="Areas\Faqs\Controllers\" />
+    <Folder Include="Areas\Faqs\Views\" />
+    <Folder Include="Areas\Contracts\Controllers\" />
+    <Folder Include="Areas\Contracts\Models\" />
+    <Folder Include="Areas\Contracts\Views\" />
+    <Folder Include="Areas\Contracts\Views\Contract\" />
+    <Folder Include="Areas\Faqs\Views\Faq\" />
+    <Folder Include="Areas\Profile\" />
+    <Folder Include="Areas\Help\" />
+    <Folder Include="Areas\Notifications\" />
+    <Folder Include="Areas\Notifications\Controllers\" />
+    <Folder Include="Areas\Notifications\Views\" />
+    <Folder Include="Areas\Notifications\Models\" />
+    <Folder Include="Areas\Help\Models\" />
+    <Folder Include="Areas\Help\Controllers\" />
+    <Folder Include="Areas\Help\Views\" />
+    <Folder Include="Areas\Profile\Views\" />
+    <Folder Include="Areas\Profile\Controllers\" />
+    <Folder Include="Areas\Profile\Models\" />
+    <Folder Include="Areas\Profile\Views\Profile\" />
+    <Folder Include="Areas\Help\Views\Help\" />
+    <Folder Include="Areas\Offers\" />
+    <Folder Include="Areas\Offers\Controllers\" />
+    <Folder Include="Areas\Offers\Model\" />
+    <Folder Include="Areas\Offers\Views\" />
+    <Folder Include="Areas\Offers\Views\Offer\" />
+    <Folder Include="Areas\ServiceRequests\" />
+    <Folder Include="Areas\ServiceRequests\Views\" />
+    <Folder Include="Areas\Payments\" />
+    <Folder Include="Areas\Payments\Models\" />
+    <Folder Include="Areas\Payments\Controllers\" />
+    <Folder Include="Areas\Payments\Views\" />
+    <Folder Include="Areas\Payments\Views\Payment\" />
+    <Folder Include="Areas\Notifications\" />
+    <Folder Include="Areas\Notifications\Views\Notification\" />
+    <Folder Include="Areas\RenewalFlow\" />
+    <Folder Include="Areas\RenewalFlow\Controllers\" />
+    <Folder Include="Areas\RenewalFlow\Views\" />
+    <Folder Include="Areas\RenewalFlow\Models\" />
+    <Folder Include="Areas\RenewalFlow\Views\Renewal\" />
+    <Folder Include="wwwroot\assets\Video\" />
+    <Folder Include="Areas\ServiceRequests\Views\ServiceRequest\" />
+    <Folder Include="DLL\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Remove="Views\Home\Dashboard.cshtml" />
+    <Content Remove="wwwroot\assets\Video\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="UBSProptTenantPortal.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\UBSProptRepository\UBSProptRepository.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+    <ProjectReference Include="..\UBSProptSharedModel\UBSProptSharedModel.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+    <ProjectReference Include="..\AIServices\AIServices.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

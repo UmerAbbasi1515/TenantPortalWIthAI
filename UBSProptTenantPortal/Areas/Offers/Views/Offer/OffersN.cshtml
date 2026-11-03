@@ -1,0 +1,137 @@
+﻿@model OffersNResponseModel
+@{
+    ViewData["Title"] = "Offers";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var offers = Model?.Offers ?? new List<OfferModel>();
+}
+
+<head>
+    <link rel="stylesheet" href="~/css/site.css">
+    <style>
+        .offer-row {
+            cursor: pointer;
+            transition: background-color .2s ease;
+        }
+
+            .offer-row:hover {
+                background-color: #bfd1ec;
+            }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            background: #e9eef3;
+            color: #333;
+        }
+
+            .status-badge.active,
+            .status-badge.approved,
+            .status-badge.accepted {
+                background: #d4f3ef;
+                color: #0b6b63;
+            }
+
+            .status-badge.expired,
+            .status-badge.rejected,
+            .status-badge.cancelled {
+                background: #fde2e2;
+                color: #a61b1b;
+            }
+
+            .status-badge.pending,
+            .status-badge.open {
+                background: #fff3cd;
+                color: #8a6d00;
+            }
+
+        #offerSearch {
+            max-width: 320px;
+        }
+    </style>
+</head>
+
+<div class="text-center">
+
+    @* Page header + search *@
+    <div class="card pageheader">
+        <div class="card-header">
+            <div class="row">
+                <div class="col-12 text-start d-flex justify-content-between align-items-center">
+                    <h4>Offers</h4>
+                    <input type="text" id="offerSearch" class="form-control" placeholder="Search offers..." />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card custom-card-according-title">
+        <div class="card-body">
+
+            @if (!string.IsNullOrEmpty(ViewBag.errorGetOffer as string))
+            {
+                <div style="height:250px">
+                    <center style="padding-top: 90px;">
+                        <h5>@ViewBag.errorGetOffer</h5>
+                        <i class="fa fa-refresh mt-2" style="font-size:18px; cursor:pointer"
+                           onclick="window.location.href='@Url.Action("OffersN", "Offer", new { area = "Offers" })';"></i>
+                    </center>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover text-start align-middle" id="offersTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 60px;">S No</th>
+                                <th>Offer No</th>
+                                <th>Offer Name</th>
+                                <th>Property</th>
+                                <th>Issue Date</th>
+                                <th>Expiry Date</th>
+                                <th>Offer Amount</th>
+                                <th>Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < offers?.Count; i++)
+                            {
+                                var item = offers[i];
+                                var url = Url.Action("OffersDetailN", "Offer", new { area = "Offers", offerId = item.OfferID, offerName = item.OfferName });
+                                var statusClass = (item.OfferStatus ?? "").Trim().ToLower().Replace(" ", "");
+
+                                <tr class="offer-row" onclick="window.location.href='@url'">
+                                    <td>@(i + 1)</td>
+                                    <td>
+                                        <h6 class="f-w-500" style="color: #198754;">@item.OfferNo</h6>
+                                    </td>
+                                    <td>@item.OfferName</td>
+                                    <td>@item.PropertyName</td>
+                                    <td>@item.IssueDate</td>
+                                    <td>@item.ExpiryDate</td>
+                                    <td>AED @(item.OfferAmt?.ToString("N2") ?? "-")</td>
+                                    <td>
+                                        <span class="status-badge @statusClass">@(string.IsNullOrWhiteSpace(item.OfferStatus) ? "-" : item.OfferStatus)</span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>// Simple client-side search over the table rows
+        $('#offerSearch').on('keyup', function () {
+            const q = $(this).val().toLowerCase();
+            $('#offersTable tbody tr').each(function () {
+                $(this).toggle($(this).text().toLowerCase().indexOf(q) > -1);
+            });
+        });</script>
+}

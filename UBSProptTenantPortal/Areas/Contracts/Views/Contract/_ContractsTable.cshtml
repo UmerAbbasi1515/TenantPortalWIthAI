@@ -1,0 +1,61 @@
+﻿@model List<Contract>
+@using UBSProptTenantPortal
+<div class="card-body d-flex flex-column" style="flex-grow: 1;">
+    @if (ViewBag.errorGetContracts != "")
+    {
+        <div class="card-header pb-0" style="height: 350px">
+            <center style="padding-top: 150px;">
+
+                <h4>@ViewBag.errorGetContracts</h4>
+
+            </center>
+            <i class="fa fa-refresh" aria-hidden="true" style="padding-top: 5px; font-size: 18px; color: black;"
+               onclick="window.location.href = '@Url.Action("ContractsN", "Contract", new { area = "Contracts" })'"></i>
+        </div>
+
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table mb-0 table-hover" id="contract-table" tabindex="2" style="table-layout: fixed; margin-top: 0px !important;">
+                <thead>
+                    <tr>
+                        <th style="width: 70px;">S No</th>
+                        <th style="text-align: left; padding-left: 10px;">Contract No</th>
+                        <th style="text-align: center;">Property Name</th>
+                        <th style="text-align: center;">Unit No</th>
+                        <th style="text-align: center;">Date</th>
+                        <th style="text-align: center;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        var contractsToShow = Model?.ToList();
+                    }
+                    @for (int i = 0; i < contractsToShow?.Count; i++)
+                    {
+                        var contract = contractsToShow[i];
+                        string statusClass = LabelsTenantPortal.GetStatusCssClass(contract?.ContractStatus ?? "");
+                        int index = i + 1;
+                        <tr>
+                            <td style="text-align: left; padding-left: 20px;">@index</td>
+                            <td style="text-align: left; padding-left: 10px;">
+                                <a href="@Url.Action("ContractDetails", "Contract", new { area = "Contracts", contractID = contract?.ContractID })">
+                                    <h6 class="f-w-500" style="color: #198754; padding-left: 20px;">@contract?.Contractno</h6>
+                                </a>
+                            </td>
+                            <td style="text-align: center;">@contract?.PropertyName</td>
+                            <td style="text-align: center;">@contract?.UnitRefNo</td>
+                            <td style="text-align: center;">@contract?.ContractStartDate > @contract?.ContractEndDate</td>
+                            <td style="text-align: center;">
+                                <span class="status-custom @statusClass">@contract?.ContractStatus</span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+    }
+</div>
+                        

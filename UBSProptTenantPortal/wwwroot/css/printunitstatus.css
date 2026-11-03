@@ -1,0 +1,116 @@
+﻿
+.report-container {
+    margin: 0;
+    padding: 0;
+    background-color: #CCC;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    font-weight: 600
+}
+
+.report-container td {
+    vertical-align: top
+}
+
+
+.report-container .main table td {
+    padding: 5px 0
+}
+
+.report-container .main table .border-top-bottom td {
+    border-top: 1px solid #000;
+    border-bottom: 1px solid #000
+}
+
+.report-container .table-2 td {
+    border: 1px solid #000;
+    padding: 5px !important;
+}
+
+
+
+.report-container table, th, td {
+    border-collapse: collapse;
+}
+
+* {
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+}
+
+.report-container {
+    padding: 10px
+}
+
+    .report-container .page {
+        min-height: 21cm;
+        padding: 0.5cm;
+        margin: 0cm auto;
+        border: 1px #D3D3D3 solid;
+        border-radius: 5px;
+        background: white;
+    }
+
+    .report-container .subpage {
+        height: auto
+    }
+
+.button-container {
+    position: fixed;
+    top: 30px;
+    right: 18px;
+    z-index: 999;
+}
+
+.action-button {
+    cursor: pointer;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    margin-left: 5px;
+}
+
+tr {
+    page-break-inside: avoid !important;
+}
+
+@page {
+    size: A4 landscape;
+    margin: 0;
+}
+
+@media print {
+    .page {
+        margin: 0;
+        padding: 1cm;
+        border: initial;
+        border-radius: initial;
+        width: initial;
+        min-height: initial;
+        box-shadow: initial;
+        background: initial;
+        page-break-after: always;
+    }
+
+    .button-container {
+        display: none !important
+    }
+
+    .report-container {
+        padding: 0
+    }
+}
+
+@media print {
+    .pagebreak {
+        clear: both;
+        page-break-after: always;
+    }
+}
+
+.report-container .font-bold td {
+    font-weight: 700
+}
+

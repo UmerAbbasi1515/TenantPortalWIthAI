@@ -1,0 +1,78 @@
+@using UBSProptTenantPortal
+@model NotificationDetailsModel
+@{
+    var NotificationID = @ViewData["NotificationID"];
+    ViewData["Title"] = $"Notification ID. {NotificationID}";
+    Layout = "~/Views/Shared/_Profilelayout.cshtml";
+}
+
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="~/css/site.css"> <!-- Link to your CSS file -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+       .detail {
+            margin-bottom: 10px;
+        }
+
+            .detail p {
+                margin: 0;
+            }
+
+        .p-style {
+            padding-left: 23px
+        }
+    </style>
+
+</head>
+<div class="text-center" style="height: 100vh; margin-right: -8px !important;">
+    <div class="card pageheader">
+        <div class="card-header">
+            <div class="row">
+                <div class="col-12 text-start" style="display:flex; flex-direction:row; justify-content:space-between">
+                    <a class="sidebar-link" href="@Url.Action("NotificationsN", "Notification", new {area = "Notifications"})">
+                        <h4><i class="fa fa-arrow-left"></i> Notification ID: @NotificationID</h4>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card" style=" padding-bottom: 80px;">
+
+        @if (!string.IsNullOrEmpty(ViewBag.errorGetALlDetail))
+        {
+            <div class="card-header pb-0" style="flex-shrink: 0; padding-bottom: 100px; padding-top: 92px; padding-bottom: 92px;">
+                <center style="padding-top: 50px;">
+                    @if (@ViewBag.errorGetALlDetail != "")
+                    {
+                        <h4>No Data Found</h4>
+                    }
+                    else
+                    {<h4>@ViewBag.errorGetALlDetail</h4>}
+
+                </center>
+                <a href="@Url.Action("NotificationsN", "Notification", new { area = "Notifications" })">
+                    <i class="fa fa-refresh" aria-hidden="true" style="padding-top: 5px; font-size: 18px; color: black;">
+
+                    </i>
+                </a>
+            </div>
+        }
+        else
+        {
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 20px; margin-right: -8px !important;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="text-align: left;">
+                        <h5><strong>@Model?.Notification?.Title.</strong></h5>
+                        <h6 style="padding-top:15px">@Model?.Notification?.CreatedOn</h6><br />
+                        <p style="font-weight: 200;">@Html.Raw(@Model?.Notification?.Description)</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+           
+</div>

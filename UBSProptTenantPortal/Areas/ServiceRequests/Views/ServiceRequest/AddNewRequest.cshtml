@@ -1,0 +1,360 @@
+﻿@model SrReqAddNewRequest
+@{
+    ViewData["Title"] = "New Request";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var properties = Model?.propeties?.Properties;
+    var categories = Model?.caseCategory?.CaseCategories;
+}
+
+@* =====================================================================
+    PAGE HEADER
+    ===================================================================== *@
+<div class="card pageheader" style="box-shadow: none;">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-12 text-start" style="display:flex; flex-direction:row; justify-content:space-between">
+                <a class="sidebar-link" href="@(Url.Action("ServiceRequests", "ServiceRequest", new { area = "ServiceRequests", tab = "FM" }))">
+                    <h4><i class="fa fa-arrow-left"></i> Add New Request</h4>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    @if (properties == null || properties.Count == 0)
+    {
+        @* No active contract *@
+        <div class="card-body" style="text-align: center;">
+            <img src="~/assets/images/noDataFound.png"
+                 alt="Cheque Sample"
+                 class="img-fluid"
+                 style="object-fit: contain; max-height: 350px; width: 79px;" />
+            <p style="padding-top: 10px; padding-bottom: 10px">You do not have any active contract. A service request cannot be added.</p>
+        </div>
+    }
+    else
+    {
+        <div class="card-body">
+
+            @* ---------- Category type label (filled by JS) ---------- *@
+            <div class="form-group" id="categoryLabel" style="display: none;">
+                <strong><label id="categoryType"></label></strong>
+            </div>
+
+            @* ---------- Category ---------- *@
+            <div class="form-group" style="padding-top:10px" id="categoryDiv">
+                <label for="SelectedCategory" style="margin-bottom: 5px">Category</label>
+                <select id="SelectedCategory" name="SelectedCategory" class="form-control">
+                    <option value="">-- Select Category --</option>
+                    @if (categories?.Count > 0)
+                    {
+                        foreach (var item in categories)
+                        {
+                            <option value="@item.Id" data-type="@item.Type">@item.Name</option>
+                        }
+                    }
+                    else
+                    {
+                        <option disabled>No Category Available</option>
+                    }
+                </select>
+            </div>
+
+            @* ---------- Sub category (loaded by AJAX) ---------- *@
+            <div class="form-group" id="subcategoryDiv" style="display: none; margin-top: 15px">
+                <label for="SelectedSubCategory" style="margin-bottom: 5px">Sub Category</label>
+                <select id="SelectedSubCategory" name="SelectedSubCategory" class="form-control">
+                    <option value="">-- Select Sub Category --</option>
+                </select>
+            </div>
+
+            @* ---------- Property ---------- *@
+            <div class="form-group" style="margin-top: 15px" id="propertyDiv">
+                <label for="SelectedProperty" style="margin-bottom: 5px">Property</label>
+                <select id="SelectedProperty" name="SelectedProperty" class="form-control">
+                    <option value="">-- Select Property --</option>
+                    @foreach (var item in properties)
+                    {
+                        <option value="@item.ContractUnitID">@item.PropertyName</option>
+                    }
+                </select>
+            </div>
+            <hr />
+
+            @* ---------- Contract detail ---------- *@
+            <div class="form-group">
+                <div class="row alert alert-light-primary subtitle" role="alert">
+                    <div class="col-sm-6">
+                        <h5 style="text-align: left; padding-left: 20px;">Contract Detail</h5>
+                    </div>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="IsOtherThanTenant" name="IsOtherThanTenant" />
+                    <label class="form-check-label" for="IsOtherThanTenant">Other than Tenant</label>
+                </div>
+            </div>
+
+            <div id="otherTenantFields" style="display: none; margin-top: 15px">
+                <div class="form-group" id="nameDiv" style="margin-top: 15px">
+                    <label for="OtherName" style="margin-bottom: 5px">Name *</label>
+                    <input type="text" class="form-control" name="OtherName" id="OtherName" />
+                </div>
+                <div class="form-group" id="mobileDiv" style="margin-top: 15px">
+                    <label for="OtherMobile" style="margin-bottom: 5px">Mobile Number *<span style="font-size:12px;"> (only numbers and '+' allowed)</span></label>
+                    <input type="text" class="form-control" name="OtherMobile" id="OtherMobile" />
+                </div>
+            </div>
+
+            @* ---------- Contact time (FM requests only) ---------- *@
+            <div class="form-group" id="contactTimeDiv" style="margin-top: 15px; display:none">
+                <label for="SelectedContactTime" style="margin-bottom: 5px">Contact Time *</label>
+                <select id="SelectedContactTime" name="SelectedContactTime" class="form-control">
+                    <option value="">-- Select Contact Time --</option>
+                    @foreach (var item in Model?.contactTiming?.ContactTiming!)
+                    {
+                        <option value="@item.Id">@item.Name</option>
+                    }
+                </select>
+            </div>
+
+            <hr />
+
+            @* ---------- Request detail ---------- *@
+            <div class="form-group" id="descriptionDiv">
+                <div class="row alert alert-light-primary subtitle" role="alert">
+                    <div class="col-sm-6">
+                        <h5 style="text-align: left; padding-left: 20px;">Request Detail</h5>
+                    </div>
+                </div>
+                <label for="Description" style="margin-bottom: 5px">Description *</label>
+                <textarea id="Description" name="Description" class="form-control" rows="4" placeholder="Enter request detail..."></textarea>
+            </div>
+
+            <button type="submit" id="submitID" class="btn btn-primary mt-3" onclick="SubmitRequest()">
+                Next
+            </button>
+        </div>
+    }
+</div>
+
+<script src="~/toaster/toaster.js"></script>
+
+<script>
+    // =====================================================================
+    // Helpers
+    // =====================================================================
+
+    // Safe JSON reader: reads the body once and never throws on empty / non-JSON bodies.
+    async function readJson(response, fallback = {}) {
+        try {
+            const text = await response.text();
+            return text ? JSON.parse(text) : fallback;
+        } catch (error) {
+            console.error('Invalid JSON response:', error);
+            return fallback;
+        }
+    }
+
+    function showErrorMessage(div, message) {
+        const errorMessage = document.createElement('p');
+        errorMessage.textContent = message;
+        errorMessage.style.color = 'red';
+        div.appendChild(errorMessage);
+    }
+
+    function clearErrorMessages(div) {
+        const existingError = div.querySelector('p');
+        if (existingError) {
+            div.removeChild(existingError);
+        }
+    }
+
+    function btnshowLoader(btnId) {
+        const currentLanguage = "@AuthLabelsPortal.language";
+        $htmlOld = $("#" + btnId).html();
+        $("#" + btnId).prop('disabled', true);
+
+        const loadingText = currentLanguage === "English" ? 'Loading...' : 'تحميل...';
+        $("#" + btnId).html(`<i class="fa fa-spinner fa-spin" style="font-size:20px"></i>${loadingText}`);
+
+        $("button").prop('disabled', true);
+        $("a").prop('disabled', true);
+    }
+
+    function btnhideLoader(btnId) {
+        $("#" + btnId).html($htmlOld);
+        $("#" + btnId).prop('disabled', false);
+        $("button").prop('disabled', false);
+        $("a").prop('disabled', false);
+    }
+
+    // =====================================================================
+    // UI behaviour
+    // =====================================================================
+    $(document).ready(function () {
+
+        // Category change: show type label, toggle contact time, load sub categories
+        $('#SelectedCategory').on('change', function () {
+            const value = this.value;
+
+            const label = document.getElementById("categoryLabel");
+            const contactTimeDiv = document.getElementById("contactTimeDiv");
+            const labelText = document.getElementById("categoryType");
+            const subcategory = document.getElementById("subcategoryDiv");
+
+            const type = $(this).find('option:selected').data('type');
+
+            label.style.display = "block";
+            labelText.textContent = type;
+
+            contactTimeDiv.style.display = (type == "FM") ? "block" : "none";
+
+            if (value) {
+                $.ajax({
+                    url: '/ServiceRequests/ServiceRequest/ServiceRequestCaseSubCategoryFunc',
+                    data: { catId: value },
+                    success: function (data) {
+                        const $subCategorySelect = $('#SelectedSubCategory');
+                        $subCategorySelect.empty();
+                        $subCategorySelect.append('<option value="">-- Select Subcategory --</option>');
+
+                        $.each(data.caseSubCategories, function (index, item) {
+                            $subCategorySelect.append(
+                                $('<option></option>').val(item.id).text(item.name)
+                            );
+                        });
+                        subcategory.style.display = "block";
+                    },
+                    error: function (xhr, status, error) {
+                        alert('Error fetching subcategories');
+                        alert(error);
+                        console.error(error);
+                    }
+                });
+            } else {
+                $('#SelectedSubCategory').html('<option value="">-- Select Subcategory --</option>');
+            }
+        });
+
+        // Toggle visibility and required fields for "other than tenant"
+        $('#IsOtherThanTenant').on('change', function () {
+            const isChecked = this.checked;
+            $('#otherTenantFields').toggle(isChecked);
+            $('#OtherName').prop('required', isChecked);
+            $('#OtherMobile').prop('required', isChecked);
+        });
+    });
+
+    // Mobile number: digits and one optional leading '+'
+    document.getElementById('OtherMobile').addEventListener('input', function () {
+        this.value = this.value.replace(/[^0-9+]/g, '').replace(/^([^+]*\+)(?=.)/g, '$1');
+
+        // Ensure the '+' is only at the start
+        if (this.value.indexOf('+') > 0) {
+            this.value = this.value.replace(/\+/g, '');
+        }
+    });
+
+    // =====================================================================
+    // Submit request
+    // =====================================================================
+    async function SubmitRequest() {
+        const categoryType = document.querySelector("#categoryType").innerText;
+        const selectedCategory = document.getElementById("SelectedCategory").value;
+        const selectedSubCategory = document.getElementById("SelectedSubCategory").value;
+        const selectedProperty = document.getElementById("SelectedProperty").value;
+        const isOtherThanTenant = document.getElementById("IsOtherThanTenant").checked;
+        const otherName = document.getElementById("OtherName").value;
+        const otherMobile = document.getElementById("OtherMobile").value;
+        const contactTime = document.getElementById("SelectedContactTime").value;
+        const description = document.getElementById("Description").value;
+
+        const categoryDiv = document.getElementById("categoryDiv");
+        const subcategoryDiv = document.getElementById("subcategoryDiv");
+        const propertyDiv = document.getElementById("propertyDiv");
+        const nameDiv = document.getElementById("nameDiv");
+        const mobileDiv = document.getElementById("mobileDiv");
+        const contactTimeDiv = document.getElementById("contactTimeDiv");
+        const descriptionDiv = document.getElementById("descriptionDiv");
+
+        [categoryDiv, subcategoryDiv, propertyDiv, nameDiv, mobileDiv, contactTimeDiv, descriptionDiv]
+            .forEach(clearErrorMessages);
+
+        // ---------- Validation ----------
+        let hasError = false;
+
+        if (selectedCategory === "") {
+            showErrorMessage(categoryDiv, "Please select category");
+            hasError = true;
+        }
+        if (selectedSubCategory === "") {
+            showErrorMessage(subcategoryDiv, "Please select sub category");
+            hasError = true;
+        }
+
+        if (isOtherThanTenant) {
+            if (otherName === "") {
+                showErrorMessage(nameDiv, "Please enter name");
+                hasError = true;
+            }
+            if (otherMobile === "") {
+                showErrorMessage(mobileDiv, "Please enter phone number");
+                hasError = true;
+            }
+        }
+
+        if (categoryType === "FM" && contactTime === "") {
+            showErrorMessage(contactTimeDiv, "Please select contact time");
+            hasError = true;
+        }
+
+        if (description === "") {
+            showErrorMessage(descriptionDiv, "Please enter description");
+            hasError = true;
+        }
+
+        if (hasError) {
+            return;
+        }
+
+        // ---------- Send ----------
+        try {
+            const data = {
+                "CaseCategoryId": selectedCategory,
+                "CaseSubCategoryId": selectedSubCategory,
+                "ContractUnitId": selectedProperty,
+                "OtherContactPersonName": otherName,
+                "OtherContactPersonMobile": otherMobile,
+                "ContactTimeId": contactTime,
+                "Description": description,
+            };
+
+            btnshowLoader("submitID");
+            const response = await fetch('/ServiceRequests/ServiceRequest/SubmitServiceRequest', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                btnhideLoader("submitID");
+                const result = await readJson(response);
+
+                if (result.status == null) {
+                    toastr.error("Something went wrong");
+                } else {
+                    const caseNO = result.addServiceRequest.caseNo;
+                    window.location.href = '/ServiceRequests/ServiceRequest/UploadPhoto?caseNo=' + caseNO;
+                }
+            } else {
+                btnhideLoader("submitID");
+                toastr.error("Error", response.message);
+            }
+        } catch (error) {
+            btnhideLoader("submitID");
+            toastr.error("Error", error);
+        }
+    }
+</script>

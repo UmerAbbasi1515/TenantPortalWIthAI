@@ -1,0 +1,226 @@
+﻿@using UBSProptTenantPortal
+@model MunicipalInstructions
+@{
+    ViewData["Title"] = "Signin Contract";
+    var ContractNo = ViewBag.ContractNo;
+    var dueActionID = ViewBag.DueActionID;
+    var ContractID = ViewBag.ContractID;
+    var CaseNO = ViewBag.caseNo;
+    var callingFrom = ViewBag.callingFrom;
+    var tab = callingFrom == "Renewal" ? "RCF" : "NCF";
+    var directionClass = LabelsLandlordPortal._language == "English" ? "ltr" : "rtl";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@* =====================================================================
+     STYLES / VENDOR RESOURCES
+    ===================================================================== *@
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="~/css/site.css">
+
+    <style>
+        .guide-box {
+            background-color: rgba(67, 185, 178, 0.1) !important;
+            color: #43B9B2 !important;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .guide-content {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #333;
+        }
+
+            .guide-content i {
+                color: #43B9B2;
+                font-size: 16px;
+            }
+    </style>
+</head>
+
+<div class="text-center" style="height: 100vh;" id="scrollContainer">
+
+    @* ---------- Page header ---------- *@
+    <div class="card pageheader sticky-header">
+        <div class="card-header">
+            <div class="row">
+                <div class="col-12 text-start">
+                    <h4>
+                        <a href="@Url.Action("ContractAction", "Renewal", new { area = "RenewalFlow", tab = tab })"
+                           class="text-dark text-decoration-none fw-bold"
+                           style="font-size: 1.25rem;">
+                            <i class="fa fa-arrow-left me-2"></i> Contract No. @ContractNo
+                        </a>
+                    </h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-12 col-lg-12 col-xl-12 mt-2 d-flex">
+        <div style="width:100% !important">
+            <div class="card" style=" padding: 20px; padding-top: 30px;">
+                <p>@Model.Record</p>
+
+                @* ---------- Login to Tawtheeq ---------- *@
+                @if (!string.IsNullOrEmpty(Model.Record))
+                {
+                    <div class="mb-3">
+                        <a href="@Model.Record" target="_blank" class="btn btn-primary">
+                            Login to Tawtheeq
+                        </a>
+                    </div>
+                }
+
+                <!-- Step guidance -->
+                <div class="guide-box">
+                    <div class="guide-content">
+                        <i class="fa fa-info-circle" aria-hidden="true"></i>
+                        <span>Please click on the Login To Tawtheeq link to complete the municipality process.</span>
+                    </div>
+                </div>
+
+                <!-- Confirmation checkbox -->
+                <div class="row mt-3">
+                    <div class="col-12 text-start d-flex align-items-center">
+                        <input type="checkbox" id="agreeTerms" class="form-check-input me-2" />
+                        <label for="agreeTerms" class="mb-0" style="padding-top: 3px;">
+                            I confirm that I've completed the municipality approval procedure.
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <div class="text-end" style="margin-top: 20px; margin-bottom:5px; margin-left: 30%; margin-right: 30%;">
+                    <button id="submitBtn" onclick="UpdateDocumentStage(@dueActionID)" class="btn btn-primary w-100 text-white" disabled>
+                        Submit
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        @* ---------- Confirmation modal ---------- *@
+        <div class="modal fade" id="confirmationModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-3" style="padding: 30px;">
+
+                    <!-- Close Button -->
+                    <div class="modal-header border-0">
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <img src="~/assets/images/bluetick.png"
+                         alt="Check"
+                         class="img-fluid"
+                         style="object-fit: contain; max-height: 113px; padding-bottom: 10px;" />
+
+                    <!-- Modal Body -->
+                    <label><strong>Thank you for completing the Municipality Approval</strong></label>
+                    <p class="mb-4">
+                        Dear Tenant, Thanks for choosing FABP as your real estate service provider, your contract will be ready to download within 1 to 2 working days.
+                    </p>
+
+                    <!-- Buttons -->
+                    <div class="d-flex justify-content-center gap-3">
+                        <button type="button" class="btn btn-primary text-white" onclick="closeConfirmationModel()">Back</button>
+                        <button type="button" class="btn btn-primary" onclick="cancelConfirmationModel()" aria-label="Close">Stay on Page</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* =====================================================================
+     SCRIPTS
+    ===================================================================== *@
+<script>// =====================================================================
+    // Helpers
+    // =====================================================================
+
+    // Reads a fetch Response body once and never throws on empty / non-JSON bodies.
+    async function readJsonSafely(response, fallback = {}) {
+        try {
+            const text = await response.text();
+            return text ? JSON.parse(text) : fallback;
+        } catch (error) {
+            console.error('Invalid JSON response:', error);
+            return fallback;
+        }
+    }
+
+    // =====================================================================
+    // Confirmation checkbox
+    // =====================================================================
+    const checkbox = document.getElementById("agreeTerms");
+    const submitBtn = document.getElementById("submitBtn");
+
+    checkbox.addEventListener("change", function () {
+        submitBtn.disabled = !this.checked; // Enable only if checked
+    });
+
+    // =====================================================================
+    // Confirmation modal
+    // =====================================================================
+    function showConfirmationModel() {
+        $('#confirmationModal').modal('show');
+    }
+
+    function cancelConfirmationModel() {
+        $('#confirmationModal').modal('hide');
+    }
+
+    function closeConfirmationModel() {
+        $('#confirmationModal').modal('hide');
+
+        // Wait for modal to fully close, then redirect
+        $('#confirmationModal').on('hidden.bs.modal', function () {
+            window.location.href = '/Dashboard/TenantDashboard/MainDashboard';
+        });
+    }
+
+    // =====================================================================
+    // Update renewal contract stage
+    // =====================================================================
+    async function UpdateDocumentStage(dueActionID) {
+        btnshowLoader("btn-updateDocStage");
+        debugger;
+
+        const formData = new FormData();
+        formData.append("DueActionid", dueActionID);
+        formData.append("StageId", "9");
+
+        try {
+            const response = await fetch('/RenewalFlow/Renewal/UpdateRenewalContractStage', {
+                method: 'POST',
+                body: formData
+            });
+            debugger;
+
+            if (response.ok) {
+                btnhideLoader("btn-updateDocStage");
+                const data1 = await readJsonSafely(response);
+
+                if (data1.message == "Stage Updated Successfully") {
+                    toastr.success("Stage Updated Successfully");
+                    showConfirmationModel();
+                } else {
+                    toastr.error("Stage Updated failed: " + data1.message);
+                }
+            } else {
+                btnhideLoader("btn-updateDocStage");
+                toastr.error("Stage Updated failed: " + response.message);
+            }
+        } catch (error) {
+            btnhideLoader("btn-updateDocStage");
+            toastr.error("Stage Updated failed: " + error);
+        }
+    }</script>

@@ -1,0 +1,796 @@
+@model OfferModel
+@{
+    ViewData["Title"] = "Offer Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    string Money(double? v) => v.HasValue ? v.Value.ToString("N2") : null;
+
+    var sections = new List<(string Title, List<(string Label, string Value)> Items)>
+{
+        ("Offer Information", new List<(string, string)>
+{
+            ("Offer No", Model.OfferNo),
+            ("Offer Name", Model.OfferName),
+            ("Status", Model.OfferStatus),
+            ("Issue Date", Model.IssueDate),
+            ("Expiry Date", Model.ExpiryDate),
+        }),
+        ("Property", new List<(string, string)>
+{
+            ("Property Name", Model.PropertyName),
+            ("Property Name (AR)", Model.PropertyNameAR),
+            ("Building Ref No", Model.BuildingRefNo),
+        }),
+        ("Rent Period", new List<(string, string)>
+{
+            ("Period", Model.Period?.ToString()),
+            ("Rent Start Date", Model.RentStartDate),
+            ("Rent End Date", Model.RentEndDate),
+            ("Payment Installments", Model.PaymentInstallments?.ToString()),
+        }),
+        ("Financials", new List<(string, string)>
+{
+            ("Offer Amount", Money(Model.OfferAmt)),
+            ("Security Amount", Money(Model.SecurityAmount)),
+            ("Reservation Fee", Money(Model.ReservationFee)),
+        })
+    };
+}
+
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="~/css/site.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        /* ---------- Page loader ---------- */
+        #pageLoader {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.6);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+            #pageLoader .spinner {
+                width: 50px;
+                height: 50px;
+                border: 5px solid #e0e0e0;
+                border-top-color: #43B9B2;
+                border-radius: 50%;
+                animation: pageLoaderSpin 0.8s linear infinite;
+            }
+
+            #pageLoader .loader-text {
+                margin-top: 12px;
+                font-size: 14px;
+                color: #333;
+            }
+
+        @@keyframes pageLoaderSpin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ---------- Tabs / overview ---------- */
+        .tab-container {
+            margin: 20px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+            .tab-content.active {
+                display: block;
+            }
+
+        .property-details {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            padding: 0 10px;
+        }
+
+        #caseInfoRow {
+            display: flex;
+            align-items: center;
+            padding: 8px 16px;
+            margin-bottom: 8px;
+            background: #f1fbfa;
+            border: 1px solid #bbd9d7;
+            border-radius: 8px;
+            text-align: left;
+        }
+
+        .section-title {
+            text-align: left;
+            font-weight: 600;
+            margin: 18px 0 10px;
+            color: #0b6b63;
+        }
+
+        .info-box {
+            padding: 6px 4px;
+            text-align: left;
+        }
+
+            .info-box small {
+                display: block;
+                color: #6c757d;
+            }
+
+        /* ---------- Styles used by the Document / Communication partials ---------- */
+        .doc-footer {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 12px;
+            background: #fff;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+        }
+
+        .uploadDoc {
+            background-color: #42ae950f !important;
+            border: 2px dashed #bbd9d7a6 !important;
+            border-radius: 12px;
+        }
+
+            .uploadDoc:hover {
+                border: 2px dashed #43B9B2 !important;
+            }
+
+        .bg-teal {
+            background-color: #43B9B2;
+        }
+
+        .btn-download {
+            background-color: #fff;
+            color: #000;
+            border: 1px solid #ccc;
+        }
+
+            .btn-download:hover {
+                background-color: #eee5e5;
+                border-color: #999;
+            }
+
+        .btn-teal {
+            background: #009688;
+            color: #fff;
+        }
+
+            .btn-teal:hover {
+                background: #00796B;
+                color: #fff;
+            }
+
+        .delete-icon {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: transparent;
+            border: none;
+            color: #e74c3c;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .uploadDocN {
+            border-radius: 10px;
+            overflow: hidden;
+            background: #f8f9fa;
+            text-align: center;
+            height: 320px;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .preview-box {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 180px;
+            background: #e9eef3;
+            position: relative;
+        }
+
+        .doc-img {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+        }
+
+        .doc-icon {
+            font-size: 4rem;
+            color: gray;
+        }
+
+        .overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, .35);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity .3s ease-in-out;
+        }
+
+        .preview-box:hover .overlay {
+            opacity: 1;
+        }
+
+        .photo-container {
+            display: inline-block;
+            transition: transform .2s;
+        }
+
+            .photo-container:hover {
+                transform: scale(1.05);
+            }
+    </style>
+</head>
+
+<div class="text-center" style="height: 100vh;">
+
+    @* Page loader *@
+    <div id="pageLoader">
+        <div class="spinner"></div>
+        <div class="loader-text">Loading ...</div>
+    </div>
+
+    @* Page header *@
+    <div class="card pageheader">
+        <div class="card-header">
+            <div class="row">
+                <div class="col-12 text-start">
+                    <a class="sidebar-link" href="@Url.Action("OffersN", "Offer", new { area = "Offers" })">
+                        <h4><i class="fa fa-arrow-left"></i> Offer Details</h4>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card custom-card-according-title">
+        <div class="tab-container">
+
+            <div id="caseInfoRow">
+                <strong class="me-2">Offer No:</strong>
+                <span class="me-4">@Model.OfferNo</span>
+                <strong class="me-2">Status:</strong>
+                <span>@Model.OfferStatus</span>
+            </div>
+
+            @* Tab navigation *@
+            <ul class="nav nav-tabs border-tab nav-info border-tab sticky" id="bottom-tab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link nav-border font-info tab-info active" id="MainInfo-tab"
+                       href="javascript:void(0)" role="tab" aria-selected="true" onclick="loadMainInfo()">
+                        <i class="fa fa-chart-pie me-1"></i>Overview
+                    </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link nav-border font-info tab-info" id="document-tab"
+                       href="javascript:void(0)" role="tab" aria-selected="false" onclick="loadDocuments()">
+                        <i class="fa fa-file me-1"></i>Document
+                    </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link nav-border font-info tab-info" id="Communication-tab"
+                       href="javascript:void(0)" role="tab" aria-selected="false" onclick="loadCommunications()">
+                        <i class="fa fa-comments me-1"></i>Communication
+                    </a>
+                </li>
+            </ul>
+
+            @* ===================== Overview ===================== *@
+            <div id="mainInfo" class="tab-content active" style="background: transparent !important; color: inherit !important;">
+                @if (!string.IsNullOrEmpty(ViewBag.errorOverView as string))
+                {
+                    <div class="card-header pb-0" style="height:350px">
+                        <center style="padding-top: 150px;">
+                            <h4>@ViewBag.errorOverView</h4>
+                        </center>
+                        <center>
+                            <i class="fa fa-refresh" style="padding-top: 5px; font-size: 18px; cursor:pointer"
+                               onclick="window.location.href='@Url.Action("OffersN", "Offer", new { area = "Offers" })';"></i>
+                        </center>
+                    </div>
+                }
+                else
+                {
+                    <div style="background-color: white;">
+                        <div class="property-details">
+                            @foreach (var s in sections)
+                            {
+                                <div class="row alert alert-light-primary subtitle" role="alert">
+                                    <div class="col-sm-6">
+                                        <h5 style="text-align: left; padding-left: 20px;">@s.Title</h5>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    @foreach (var f in s.Items)
+                                    {
+                                        <div class="col-sm-6 col-md-3 mb-3">
+                                            <div class="info-box">
+                                                <small>@f.Label</small>
+                                                <strong>@(string.IsNullOrWhiteSpace(f.Value) ? "-" : f.Value)</strong>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+
+            @* ===================== Documents (loaded on demand) ===================== *@
+            <div id="documentInfo" class="tab-content" style="background: transparent !important; color: inherit !important; min-height: 390px;"></div>
+
+            @* ===================== Communication (loaded on demand) ===================== *@
+            <div id="CommunicationInfo" class="tab-content"></div>
+
+            @* ===================== Upload modal ===================== *@
+            <div class="modal fade" id="uploadModel_" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header bg-teal text-white">
+                            <h5 class="modal-title" id="modalTitle" style="color:white">Upload — Document</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" id="uploadofferId" />
+                            <input type="hidden" id="uploadReqNo" />
+                            <input type="hidden" id="uploadDocTypeId" />
+                            <input type="hidden" id="index" />
+
+                            <div class="mb-1 text-start">
+                                <label class="form-label" style="display: contents;">Select a file for <strong id="docNameLabel">Document </strong> <span class="text-danger">*</span></label>
+                                <input type="file" id="UploadFile" class="form-control" accept=".jpg,.jpeg,.png,.pdf" />
+                                <div class="form-text">Accepted: JPG, PNG, PDF · up to 10 MB</div>
+                            </div>
+
+                            <div class="row align-items-end mb-1">
+                                <input type="hidden" id="isRejected" />
+                                <div class="col-md-4 d-flex align-items-end">
+                                    <button type="button" id="uploadBtn" onclick="submitUpload()" class="btn btn-primary w-100">Upload</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // =====================================================
+        //  Safe response helpers
+        // =====================================================
+
+        // Safely read a JSON body; returns null if the body is empty or not JSON
+        async function readJsonSafe(response) {
+            try {
+                const text = await response.text();
+                return text ? JSON.parse(text) : null;
+            } catch {
+                return null;
+            }
+        }
+
+        // Pick the most useful error text from our API, ASP.NET validation, or the HTTP status
+        function getErrorMessage(response, result, fallback) {
+            if (result?.message) return result.message;
+            if (result?.title) return result.title;
+
+            if (result?.errors) {
+                const firstError = Object.values(result.errors).flat()[0];
+                if (firstError) return firstError;
+            }
+
+            if (!response.ok) return `${fallback} (HTTP ${response.status})`;
+            return fallback;
+        }
+
+        // =====================================================
+        //  Global state (the offer is already known, so tabs 2 & 3 can load immediately)
+        // =====================================================
+        let offerId = '@(Model.OfferID?.ToString() ?? "")';
+        let offerName = '@(Model.OfferName?.ToString() ?? "")';
+        let requestId = null;
+        let communicationsLoaded = false;
+        let commRefreshTimer = null;
+        let commRefreshing = false;
+        let currentTab = 'mainInfo';
+
+        const photoIds = {};
+
+        const URL_DOCS = '@Url.Action("OffersNDocumentsPartial", "Offer", new { area = "Offers" })';
+        const URL_COMM = '@Url.Action("InvoiceCommunicationsPartial", "Offer", new { area = "Offers" })';
+        const URL_UPLOAD = '/Offers/Offer/UploadOfferDocument';
+        const URL_REPLACE = '/Offers/Offer/UploadOfferDocument';
+        const URL_DOWNLOAD = '/Offers/Offer/DownloadOfferDocuments';
+        const URL_SEND_MESSAGE = '/Offers/Offer/SendMessage';
+        const URL_TICKET_DOWNLOAD = '/Offers/Offer/GetTikcketReplyOfferDownloadDocuments';
+
+        // =====================================================
+        //  Loader / tabs
+        // =====================================================
+        function showLoader(text) {
+            $('#pageLoader .loader-text').text(text || 'Loading ...');
+            $('#pageLoader').css('display', 'flex');
+        }
+
+        function hideLoader() {
+            $('#pageLoader').hide();
+        }
+
+        function showTab(tabId, linkId) {
+            $('.tab-content').removeClass('active');
+            $('#' + tabId).addClass('active');
+            $('#bottom-tab .nav-link').removeClass('active').attr('aria-selected', 'false');
+            $('#' + linkId).addClass('active').attr('aria-selected', 'true');
+            currentTab = tabId;
+        }
+
+        // ---------- Overview ----------
+        function loadMainInfo() {
+            stopCommunicationRefresh();
+            showTab('mainInfo', 'MainInfo-tab');
+        }
+
+        // ---------- Documents ----------
+        async function loadDocuments() {
+            stopCommunicationRefresh();
+            showTab('documentInfo', 'document-tab');
+
+            showLoader('Loading documents...');
+            try {
+                const response = await fetch(
+                    URL_DOCS +
+                    '?offerId=' + encodeURIComponent(offerId) +
+                    '&offerName=' + encodeURIComponent(offerName)
+                );
+                if (response.ok) {
+                    $('#documentInfo').html(await response.text());
+                } else {
+                    $('#documentInfo').html('<div class="alert alert-danger">Error loading documents. Please try again.</div>');
+                }
+            } catch (error) {
+                console.error('Error loading documents:', error);
+                $('#documentInfo').html('<div class="alert alert-danger">Error loading documents: ' + error.message + '</div>');
+            } finally {
+                hideLoader();
+            }
+        }
+
+        function reloadTab2() {
+            return loadDocuments();
+        }
+
+        // ---------- Upload modal ----------
+        function openUploadModal(index, docName) {
+            document.getElementById("docNameLabel").innerText = docName;
+            document.getElementById("index").value = index;
+            showUploadModal();
+        }
+
+        function showUploadModal() {
+            const el = document.getElementById('uploadModel_');
+            if (window.bootstrap && bootstrap.Modal) bootstrap.Modal.getOrCreateInstance(el).show();
+            else $('#uploadModel_').modal('show');
+        }
+
+        function hideUploadModal() {
+            const el = document.getElementById('uploadModel_');
+            if (window.bootstrap && bootstrap.Modal) {
+                const inst = bootstrap.Modal.getInstance(el);
+                if (inst) inst.hide();
+            } else {
+                $('#uploadModel_').modal('hide');
+            }
+        }
+
+        async function submitUpload() {
+            const fileInput = document.getElementById("UploadFile");
+            const file = fileInput.files[0];
+
+            if (!file) {
+                toastr.error("Please select a file to upload.");
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                toastr.error("File size must be 10 MB or less. Please upload again.");
+                fileInput.value = "";
+                return;
+            }
+
+            const index = document.getElementById("index").value;
+            const docName = document.getElementById("docNameLabel").innerText;
+            await sendDocument(URL_UPLOAD, index, docName, file);
+        }
+
+        async function sendDocument(url, index, docName, file) {
+            const $btn = $('#uploadBtn').prop('disabled', true);
+
+            showLoader('Uploading document...');
+
+            const formData = new FormData();
+            formData.append("MasterID", offerId);
+            formData.append("index", index);
+            formData.append("OriginalFiles", file);
+            formData.append("Title", docName);
+
+            try {
+                const response = await fetch(url, { method: 'POST', body: formData });
+                const result = await readJsonSafe(response);
+
+                if (!response.ok) {
+                    toastr.error(getErrorMessage(response, result, "Server error while uploading"));
+                    return;
+                }
+
+                if (!result) {
+                    toastr.error("Unexpected server response. Your session may have expired.");
+                    return;
+                }
+
+                if (!result.success) {
+                    toastr.error("Upload failed: " + (result.message || ''));
+                    return;
+                }
+
+                toastr.success("Document uploaded successfully");
+                hideUploadModal();
+                document.getElementById("UploadFile").value = "";
+                await reloadTab2();
+            } catch (error) {
+                toastr.error("Network error: " + error.message);
+            } finally {
+                $btn.prop('disabled', false);
+                hideLoader();
+            }
+        }
+
+        // ---------- Download ----------
+        async function downloadDocument(documentTypeId, extension, index) {
+            showLoader();
+
+            // Matches DownloadOfferDetailparameter { OfferId, DocumentId }
+            const data = { OfferId: offerId, DocumentId: documentTypeId };
+
+            try {
+                const response = await fetch(URL_DOWNLOAD, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await readJsonSafe(response);
+
+                if (!response.ok) {
+                    toastr.error(getErrorMessage(response, result, "Download failed"));
+                    return;
+                }
+
+                if (!result?.path) {
+                    toastr.error("Download failed: file path not found");
+                    return;
+                }
+
+                openBase64File(result.path, extension);
+            } catch (error) {
+                toastr.error("Download failed: " + error);
+            } finally {
+                hideLoader();
+            }
+        }
+
+        function detectFileType(base64, ext) {
+            ext = (ext || '').toLowerCase();
+            if (ext === 'pdf') return { mime: 'application/pdf', ext: 'pdf' };
+            if (ext === 'png') return { mime: 'image/png', ext: 'png' };
+            if (ext === 'jpg' || ext === 'jpeg') return { mime: 'image/jpeg', ext: 'jpg' };
+            if (base64.startsWith('JVBER')) return { mime: 'application/pdf', ext: 'pdf' };
+            if (base64.startsWith('iVBOR')) return { mime: 'image/png', ext: 'png' };
+            if (base64.startsWith('/9j/')) return { mime: 'image/jpeg', ext: 'jpg' };
+            return { mime: 'application/pdf', ext: 'pdf' };
+        }
+
+        function openBase64File(base64, ext) {
+            const type = detectFileType(base64, ext);
+            const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+            const blob = new Blob([bytes], { type: type.mime });
+            const blobUrl = URL.createObjectURL(blob);
+
+            window.open(blobUrl, '_blank');
+
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = 'file.' + type.ext;
+            link.click();
+
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 3000);
+        }
+
+        // ---------- Communication ----------
+        async function loadCommunications() {
+            showTab('CommunicationInfo', 'Communication-tab');
+
+            showLoader('Loading communication...');
+            try {
+                await refreshCommunications();
+                startCommunicationRefresh();
+            } finally {
+                hideLoader();
+            }
+        }
+
+        function onFileSelected(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.size > 10 * 1024 * 1024) {
+                toastr.error('File size must be 10 MB or less.');
+                event.target.value = '';
+                return;
+            }
+
+            $('#fileName').text(file.name);
+            $('#selectedFileContainer').css('display', 'block');
+        }
+
+        function removeFile() {
+            $('#FileUpload').val('');
+            $('#fileName').text('');
+            $('#selectedFileContainer').hide();
+        }
+
+        async function sendCommunicationMessage() {
+            const msgEl = document.getElementById('UserMessage');
+            const fileEl = document.getElementById('FileUpload');
+            const message = msgEl ? msgEl.value.trim() : '';
+            const file = fileEl ? fileEl.files[0] : null;
+
+            if (!message && !file) {
+                toastr.error('Type a message or attach a file.');
+                return;
+            }
+
+            showLoader('Sending ...');
+            const fd = new FormData();
+            fd.append('Message', message);
+            fd.append('offerId', offerId);
+            if (file) fd.append('Attachment', file);
+
+            try {
+                const response = await fetch(URL_SEND_MESSAGE, { method: 'POST', body: fd });
+                const result = await readJsonSafe(response);
+
+                if (!response.ok) {
+                    toastr.error(getErrorMessage(response, result, 'Server error while sending'));
+                    return;
+                }
+
+                if (!result || !result.success) {
+                    toastr.error((result && result.message) || 'Message could not be sent');
+                    return;
+                }
+
+                msgEl.value = '';
+                removeFile();
+
+                while (commRefreshing) await new Promise(r => setTimeout(r, 100));
+                await refreshCommunications();
+
+                const c = document.getElementById('ChatContainer');
+                if (c) c.scrollTop = c.scrollHeight;
+            } catch (error) {
+                toastr.error('Network error: ' + error.message);
+            } finally {
+                hideLoader();
+            }
+        }
+
+        async function downloadFileGetTicket(ticketReplyId, index, name) {
+            if (!ticketReplyId) {
+                toastr.warning('Attachment ID not found');
+                return;
+            }
+
+            showLoader('Downloading...');
+            try {
+                const response = await fetch(URL_TICKET_DOWNLOAD + '?ticketReplyID=' + encodeURIComponent(ticketReplyId));
+                const data = await readJsonSafe(response);
+
+                if (!response.ok) {
+                    toastr.error(getErrorMessage(response, data, 'Download failed'));
+                    return;
+                }
+
+                if (!data?.path) {
+                    toastr.error(data?.message || 'Download failed: file not found');
+                    return;
+                }
+
+                var extension = name.includes('.') ? name.split('.').pop().toLowerCase() : '';
+                openBase64File(data.path, extension);
+            } catch (error) {
+                toastr.error('Download failed: ' + error);
+            } finally {
+                hideLoader();
+            }
+        }
+
+        // Refresh only the ChatContainer content (HTML response, so readJsonSafe is not used here)
+        async function refreshCommunications() {
+            if (commRefreshing) return;
+            commRefreshing = true;
+            try {
+                const response = await fetch(URL_COMM + '?offerId=' + encodeURIComponent(offerId));
+                if (!response.ok) {
+                    if (!communicationsLoaded)
+                        $('#CommunicationInfo').html('<div class="alert alert-danger">Error loading communication.</div>');
+                    return;
+                }
+                const html = await response.text();
+
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+                const newChat = tempDiv.querySelector('#ChatContainer');
+                const oldChat = document.getElementById('ChatContainer');
+
+                if (!oldChat || !newChat) {
+                    $('#CommunicationInfo').html(html);
+                    const c = document.getElementById('ChatContainer');
+                    if (c) c.scrollTop = c.scrollHeight;
+                    communicationsLoaded = true;
+                    return;
+                }
+
+                const isNearBottom = oldChat.scrollTop + oldChat.clientHeight >= oldChat.scrollHeight - 50;
+                oldChat.innerHTML = newChat.innerHTML;
+                if (isNearBottom) oldChat.scrollTop = oldChat.scrollHeight;
+                communicationsLoaded = true;
+            } catch (error) {
+                console.error('Error loading communications:', error);
+            } finally {
+                commRefreshing = false;
+            }
+        }
+
+        function startCommunicationRefresh() {
+            stopCommunicationRefresh();
+            commRefreshTimer = setInterval(refreshCommunications, 5000);
+        }
+
+        function stopCommunicationRefresh() {
+            if (commRefreshTimer) {
+                clearInterval(commRefreshTimer);
+                commRefreshTimer = null;
+            }
+        }
+
+        window.addEventListener('beforeunload', stopCommunicationRefresh);
+
+        document.addEventListener('visibilitychange', function () {
+            if (document.hidden) stopCommunicationRefresh();
+            else if (currentTab === 'CommunicationInfo' && offerId) startCommunicationRefresh();
+        });
+    </script>
+}

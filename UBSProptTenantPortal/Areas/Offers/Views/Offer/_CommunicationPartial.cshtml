@@ -1,0 +1,97 @@
+﻿@model CommunicationModel
+
+@{
+    var ServiceRequestNo = @ViewData["ServiceReqNoTitle"];
+}
+@if (ViewBag.errorCommunications == "")
+{
+    <div class="card-header pb-80px" style="flex-shrink: 0;">
+        <center style="padding-top: 50px;">
+            <h4 style="padding-top: 5px; padding-bottom: 50px;">@ViewBag.errorCommunications</h4>
+        </center>
+        <i class="fa fa-refresh" aria-hidden="true" style="padding-top: 5px; font-size: 18px; color: black;"
+           onclick="window.location.href = '@Url.Action("ServiceRequests", "ServiceRequest", new { area = "ServiceRequests" })'"></i>
+    </div>
+}
+else
+{
+    <div style="background-color: white; height:550px; padding: 0px; display:flex;flex-direction:row;justify-content:space-between">
+
+        <!-- Messages Section -->
+        <div class="col-md-7" id="ChatContainer" style="border: 1px solid #43B9B2; border-radius: 12px; max-height: 450px; overflow-y: auto;">
+            @if (Model?.TicketReply != null && Model.TicketReply.Any())
+            {
+                for (int i = 0; i < Model.TicketReply.Count; i++)
+                {
+                    var reply = Model.TicketReply[i];
+
+                    bool isSelf = reply?.UserId == null;
+
+                    <div class="p-2" style="background-color: #e0f7f7; border-radius: 10px; width: 50%; margin:5px;
+                         @(isSelf ? "margin-right: auto;" : "margin-left: auto;")">
+
+                        @if (!string.IsNullOrEmpty(reply!.FileName))
+                        {
+                            <div style="display: flex; justify-content: space-between; align-items: center; text-align: left; padding-left: 10px;">
+                                <strong>
+                                    <a href="#" onclick="downloadFileGetTicket(@reply.TicketReplyId , @i, '@reply!.FileName')" target="_blank" style="color: #43B9B2">@reply.FileName</a>
+                                </strong>
+                                <a href="#" onclick="downloadFileGetTicket(@reply.TicketReplyId , @i, '@reply!.FileName')" download style="margin-left: 10px;">
+                                    <i class="fa fa-download" id="btnTicketReplyId"></i>
+                                </a>
+                            </div>
+                        }
+
+                        <div style="height:10px"></div>
+
+                        <div style=" text-align: @(isSelf ? "margin-right: auto;" : "margin-left: auto;"); padding-left: 10px; padding-right: 10px;">
+                            <strong style="color: grey">@Html.Raw(reply.Reply)</strong>
+                        </div>
+
+                        <div style="height: 10px"></div>
+
+                        <div class="text-muted" style="font-size: 12px; text-align: @(isSelf ? "margin-right: auto;" : "margin-left: auto;");  padding-left: 10px; padding-right: 10px;">
+                            @reply.DateTime
+                        </div>
+
+                    </div>
+                }
+            }
+            else
+            {
+                <p>No messages yet.</p>
+            }
+        </div>
+
+        <!-- Send Message Section -->
+        <div class="col-md-4" style="border: 1px solid #43B9B2; border-radius: 12px; margin-left: 0.5px; max-height: 450px;">
+
+            <div style="max-width: 400px; margin: auto; padding-top: 110px; font-family: sans-serif;">
+                <textarea id="UserMessage" name="Message" placeholder="Your Message"
+                          style="width: 100%; height: 100px; padding: 10px; font-size: 16px; border: 2px solid #43B9B2; border-radius: 12px;"></textarea>
+
+                <div style="margin-top: 15px;">
+                    <label for="FileUpload" style="cursor: pointer; color: #444;">
+                        <i class="fa fa-paperclip" aria-hidden="true"></i>
+                        <span style="text-decoration: underline;">Attach File</span>
+                    </label>
+                    <input type="file" id="FileUpload" name="Attachment" style="display: none;" onchange="onFileSelected(event)" />
+                </div>
+
+                <div id="selectedFileContainer" style="display: none; margin-top: 10px;">
+                    <span id="fileName" style="margin-right: 10px;"></span>
+                    <button type="button" onclick="removeFile()" style="background-color: transparent; border: none; font-size: 18px; cursor: pointer; color: #777;">
+                        <i class="fa fa-times" aria-hidden="true"></i>
+                    </button>
+                </div>
+
+                <div style="margin-top: 20px; display: flex; align-items: center;">
+                    <button class="btn btn-outline-primary w-100" id="sendBtn" onclick="sendCommunicationMessage()">
+                        Send <span style="margin-left: 10px;">➤</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+}

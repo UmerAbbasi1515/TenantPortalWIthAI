@@ -1,0 +1,100 @@
+@using UBSProptTenantPortal
+@model ContractResponse
+@{
+    ViewData["Title"] = "Contract ";
+    var directionClass = LabelsLandlordPortal._language == "English" ? "ltr" : "rtl";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="~/css/site.css"> <!-- Link to your CSS file -->
+    <style>
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background-color: white;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .table-container {
+            margin: 20px;
+        }
+
+        .table thead {
+            background-color: white;
+        }
+    </style>
+</head>
+<div class="text-center" style="height: 100vh;">
+    <div class="card pageheader sticky-header">
+        <div class="card-header">
+            <div class="row">
+                <div class="col-12 text-start">
+                    <h4>
+                        <i class="fa fa-file-signature"></i> Tenancy Contracts
+                    </h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-12 col-lg-12 col-xl-12 mt-2 d-flex">
+        <div class="card invoice-card mb-0 w-100" style="display: flex; flex-direction: column; height: 100%;">
+            @if (ViewBag.errorGetContracts != "")
+            {
+                <div class="card-header pb-0" style="flex-shrink: 0;">
+                    <center style="padding-top: 50px;">
+                        <h4>Contracts</h4>
+                        <p style="padding-top: 5px;">@ViewBag.errorGetContracts</p>
+                    </center>
+                    <i class="fa fa-refresh" aria-hidden="true" style="padding-top: 5px; font-size: 18px; color: black;"
+                       onclick="getContractsofDashboardCards('@ViewBag.errorGetContracts')"></i>
+                </div>
+            }
+            else
+            {
+
+                <div class="card-body d-flex flex-column" style="flex-grow: 1;">
+                    <div class="table-responsive">
+                        <table class="table mb-0 datatable-table" id="contract-table" tabindex="2" style="table-layout: fixed; margin-top: 0px !important;">
+                            <thead>
+                                <tr>
+                                    <th style="text-align: left; padding-left: 10px;">Contract No</th>
+                                    <th style="text-align: center;">Property Name</th>
+                                    <th style="text-align: center;">Unit No</th>
+                                    <th style="text-align: center;">Date</th>
+                                    <th style="text-align: center;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var contractsToShow = Model?.data?.ToList();
+                                }
+                                @for (int i = 0; i < contractsToShow?.Count; i++)
+                                {
+                                    var contract = contractsToShow[i];
+                                    string statusClass = @LabelsTenantPortal.GetStatusCssClass(contract?.ContractStatus ?? "");
+
+                                    <tr>
+                                        <td style="text-align: left; padding-left: 10px;">
+                                            <a href="@Url.Action("ContractDetails", "Contract", new { area = "Contracts", contractID = contract?.ContractID })">
+                                                <h6 class="f-w-500" style="color:#198754;">@contract?.Contractno</h6>
+                                            </a>
+                                        </td>
+                                        <td style="text-align: center;">@contract?.PropertyName</td>
+                                        <td style="text-align: center;">@contract?.UnitRefNo</td>
+                                        <td style="text-align: center;">@contract?.ContractStartDate > @contract?.ContractEndDate</td>
+                                        <td style="text-align: center;">
+                                            <span class="status-custom @statusClass">@contract?.ContractStatus</span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,93 @@
+﻿@model NotificationViewModel
+@{
+    ViewData["Title"] = "Notifications";
+    Layout = "~/Views/Shared/_Profilelayout.cshtml";
+}
+
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="~/css/site.css">
+    <style>
+        .tab-container {
+/*            margin: 0 20px;*/
+            background-color: white;
+            z-index: 999;
+        }
+
+        .nav-tabs .nav-link.active {
+            background-color: white;
+            font-weight: bold;
+        }
+
+
+        .circle {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background-color: #43B9B2;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 5px;
+        }
+
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background-color: white;
+/*            border-bottom: 1px solid #ccc;*/
+        }
+
+        .sticky-tabs {
+            position: sticky;
+            /*top: 60px;*/ /* adjust based on header height */
+            z-index: 999;
+            background-color: white;
+/*            border-bottom: 1px solid #ccc;*/
+        }
+
+        .table-container {
+/*            margin: 20px;*/
+        }
+
+        .table thead {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+
+<div class="text-center" style="height: 100vh; margin-right: -15px !important; ">
+    <!-- Sticky Page Header -->
+    <div class="card pageheader" style="box-shadow: none; margin-bottom: 3px;">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4><i class="fa fa-bell"></i> Notifications</h4>
+        </div>
+    </div>
+
+    <!-- Sticky Tabs for Read/UnRead -->
+    <ul class="nav nav-tabs border-tab nav-info tab-container" id="serviceRequestTabs" role="tablist" style=" margin-left: 2px; margin-bottom: 0px;  padding-top: 10px; ">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link nav-border font-info tab-info active" data-tab="Read" id="Read-tab" data-bs-toggle="tab" href="#Read" role="tab"><i class="fa-solid fa-bell" aria-hidden="true"></i>All</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link nav-border font-info tab-info" data-tab="Unread" id="Unread-tab" data-bs-toggle="tab" href="#UnRead" role="tab"><i class="fa-solid fa-bell fa-shake" aria-hidden="true"></i>Unread</a>
+        </li>
+    </ul>
+
+    <div class="card invoice-card mb-0 w-100" style="display: flex; flex-direction: column; height: 100%; padding: 0px;">
+        
+    <div class="row" style="margin-top: 0px; margin-right: 0px;">
+        <div class="col-md-12" style="display: none;" id="ReadRequestID">
+            @Html.Partial("_Notifications", Model?.allNotification?.Notifications)
+        </div>
+        <div class="col-md-12" style="display: block;" id="UnReadRequestID">
+            @Html.Partial("_Notifications", Model.unreadNotifications.Notifications)
+        </div>
+    </div>
+
+
+    </div>
+</div>
+<script src="~/js/profile-page-scripts.js"></script>

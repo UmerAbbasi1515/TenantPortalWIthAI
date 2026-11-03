@@ -1,0 +1,166 @@
+﻿@using UBSProptTenantPortal
+@model ContractResponse
+@{
+    ViewData["Title"] = "Contract ";
+    var directionClass = LabelsLandlordPortal._language == "English" ? "ltr" : "rtl";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="~/css/site.css">
+    <link href="~/select2checkbox/multiple-select.css" rel="stylesheet" />
+
+    <style>
+        .table-container {
+            margin: 20px;
+        }
+
+        .table thead {
+            background-color: #f0f0f0;
+        }
+
+        .ui-autocomplete {
+            max-height: 200px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 20px;
+            border-radius: 7px;
+        }
+
+        .error-message {
+            display: none;
+            color: red;
+            font-size: 13px;
+            margin-top: 3px;
+        }
+    </style>
+</head>
+
+<div class="text-center" style="height: 100vh;">
+    <div class="card pageheader">
+        <div class="card-header">
+            <div class="row">
+                <div class="col-12 text-start">
+                    <h4>
+                        <i class="fa fa-file-signature"></i> Tenancy Contracts
+                    </h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form id="form-search">
+                <div class="row padding-bottom-5">
+                    <div class="col-sm-4 tooltip-custom">
+                        <div class="form-group">
+                            <input type="text" id="PropertyName" class="form-control" name="PropertyName" placeholder="Search by property">
+                        </div>
+                        <span class="tooltip-text">Search by property</span>
+                    </div>
+
+                    <div class="col-sm-4 tooltip-custom text-start">
+                        <div class="form-group">
+                            <select class="seelct2Dropdown form-control" name="Property">
+                                <option value="" disabled selected hidden>--Select property type--</option>
+                                @if (ViewBag.Property != null && ViewBag.Property.Count > 0)
+                                {
+                                    foreach (var item in ViewBag.Property)
+                                    {
+                                        <option value="@item.PropertyTypeId">@item.PropertyType</option>
+                                    }
+                                }
+                                else
+                                {
+                                    <option disabled>No Property Type Available</option>
+                                }
+                            </select>
+                        </div>
+                        <span class="tooltip-text">Select property type</span>
+                    </div>
+
+                    <div class="col-sm-4 tooltip-custom">
+                        <div class="form-group  text-start">
+                            <select class="seelct2Dropdown form-control  text-start" name="ContractStatus">
+                                <option value="" disabled selected hidden>--Select contract status--</option>
+                                @if (ViewBag.ContractStatus != null && ViewBag.ContractStatus.Count > 0)
+                                {
+                                    foreach (var item in ViewBag.ContractStatus)
+                                    {
+                                        if (item.ContractType.ToString().ToLower() == "active")
+                                        {
+                                            <option value="@item.ContractTypeId">
+                                                @item.ContractType / Expired
+                                            </option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@item.ContractTypeId">@item.ContractType</option>
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    <option disabled>No Contract Status Available</option>
+                                }
+                            </select>
+                        </div>
+                        <span class="tooltip-text">Select contract status</span>
+                    </div>
+                </div>
+
+                <div class="row mt-1 padding-bottom-5">
+                    <div class="col-sm-4 tooltip-custom-bottom">
+                        <div class="form-group">
+                            <input type="text" class="form-control fromDate" id="FromDate" placeholder="Select from date" value="@Model?.contractFilter?.FromDate">
+                            <div id="fromDateErrorID" class="error-message">Please select from date</div>
+                        </div>
+                        <span class="tooltip-text">Select from date</span>
+                    </div>
+                    <div class="col-sm-4 tooltip-custom-bottom">
+                        <div class="form-group">
+                            <input type="text" class="form-control toDate" id="ToDate" placeholder="Select to date" value="@Model?.contractFilter?.ToDate">
+                            <div id="toDateErrorID" class="error-message">Please select to date</div>
+                        </div>
+                        <span class="tooltip-text">Select to date</span>
+                    </div>
+
+                    <div class="col-sm-4 text-start">
+                        <button type="button" class="btn btn-outline-primary w-48" id="btn-Search" title="Search">
+                            <i class="fa fa-search" style="font-size:14px"></i> Search
+                        </button>
+                        <button type="reset" class="btn btn-warning btn-outline-warning w-48" id="resetButton">
+                            <i class="fa fa-refresh"></i> Reset
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-md-12 col-lg-12 col-xl-12 d-flex">
+        <div class="card invoice-card mb-0 w-100">
+            @if (!string.IsNullOrEmpty(ViewBag.errorGetContracts))
+            {
+                <div class="card-header pb-0" style="height: 350px">
+                    <center style="padding-top: 150px;">
+
+                        <h4>@ViewBag.errorGetContracts</h4>
+
+                    </center>
+                    <i class="fa fa-refresh" aria-hidden="true" style="padding-top: 5px; font-size: 18px; color: black;"
+                       onclick="window.location.href = '@Url.Action("ContractsN", "Contract" , new { area = "Contracts" })'"></i>
+                </div>
+            }
+            else
+            {
+                <div class="col-md-12" id="ContractTableID">
+                    @Html.Partial("_ContractsTable", Model?.data)
+                </div>
+            }
+        </div>
+    </div>
+</div>
+<script src="~/js/contracts.js"></script>

@@ -1,0 +1,949 @@
+﻿@using UBSProptTenantPortal
+@model OutstandingPaymentsModel
+@{
+    ViewData["Title"] = "Make Payments";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var ContractNo = ViewBag.ContractNo;
+    var ContractID = ViewBag.ContractID;
+    var callingFrom = ViewBag.callingFrom;
+    var isDataAvailable = ViewBag.errorContractMakePayment;
+
+    bool hasChequePayment = false;
+    int selfDelivery = ViewBag.ChequeDeliveryOption ?? 2;
+    int isPaymentConfirmed = ViewBag.isPaymentConfirmed ?? 0;
+    string selfDeliveryAddress = ViewBag.ChequeDeliveryAddress;
+
+    // Once the payment is confirmed the form becomes read-only
+    var isConfirmed = isPaymentConfirmed == 1;
+    var disabledAttr = isConfirmed ? "disabled" : "";
+    var readonlyAttr = isConfirmed ? "readonly" : "";
+
+    // Back link: renewal flow when opened from Renewal / New, otherwise the contracts list
+    var backUrl = (callingFrom == "Renewal" || callingFrom == "New")
+        ? Url.Action("ContractAction", "Renewal", new { area = "RenewalFlow", tab = callingFrom == "Renewal" ? "RCF" : "NCF" })
+        : Url.Action("Contracts", "Contract", new { area = "Contracts" });
+}
+
+@* =====================================================================
+    STYLES / VENDOR RESOURCES
+    ===================================================================== *@
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" href="~/css/site.css">
+
+<style>
+    .guide-box {
+        background-color: rgba(67, 185, 178, 0.1) !important;
+        color: #43B9B2 !important;
+        border-radius: 8px;
+        padding: 12px;
+        margin-top: 10px;
+        text-align: center;
+    }
+
+    .guide-content {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #333;
+    }
+
+        .guide-content i {
+            color: #43B9B2;
+            font-size: 16px;
+        }
+
+    .modal-content {
+        background-color: #ffffff;
+        width: 90%;
+        max-width: 400px;
+        border-radius: 12px;
+        padding: 20px;
+        position: relative;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    .sticky-footer {
+        position: sticky;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #fff;
+        z-index: 1000;
+        padding: 10px 15px;
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<div class="text-center" style="height: 100vh;">
+
+    @* ---------- Page header ---------- *@
+    <div class="card pageheader sticky-header">
+        <div class="card-header">
+            <div class="row">
+                <div class="col-12 text-start" style="display:flex; flex-direction:row; justify-content:space-between">
+                    <h4>
+                        <a href="@backUrl"
+                           class="text-dark text-decoration-none fw-bold"
+                           style="font-size: 1.25rem;">
+                            <i class="fa fa-arrow-left me-2"></i>Contract No. @ContractNo
+                        </a>
+                    </h4>
+                    <div>
+                        <span>Cheque Sample </span>
+                        <a href="javascript:void(0);" onclick="showChequeSample()" style="color: #43b9b2; text-decoration: underline;">
+                            Click Here
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-12 col-lg-12 col-xl-12 mt-2 d-flex" style="flex-direction:column; text-align:left;">
+
+        @if (isDataAvailable != "404")
+        {
+            @* ---------- Payments list ---------- *@
+            @for (int i = 0; i < Model?.PaymentsToShow?.Count; i++)
+            {
+                var payment = Model.PaymentsToShow[i];
+                var index = i;
+
+                if (payment is string)
+                {
+                    <label style="padding-left: 16px;"><strong>@payment</strong></label>
+                }
+                else
+                {
+                    if (payment.PaymentMode == "Cheque")
+                    {
+                        hasChequePayment = true;
+                    }
+
+                    <div class="card mb-3 p-3">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <span class="payment-title">@payment.Title</span>
+                            </div>
+                            <div>
+                                <strong>AED @payment.Amount?.ToString("N2")</strong>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <span>Due Date</span>
+                            </div>
+                            <div>
+                                <strong style="color: #43b9b2">@payment.PaymentDate</strong>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <span>I want to make this payment through</span>
+                            </div>
+                        </div>
+
+                        @* ---------- Payment method options ---------- *@
+                        <div style="display:flex;flex-direction:row">
+                            @* Card Payment: AcceptPaymentType 0=All, 1=CardOnly, 4=WithBankTransfer, 5=WithCheque *@
+                            @if (payment.AcceptPaymentType == 1 || payment.AcceptPaymentType == 0 || payment.AcceptPaymentType == 4 || payment.AcceptPaymentType == 5)
+                            {
+                                <label style="display: flex; align-items: center; padding-top:10px">
+                                    <input type="radio" name="paymentMethod_@i" value="1"
+                                           @(payment.PaymentMethodId == 1 ? "checked" : "")
+                                           onchange="onPaymentMethodChange(@i, 'Card', '@payment.PaymentSettingId')"
+                                           @disabledAttr />
+                                    <span style="margin-left: 5px;">Card Payment</span>
+                                </label>
+                                <div style="width:20px"></div>
+                            }
+
+                            @* Cheque: AcceptPaymentType 0=All, 3=ChequeOnly, 5=WithCard, 6=WithBankTransfer *@
+                            @if (payment.AcceptPaymentType == 3 || payment.AcceptPaymentType == 0 || payment.AcceptPaymentType == 5 || payment.AcceptPaymentType == 6)
+                            {
+                                <label style="display: flex; align-items: center; padding-top: 10px">
+                                    <input type="radio" name="paymentMethod_@i" value="2"
+                                           @(payment.PaymentMethodId == 2 ? "checked" : "")
+                                           onchange="onPaymentMethodChange(@i, 'Cheque', '@payment.PaymentSettingId')"
+                                           @disabledAttr />
+                                    <span style="margin-left: 5px;">Cheque</span>
+                                </label>
+                                <div style="width:20px"></div>
+                                <strong class="ps-3" id="tempChequeNo_@i" style="display:none">@payment.ChequeNo</strong>
+                            }
+
+                            @* Bank Transfer: AcceptPaymentType 0=All, 2=BankTransferOnly, 4=WithCard, 6=WithCheque *@
+                            @if (payment.AcceptPaymentType == 2 || payment.AcceptPaymentType == 0 || payment.AcceptPaymentType == 4 || payment.AcceptPaymentType == 6)
+                            {
+                                <label style="display: flex; align-items: center; padding-top: 10px">
+                                    <input type="radio" name="paymentMethod_@i" value="3"
+                                           @(payment.PaymentMethodId == 3 ? "checked" : "")
+                                           onchange="onPaymentMethodChange(@i, 'Bank Transfer', '@payment.PaymentSettingId')"
+                                           @disabledAttr />
+                                    <span style="margin-left: 5px;">Bank Transfer</span>
+                                </label>
+                            }
+                        </div>
+
+                        @* ---------- Cheque upload area (hidden unless Cheque is selected) ---------- *@
+                        <div id="chequeUpload_@i" class="@(payment.PaymentMethodId == 2 ? "" : "d-none")" style="width: 50%">
+                            @if (!string.IsNullOrEmpty(payment.Cheque) && !payment.IsRejected)
+                            {
+                                <!-- CASE 1: Valid cheque already uploaded -->
+                                <div class="d-flex justify-content-between align-items-start mt-2" style="margin-top: 10px; border: 2px solid rgba(67, 185, 178, 0.5) !important; border-radius: 8px; padding: 15px; ">
+                                    <div class="flex-grow-1">
+                                        <a href="javascript:void(0);" onclick="downloadDocument(@payment.PaymentSettingId)">
+                                            <div class="d-flex align-items-center">
+                                                <i style="color: #43b9b2;" class="fa fa-download me-2"></i>
+                                                <span style="color: #43b9b2;">@payment.Cheque</span>
+                                            </div>
+                                        </a>
+                                        <div class="d-flex justify-content-between align-items-center mt-2 px-2">
+                                            <span class="pe-3">Cheque Number</span>
+                                            <strong class="ps-3">@payment.ChequeNo</strong>
+                                            <input type="hidden" id="chequeNoID_@i" value="@payment.ChequeNo" />
+                                        </div>
+                                    </div>
+                                    @if (!isConfirmed)
+                                    {
+                                        <a href="javascript:void(0);"
+                                           id="deleteUploadedBtn_@index"
+                                           onclick="DeleteCheque(@payment.PaymentSettingId, @index, '@payment.Title', '@payment.PaymentMethodId', '@payment.AramexAddress')" style="padding-top: 12px">
+                                            <i class="far fa-trash-alt" style="background:white; padding:5px; border-radius:20px; color:red;"></i>
+                                        </a>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <!-- CASE 2 + 3: Either rejected OR not uploaded -->
+                                @if (payment?.IsRejected == true)
+                                {
+                                    <p class="text-danger mt-2">
+                                        <strong>
+                                            Your cheque
+                                            <a href="javascript:void(0);" onclick="downloadDocument(@payment.PaymentSettingId)" style="color: #43b9b2; text-decoration: underline;">
+                                                @payment?.Cheque
+                                            </a>
+                                            has been rejected, please upload again
+                                        </strong>
+                                    </p>
+                                }
+
+                                <!-- Upload form -->
+                                <div id="chequeUploadForm_@i">
+                                    <div class="mt-2 px-2">
+                                        <label class="mb-1"><strong>Upload Cheque File</strong></label>
+                                        <div class="d-flex align-items-center">
+                                            <input type="file"
+                                                   name="chequeFile_@i"
+                                                   id="chequeFile_@i"
+                                                   class="form-control"
+                                                   accept="image/*,.pdf"
+                                                   onchange="onChequeFileChange(this, @i)" />
+                                            <button type="button"
+                                                    class="btn btn-sm ms-2 d-none"
+                                                    id="deleteChequeFileBtn_@i"
+                                                    onclick="removeChequeFile(@i)">
+                                                ❌
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-2 px-2">
+                                        <label class="mb-1"><strong>Cheque Number</strong></label>
+                                        <input type="text"
+                                               name="chequeNo_@i"
+                                               id="chequeNo_@i"
+                                               class="form-control"
+                                               placeholder="Enter cheque number..."
+                                               maxlength="6"
+                                               oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);" />
+                                    </div>
+
+                                    <div class="px-2">
+                                        <button class="btn mt-2 w-100"
+                                                id="uploadBtn_@i"
+                                                style="background-color: rgba(67, 185, 178, 0.1) !important; color: #43B9B2 !important;"
+                                                onclick="validateAndUpload('@payment?.Title', '@payment?.PaymentMethodId', '@payment?.PaymentSettingId', '@payment?.AramexAddress', @i)">
+                                            Upload Cheque
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+        }
+        else
+        {
+            <div class="card-header pb-0" style="flex-shrink: 0;">
+                <center style="padding-top: 50px; padding-bottom: 40px;">
+                    <h4 style="padding-top: 5px;">No Data Found</h4>
+                    <a href="@backUrl"
+                       class="text-dark text-decoration-none fw-bold"
+                       style="font-size: 1.25rem;">
+                        <i class="fa fa-refresh" aria-hidden="true" style="padding-top: 5px; font-size: 18px; color: black;"
+                           onclick="">
+                        </i>
+                    </a>
+                </center>
+            </div>
+        }
+
+        @* ---------- Sticky footer: cheque delivery option ---------- *@
+        @if (isDataAvailable != "404")
+            {
+            <div class="sticky-footer">
+                @if (hasChequePayment)
+                {
+                    <div class="card p-3 mb-2">
+                        <label><strong>How do you want to deliver the cheque?</strong></label>
+
+                        <div style="display:flex;flex-direction:row">
+                            <input type="radio" name="deliveryOption" value="Self"
+                                   onchange="toggleAddressInput(false)"
+                                   @(selfDelivery == 1 ? "checked" : "") @disabledAttr />
+                            <span style="margin-left: 6px;">Self Delivery</span>
+
+                            <div style="width: 20px"></div>
+
+                            <input type="radio" name="deliveryOption" value="Pickup"
+                                   onchange="toggleAddressInput(true)"
+                                   @(selfDelivery == 2 ? "checked" : "") @disabledAttr />
+                            <span style="margin-left: 6px;">Free Pickup</span>
+                        </div>
+
+                        <div class="mt-2 @(selfDelivery == 2 ? "" : "d-none")" id="addressInput">
+                            <label>Enter Pickup Address</label>
+                            <input type="text"
+                                   name="pickupAddress"
+                                   id="pickupAddress"
+                                   value="@(string.IsNullOrEmpty(selfDeliveryAddress) ? "" : selfDeliveryAddress)"
+                                   class="form-control"
+                                   placeholder="Please enter a valid address"
+                                   @readonlyAttr />
+                        </div>
+
+                        <div class="text-end" style="margin-top: 20px; margin-bottom:5px; margin-left: 30%; margin-right: 30%;">
+                            <a class="btn btn-primary w-100 text-white"
+                               href="javascript:void(0);" onclick="showConfirmation()">
+                                Continue With Payment
+                            </a>
+                        </div>
+                    </div>
+                    }
+            </div>
+            }
+            @* ---------- Modal: cheque sample ---------- *@
+            <div class="modal fade" id="chequeSampleModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content rounded-3">
+                        <div class="modal-header border-0">
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <div style="max-height: 400px; overflow: hidden;">
+                                <img src="~/assets/images/cheque.png"
+                                     alt="Cheque Sample"
+                                     class="img-fluid"
+                                     style="object-fit: contain; max-height: 350px;" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* Hidden fields for the delete modal *@
+            <input id="paymentSettingID" type="hidden" />
+            <input id="index" type="hidden" />
+            <input id="paymentTitle" type="hidden" />
+            <input id="paymentMethodId" type="hidden" />
+            <input id="aramexAddress" type="hidden" />
+
+            @* ---------- Modal: delete confirmation ---------- *@
+            <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content rounded-3" style="padding: 30px;">
+                        <div class="modal-header border-0">
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <p class="mb-2 text-center">
+                            Are you sure you want to delete this cheque?
+                        </p>
+                        <div class="d-flex justify-content-center gap-3">
+                            <a class="btn btn-danger text-white"
+                               href="javascript:void(0);" onclick="removeCheque()" id="btn-delete">
+                                Delete
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* ---------- Modal: confirm payment method ---------- *@
+            <div class="modal fade" id="confirmationModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content rounded-3" style="padding: 30px;">
+                        <div class="modal-header border-0">
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <p class="fw-bold mb-4">
+                            Please ensure that you have selected the correct payment method
+                            as it cannot be changed after confirmation.<br />
+                            Do you want to proceed?
+                        </p>
+                        <div class="d-flex justify-content-center gap-3">
+                            <a class="btn btn-primary text-white"
+                               href="javascript:void(0);" onclick="validatePayments('@callingFrom')" id="btn-confirm">
+                                Confirm
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    @* ---------- Full page loader ---------- *@
+    <div id="fullPageLoader" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        z-index: 99999;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        font-size: 20px;
+        color: white;">
+        <div>
+            <div class="spinner-border text-light" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <div style="margin-top: 15px;">Loading...</div>
+        </div>
+    </div>
+
+    @* =====================================================================
+        SCRIPTS
+        ===================================================================== *@
+<script>
+        // =====================================================================
+        // Helpers
+        // =====================================================================
+
+        // Reads a fetch Response body once and never throws on empty / non-JSON bodies.
+        async function readJsonSafely(response, fallback = {}) {
+            try {
+                const text = await response.text();
+                return text ? JSON.parse(text) : fallback;
+            } catch (error) {
+                console.error('Invalid JSON response:', error);
+                return fallback;
+            }
+        }
+
+        function showLoader() {
+            const loader = document.getElementById('fullPageLoader');
+            if (loader) loader.style.display = 'flex';
+        }
+
+        function hideLoader() {
+            const loader = document.getElementById('fullPageLoader');
+            if (loader) loader.style.display = 'none';
+        }
+
+        // Placeholder button loader functions (implement based on your existing code)
+        function btnshowLoader(btnId) {
+            const btn = document.getElementById(btnId);
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Loading...';
+            }
+        }
+
+        function btnhideLoader(btnId) {
+            const btn = document.getElementById(btnId);
+            if (btn) {
+                btn.disabled = false;
+                // Restore original text based on button
+                if (btnId === 'btn-confirm') {
+                    btn.innerHTML = 'Confirm';
+                } else if (btnId === 'btn-delete') {
+                    btn.innerHTML = 'Delete';
+                } else if (btnId.startsWith('uploadBtn_')) {
+                    btn.innerHTML = 'Upload Cheque';
+                }
+            }
+        }
+
+        // =====================================================================
+        // Validation and confirmation
+        // =====================================================================
+        function validatePayments(callingFrom) {
+            let isValid = true;
+            let messages = "";
+            if (@isPaymentConfirmed == 0) {
+                document.querySelectorAll("[id^='chequeUpload_']").forEach((el) => {
+                    const index = el.id.split("_")[1];
+                    const selected = document.querySelector(`input[name="paymentMethod_${index}"]:checked`);
+
+                    if (!selected) {
+                        isValid = false;
+                        messages = `Please select a payment method`;
+                        return;
+                    }
+
+                    if (selected.value === "Cheque") {
+                        const chequeNo = document.getElementById(`chequeNo_${index}`);
+                        const chequeFile = document.getElementById(`chequeFile_${index}`);
+
+                        // Check if upload form still exists (not uploaded yet)
+                        if (document.getElementById(`chequeUploadForm_${index}`)) {
+                            if (!chequeNo || chequeNo.value.trim() === "") {
+                                isValid = false;
+                                messages = `Please enter cheque number for the selected payment`;
+                                return;
+                            }
+                            if (!chequeFile || chequeFile.files.length === 0) {
+                                isValid = false;
+                                messages = `Please upload cheque copy for the selected payment`;
+                                return;
+                            }
+                        }
+                    }
+                });
+            }
+
+            if (!isValid) {
+                toastr.error(messages);
+                $('#confirmationModal').modal('hide');
+                return;
+            }
+
+            var callingFromP = callingFrom.toString();
+
+            // Validation passed, proceed with confirmation
+            const deliveryOption = document.querySelector("input[name='deliveryOption']:checked");
+            const selfDeliveryValue = deliveryOption?.value === "Pickup" ? 2 : 1;
+
+            if (selfDeliveryValue == 2) {
+                let addressInput = document.getElementById("pickupAddress");
+                const address = addressInput?.value || "";
+                Confirm(@ContractID, address, selfDeliveryValue, callingFromP);
+            } else {
+                Confirm(@ContractID, "", selfDeliveryValue, callingFromP);
+            }
+        }
+
+        function ValidationAddress() {
+            let deliveryOption = document.querySelector("input[name='deliveryOption']:checked");
+            let messages = "";
+            let isValid = true;
+
+            if (!deliveryOption) {
+                isValid = false;
+                messages = "Please select how you want to deliver the cheque.";
+                toastr.error(messages);
+                return false;
+            }
+
+            if (deliveryOption.value === "Pickup") {
+                let addressInput = document.getElementById("pickupAddress");
+                if (!addressInput || addressInput.value.trim() === "") {
+                    isValid = false;
+                    messages = "Please enter a valid pickup address.";
+                    addressInput.classList.add("is-invalid");
+                    toastr.error(messages);
+                    return false;
+                } else {
+                    addressInput.classList.remove("is-invalid");
+                }
+            }
+
+            return isValid;
+        }
+
+        async function Confirm(contractId, address, selfDelivery, callerFrom) {
+            try {
+                btnshowLoader("btn-confirm");
+
+                const data = {
+                    ContractId: contractId.toString(),
+                    Address: address.toString(),
+                    SelfDelivery: selfDelivery.toString(),
+                };
+
+                const response = await fetch('/RenewalFlow/Renewal/UpdateArmaxAdress', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    toastr.success("Payment method updated successfully", "Success");
+
+                    // Base URL without callerFrom (Razor-rendered, static per page load),
+                    // then append the *runtime* JS value as a query param.
+                    const baseUrl = '@Url.Action("OnlinePayments", "Renewal", new { area = "RenewalFlow", contractNo = ContractNo?.ToString(), contractID = ContractID?.ToString() })';
+
+                    const redirectUrl = baseUrl +
+                        (baseUrl.includes('?') ? '&' : '?') +
+                        'callerFrom=' + encodeURIComponent(callerFrom);
+
+                    setTimeout(function () {
+                        window.location.href = redirectUrl;
+                    }, 500);
+                } else {
+                    toastr.error('Error updating payment method');
+                    console.error('Error in response:', response.status);
+                }
+            } catch (error) {
+                toastr.error('Error: ' + error.message);
+                console.error('Error:', error);
+            } finally {
+                btnhideLoader("btn-confirm");
+            }
+        }
+
+        // =====================================================================
+        // Payment method / delivery address / file input
+        // =====================================================================
+        function onPaymentMethodChange(index, type) {
+            const chequeDiv = document.getElementById(`chequeUpload_${index}`);
+            const selected = document.querySelector(`input[name="paymentMethod_${index}"]:checked`);
+
+            if (!selected || !chequeDiv) return;
+
+            if (selected.value === "Cheque") {
+                chequeDiv.classList.remove("d-none");
+            } else {
+                chequeDiv.classList.add("d-none");
+            }
+        }
+
+        function toggleAddressInput(show) {
+            const inputDiv = document.getElementById("addressInput");
+            if (!inputDiv) return;
+
+            if (show) {
+                inputDiv.classList.remove('d-none');
+            } else {
+                inputDiv.classList.add('d-none');
+            }
+        }
+
+        function onChequeFileChange(input, index) {
+            const deleteBtn = document.getElementById(`deleteChequeFileBtn_${index}`);
+            if (!deleteBtn) return;
+
+            if (input.files && input.files.length > 0) {
+                deleteBtn.classList.remove("d-none");
+            } else {
+                deleteBtn.classList.add("d-none");
+            }
+        }
+
+        // Remove the selected file from the input
+        function removeChequeFile(index) {
+            const fileInput = document.getElementById(`chequeFile_${index}`);
+            const deleteBtn = document.getElementById(`deleteChequeFileBtn_${index}`);
+
+            if (fileInput) {
+                fileInput.value = "";
+            }
+            if (deleteBtn) {
+                deleteBtn.classList.add("d-none");
+            }
+        }
+
+        // =====================================================================
+        // Upload cheque
+        // =====================================================================
+        function validateAndUpload(paymentTitle, paymentMethodId, paymentSettingId, address, index) {
+            const chequeNo = document.getElementById(`chequeNo_${index}`)?.value.trim();
+            const tempChequeNo = document.getElementById(`tempChequeNo_${index}`)?.textContent.trim();
+            const fileInput = document.getElementById(`chequeFile_${index}`);
+            const file = fileInput?.files[0];
+            const btnID = `uploadBtn_${index}`;
+
+            if (!file) {
+                toastr.warning(`Please upload a cheque file for ${paymentTitle}`);
+                return;
+            }
+
+            if (!chequeNo) {
+                toastr.warning(`Please enter cheque number for ${paymentTitle}`);
+                return;
+            }
+            if (tempChequeNo && chequeNo === tempChequeNo) {
+                toastr.error("This cheque number was already rejected/deleted. Please try with different cheque.");
+                return;
+            }
+            uploadCheque(paymentMethodId, paymentSettingId, chequeNo, file, address, btnID, paymentTitle, index);
+        }
+
+        async function uploadCheque(paymentModeId, paymentSettingId, chequeNo, chequeFile, address, btnID, paymentTitle, index) {
+            try {
+                btnshowLoader(btnID);
+
+                const formData = new FormData();
+                formData.append('PaymentModeId', paymentModeId.toString());
+                formData.append('PaymentSettingId', paymentSettingId.toString());
+                formData.append('ChequeNo', chequeNo.toString());
+                formData.append('Address', address.toString());
+                formData.append('file', chequeFile);
+
+                const response = await fetch('/RenewalFlow/Renewal/UploadCheque', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const result = await readJsonSafely(response);
+                    if (result.success) {
+                        toastr.success("Cheque uploaded successfully", "Success");
+                        updateChequeUIAfterUpload(index, result.name, chequeNo, paymentSettingId, paymentTitle, paymentModeId, address);
+                    } else {
+                        toastr.error("Upload Failed", "We encountered an issue while uploading your cheque. Please check your details like (Cheque No) and try again.");
+                    }
+                } else {
+                    toastr.error("Cheque upload failed", "Error");
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                toastr.error("Cheque upload failed: " + error.message, "Error");
+            } finally {
+                btnhideLoader(btnID);
+            }
+        }
+
+        // Replace the upload form with the uploaded cheque summary
+        function updateChequeUIAfterUpload(index, chequeName, chequeNo, paymentSettingId, paymentTitle, paymentMethodId, aramexAddress) {
+            const chequeUploadDiv = document.getElementById(`chequeUpload_${index}`);
+            if (!chequeUploadDiv) return;
+
+            chequeUploadDiv.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start mt-2">
+                    <div class="flex-grow-1">
+                        <a href="javascript:void(0);" onclick="downloadDocument(${paymentSettingId})">
+                            <div class="d-flex align-items-center">
+                                <i style="color: #43b9b2;" class="fa fa-download me-2"></i>
+                                <span style="color: #43b9b2;">${chequeName}</span>
+                            </div>
+                        </a>
+                        <div class="d-flex justify-content-between mt-2">
+                            <span>Cheque Number</span>
+                            <strong>${chequeNo}</strong>
+                        </div>
+                    </div>
+                    <a href="javascript:void(0);"
+                       id="deleteUploadedBtn_${index}"
+                       onclick="DeleteCheque(${paymentSettingId}, ${index}, '${paymentTitle}', '${paymentMethodId}', '${aramexAddress}')">
+                        <i class="far fa-trash-alt" style="background:white; padding:5px; border-radius:20px; color:red;"></i>
+                    </a>
+                </div>
+            `;
+        }
+
+        // =====================================================================
+        // Delete cheque
+        // =====================================================================
+        function DeleteCheque(paymentSettingId, index, paymentTitle, paymentMethodId, aramexAddress) {
+            document.getElementById("paymentSettingID").value = paymentSettingId;
+            document.getElementById("index").value = index;
+            document.getElementById("paymentTitle").value = paymentTitle;
+            document.getElementById("paymentMethodId").value = paymentMethodId;
+            document.getElementById("aramexAddress").value = aramexAddress;
+
+            $('#deleteConfirmationModal').modal('show');
+        }
+
+        async function removeCheque() {
+            showLoader();
+            btnshowLoader("btn-delete");
+
+            const paymentSettingId = document.getElementById("paymentSettingID").value;
+            const index = document.getElementById("index").value;
+            const paymentTitle = document.getElementById("paymentTitle").value;
+            const paymentMethodId = document.getElementById("paymentMethodId").value;
+            const aramexAddress = document.getElementById("aramexAddress").value;
+
+            try {
+                const response = await fetch('/RenewalFlow/Renewal/MakePaymentRemoveCheque', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ PaymentSettingId: paymentSettingId })
+                });
+
+                if (response.ok) {
+                    const result = await readJsonSafely(response);
+                    if (result.status == '200') {
+                        toastr.success("Cheque deleted successfully");
+                        $('#deleteConfirmationModal').modal('hide');
+                        updateChequeUIAfterDelete(index, paymentTitle, paymentMethodId, paymentSettingId, aramexAddress);
+                    } else {
+                        toastr.error("Delete failed: " + result.message);
+                    }
+                } else {
+                    toastr.error("Delete failed");
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                toastr.error("Delete failed: " + error.message);
+            } finally {
+                btnhideLoader("btn-delete");
+                hideLoader();
+            }
+        }
+
+        // Replace the cheque summary with a fresh upload form
+        function updateChequeUIAfterDelete(index, paymentTitle, paymentMethodId, paymentSettingId, aramexAddress) {
+            const chequeUploadDiv = document.getElementById(`chequeUpload_${index}`);
+            if (!chequeUploadDiv) return;
+
+            chequeUploadDiv.innerHTML = `
+                <div id="chequeUploadForm_${index}">
+                    <label class="mt-2"><strong>Upload Cheque File</strong></label>
+                    <div class="d-flex align-items-center">
+                        <input type="file"
+                               name="chequeFile_${index}"
+                               id="chequeFile_${index}"
+                               class="form-control"
+                               accept="image/*,.pdf"
+                               onchange="onChequeFileChange(this, ${index})" />
+                        <button type="button"
+                                class="btn btn-sm ms-2 d-none"
+                                id="deleteChequeFileBtn_${index}"
+                                onclick="removeChequeFile(${index})">
+                            ❌
+                        </button>
+                    </div>
+
+                    <label class="mt-2"><strong>Cheque Number</strong></label>
+                    <input type="text"
+                           name="chequeNo_${index}"
+                           id="chequeNo_${index}"
+                           class="form-control"
+                           placeholder="Enter cheque number..."
+                           maxlength="6"
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);" />
+
+                    <button class="btn mt-2 w-100"
+                            id="uploadBtn_${index}"
+                            style="background-color: rgba(67, 185, 178, 0.1) !important; color: #43B9B2 !important;"
+                            onclick="validateAndUpload('${paymentTitle}', '${paymentMethodId}', '${paymentSettingId}', '${aramexAddress}', ${index})">
+                        Upload Cheque
+                    </button>
+                </div>
+            `;
+        }
+
+        // =====================================================================
+        // Modals
+        // =====================================================================
+        function showConfirmation() {
+            const isValidAddress = ValidationAddress();
+            if (isValidAddress) {
+                $('#confirmationModal').modal('show');
+            }
+        }
+
+        function showChequeSample() {
+            $('#chequeSampleModal').modal('show');
+        }
+
+        // =====================================================================
+        // Download cheque
+        // =====================================================================
+        async function downloadDocument(paymentSettingId) {
+            showLoader();
+
+            try {
+                const response = await fetch('/RenewalFlow/Renewal/ChequeDownload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ PaymentSettingId: paymentSettingId.toString() })
+                });
+
+                if (response.ok) {
+                    const data = await readJsonSafely(response);
+                    if (data.cheque) {
+                        // Detect file type from filename or use default
+                        const extension = data.name ? data.name.split('.').pop().toLowerCase() : 'png';
+
+                        if (extension === "png" || extension === "jpg" || extension === "jpeg") {
+                            openImageInNewTab(data.cheque);
+                        } else {
+                            openPdfInNewTab(data.cheque);
+                        }
+                    } else {
+                        toastr.error("Download failed: File not found");
+                    }
+                } else {
+                    toastr.error("Download failed");
+                }
+            } catch (error) {
+                console.error('Download error:', error);
+                toastr.error("Download failed: " + error.message);
+            } finally {
+                hideLoader();
+            }
+        }
+
+        function openPdfInNewTab(base64String) {
+            const byteCharacters = atob(base64String);
+            const byteNumbers = Array.from(byteCharacters, c => c.charCodeAt(0));
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: 'application/pdf' });
+            const blobUrl = URL.createObjectURL(blob);
+            window.open(blobUrl, '_blank');
+        }
+
+        function openImageInNewTab(base64String) {
+            const byteCharacters = atob(base64String);
+            const byteNumbers = Array.from(byteCharacters, c => c.charCodeAt(0));
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: 'image/jpeg' });
+            const blobUrl = URL.createObjectURL(blob);
+            window.open(blobUrl, '_blank');
+        }
+
+        // =====================================================================
+        // Page load initialization
+        // =====================================================================
+    window.onload = function () {
+        // Show/hide cheque upload sections based on payment method
+        document.querySelectorAll("[id^='chequeUpload_']").forEach((el) => {
+            const index = el.id.split("_")[1];
+            const selected = document.querySelector(`input[name="paymentMethod_${index}"]:checked`);
+
+            // "2" = Cheque (matches your PaymentMethodId numbering)
+            if (selected && selected.value === "2") {
+                el.classList.remove("d-none");
+            } else {
+                el.classList.add("d-none");
+            }
+        });
+
+        // Handle delivery address visibility
+        const selfDelivery = @selfDelivery;
+        toggleAddressInput(selfDelivery == 2);
+
+        // Show cheque sample on first load if payment not confirmed
+        const isDataAvailable = "@isDataAvailable";
+        const isPaymentConfirmed = @isPaymentConfirmed;
+
+        if (isDataAvailable != "404" && isPaymentConfirmed == 0) {
+            showChequeSample();
+        }
+    };
+</script>
+</div>

@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Constant\" />
+    <None Remove="Repository\" />
+    <None Remove="Repository\Auth\" />
+    <None Remove="Constant\urls\" />
+    <None Remove="Constant\helperclass\" />
+    <None Remove="Constant\helperclass\reports\" />
+    <None Remove="Repository\Reports\" />
+    <None Remove="Repository\Landlord\" />
+    <None Remove="Constant\Labels\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Constant\" />
+    <Folder Include="Repository\" />
+    <Folder Include="Repository\Auth\" />
+    <Folder Include="Constant\urls\" />
+    <Folder Include="Constant\helperclass\" />
+    <Folder Include="Constant\helperclass\reports\" />
+    <Folder Include="Repository\Reports\" />
+    <Folder Include="Repository\Landlord\" />
+    <Folder Include="Constant\Labels\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="FirebaseAdmin" Version="3.2.0" />
+    <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\UBSProptSharedModel\UBSProptSharedModel.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="UBSProptRepository.csproj" />
+  </ItemGroup>
+</Project>

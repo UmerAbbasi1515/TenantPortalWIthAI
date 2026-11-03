@@ -1,0 +1,38 @@
+﻿@using UBSProptTenantPortal
+@model TermsAndConditiosResponseModel
+@{
+    ViewData["Title"] = "Refund/Return Policy";
+    var directionClass = LabelsLandlordPortal._language == "English" ? "ltr" : "rtl";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="~/css/site.css"> <!-- Link to your CSS file -->
+
+    <style></style>
+</head>
+<div class="text-center" style="height: 100vh;">
+    <div class="card pageheader sticky-header">
+        <div class="card-header">
+            <div class="row">
+                <div class="col-12 text-start">
+                    <h4>
+                        <a href="@Url.Action("OnlinePayments", "Renewal", new { area = "RenewalFlow"})"
+                           class="text-dark text-decoration-none fw-bold"
+                           style="font-size: 1.25rem;">
+                            <i class="fa fa-arrow-left me-2"></i> Refund/Return Policy
+                        </a>
+                    </h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-12 col-lg-12 col-xl-12 mt-2 d-flex"  style="background-color: white;">
+        <div style="width:100% !important; padding:20px">
+            @Html.Raw((Model?.Data?.Value ?? "").Replace("<ul>", "<ul style='text-align:left;'>"))
+        </div>
+    </div>
+</div>

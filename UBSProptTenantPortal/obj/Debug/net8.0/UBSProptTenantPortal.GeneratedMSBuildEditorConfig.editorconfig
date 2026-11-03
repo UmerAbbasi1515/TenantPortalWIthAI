@@ -1,0 +1,239 @@
+is_global = true
+build_property.TargetFramework = net8.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = UBSProptTenantPortal
+build_property.RootNamespace = UBSProptTenantPortal
+build_property.ProjectDir = /Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.RazorLangVersion = 8.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = /Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal
+build_property._RazorSourceGeneratorDebug = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/Contracts/Views/Contract/ContractDetails.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQ29udHJhY3RzL1ZpZXdzL0NvbnRyYWN0L0NvbnRyYWN0RGV0YWlscy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/Contracts/Views/Contract/Contracts.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQ29udHJhY3RzL1ZpZXdzL0NvbnRyYWN0L0NvbnRyYWN0cy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/Contracts/Views/Contract/ContractsN.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQ29udHJhY3RzL1ZpZXdzL0NvbnRyYWN0L0NvbnRyYWN0c04uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/Contracts/Views/Contract/_ContractsTable.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQ29udHJhY3RzL1ZpZXdzL0NvbnRyYWN0L19Db250cmFjdHNUYWJsZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/Dashboard/Views/TenantDashboard/MainDashboard.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvRGFzaGJvYXJkL1ZpZXdzL1RlbmFudERhc2hib2FyZC9NYWluRGFzaGJvYXJkLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/Faqs/Views/Faq/Faqs.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvRmFxcy9WaWV3cy9GYXEvRmFxcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/Faqs/Views/Faq/FaqsDetail.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvRmFxcy9WaWV3cy9GYXEvRmFxc0RldGFpbC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/Help/Views/Help/Help.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvSGVscC9WaWV3cy9IZWxwL0hlbHAuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/Notifications/Views/Notification/NotificationsDetails.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvTm90aWZpY2F0aW9ucy9WaWV3cy9Ob3RpZmljYXRpb24vTm90aWZpY2F0aW9uc0RldGFpbHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/Notifications/Views/Notification/NotificationsN.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvTm90aWZpY2F0aW9ucy9WaWV3cy9Ob3RpZmljYXRpb24vTm90aWZpY2F0aW9uc04uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/Notifications/Views/Notification/_Notifications.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvTm90aWZpY2F0aW9ucy9WaWV3cy9Ob3RpZmljYXRpb24vX05vdGlmaWNhdGlvbnMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/Offers/Views/Offer/Offers.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvT2ZmZXJzL1ZpZXdzL09mZmVyL09mZmVycy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/Offers/Views/Offer/OffersDetail.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvT2ZmZXJzL1ZpZXdzL09mZmVyL09mZmVyc0RldGFpbC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/Offers/Views/Offer/OffersDetailN.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvT2ZmZXJzL1ZpZXdzL09mZmVyL09mZmVyc0RldGFpbE4uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/Offers/Views/Offer/OffersN.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvT2ZmZXJzL1ZpZXdzL09mZmVyL09mZmVyc04uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/Offers/Views/Offer/_CommunicationPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvT2ZmZXJzL1ZpZXdzL09mZmVyL19Db21tdW5pY2F0aW9uUGFydGlhbC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/Offers/Views/Offer/_DocumentPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvT2ZmZXJzL1ZpZXdzL09mZmVyL19Eb2N1bWVudFBhcnRpYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/Payments/Views/Payment/PaymentDetail.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvUGF5bWVudHMvVmlld3MvUGF5bWVudC9QYXltZW50RGV0YWlsLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/Payments/Views/Payment/Payments.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvUGF5bWVudHMvVmlld3MvUGF5bWVudC9QYXltZW50cy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/Profile/Views/Profile/Profile.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvUHJvZmlsZS9WaWV3cy9Qcm9maWxlL1Byb2ZpbGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/RenewalFlow/Views/Renewal/AuthenticateContract.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvUmVuZXdhbEZsb3cvVmlld3MvUmVuZXdhbC9BdXRoZW50aWNhdGVDb250cmFjdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/RenewalFlow/Views/Renewal/ContractAction.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvUmVuZXdhbEZsb3cvVmlld3MvUmVuZXdhbC9Db250cmFjdEFjdGlvbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/RenewalFlow/Views/Renewal/ContractExtend.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvUmVuZXdhbEZsb3cvVmlld3MvUmVuZXdhbC9Db250cmFjdEV4dGVuZC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/RenewalFlow/Views/Renewal/ContractRenew.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvUmVuZXdhbEZsb3cvVmlld3MvUmVuZXdhbC9Db250cmFjdFJlbmV3LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/RenewalFlow/Views/Renewal/ContractVacate.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvUmVuZXdhbEZsb3cvVmlld3MvUmVuZXdhbC9Db250cmFjdFZhY2F0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/RenewalFlow/Views/Renewal/MunicipalityApproval.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvUmVuZXdhbEZsb3cvVmlld3MvUmVuZXdhbC9NdW5pY2lwYWxpdHlBcHByb3ZhbC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/RenewalFlow/Views/Renewal/OnlinePayments.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvUmVuZXdhbEZsb3cvVmlld3MvUmVuZXdhbC9PbmxpbmVQYXltZW50cy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/RenewalFlow/Views/Renewal/OutStandingPayments.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvUmVuZXdhbEZsb3cvVmlld3MvUmVuZXdhbC9PdXRTdGFuZGluZ1BheW1lbnRzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/RenewalFlow/Views/Renewal/RefundAndReturnPolicy.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvUmVuZXdhbEZsb3cvVmlld3MvUmVuZXdhbC9SZWZ1bmRBbmRSZXR1cm5Qb2xpY3kuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/RenewalFlow/Views/Renewal/RefundAndReturnPolicyNew.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvUmVuZXdhbEZsb3cvVmlld3MvUmVuZXdhbC9SZWZ1bmRBbmRSZXR1cm5Qb2xpY3lOZXcuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/RenewalFlow/Views/Renewal/TermsAndConditions.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvUmVuZXdhbEZsb3cvVmlld3MvUmVuZXdhbC9UZXJtc0FuZENvbmRpdGlvbnMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/RenewalFlow/Views/Renewal/TermsAndConditionsNew.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvUmVuZXdhbEZsb3cvVmlld3MvUmVuZXdhbC9UZXJtc0FuZENvbmRpdGlvbnNOZXcuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/RenewalFlow/Views/Renewal/_ContractNewFlow.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvUmVuZXdhbEZsb3cvVmlld3MvUmVuZXdhbC9fQ29udHJhY3ROZXdGbG93LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/RenewalFlow/Views/Renewal/_ContractRenewalFlow.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvUmVuZXdhbEZsb3cvVmlld3MvUmVuZXdhbC9fQ29udHJhY3RSZW5ld2FsRmxvdy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/RenewalFlow/Views/Renewal/_PaymentsListItem.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvUmVuZXdhbEZsb3cvVmlld3MvUmVuZXdhbC9fUGF5bWVudHNMaXN0SXRlbS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/ServiceRequests/Views/ServiceRequest/AddNewRequest.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvU2VydmljZVJlcXVlc3RzL1ZpZXdzL1NlcnZpY2VSZXF1ZXN0L0FkZE5ld1JlcXVlc3QuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/ServiceRequests/Views/ServiceRequest/ServiceRequestDetailN.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvU2VydmljZVJlcXVlc3RzL1ZpZXdzL1NlcnZpY2VSZXF1ZXN0L1NlcnZpY2VSZXF1ZXN0RGV0YWlsTi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/ServiceRequests/Views/ServiceRequest/ServiceRequests.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvU2VydmljZVJlcXVlc3RzL1ZpZXdzL1NlcnZpY2VSZXF1ZXN0L1NlcnZpY2VSZXF1ZXN0cy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/ServiceRequests/Views/ServiceRequest/UploadPhoto.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvU2VydmljZVJlcXVlc3RzL1ZpZXdzL1NlcnZpY2VSZXF1ZXN0L1VwbG9hZFBob3RvLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/ServiceRequests/Views/ServiceRequest/_CommunicationPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvU2VydmljZVJlcXVlc3RzL1ZpZXdzL1NlcnZpY2VSZXF1ZXN0L19Db21tdW5pY2F0aW9uUGFydGlhbC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/ServiceRequests/Views/ServiceRequest/_DocumentPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvU2VydmljZVJlcXVlc3RzL1ZpZXdzL1NlcnZpY2VSZXF1ZXN0L19Eb2N1bWVudFBhcnRpYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/ServiceRequests/Views/ServiceRequest/_MainInfoPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvU2VydmljZVJlcXVlc3RzL1ZpZXdzL1NlcnZpY2VSZXF1ZXN0L19NYWluSW5mb1BhcnRpYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/ServiceRequests/Views/ServiceRequest/_ServiceRequestTable.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvU2VydmljZVJlcXVlc3RzL1ZpZXdzL1NlcnZpY2VSZXF1ZXN0L19TZXJ2aWNlUmVxdWVzdFRhYmxlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/ServiceRequests/Views/ServiceRequest/_SurveyPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvU2VydmljZVJlcXVlc3RzL1ZpZXdzL1NlcnZpY2VSZXF1ZXN0L19TdXJ2ZXlQYXJ0aWFsLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Areas/Users/Views/Auth/AuthScreen.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvVXNlcnMvVmlld3MvQXV0aC9BdXRoU2NyZWVuLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Constant/ErrorPage.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Q29uc3RhbnQvRXJyb3JQYWdlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Views/Shared/Error.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL0Vycm9yLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Views/Shared/ErrorPage.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL0Vycm9yUGFnZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Views/Shared/_AssistantWidget.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19Bc3Npc3RhbnRXaWRnZXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Views/Shared/_DashboardLayout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19EYXNoYm9hcmRMYXlvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Views/Shared/_Profilelayout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19Qcm9maWxlbGF5b3V0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Views/Shared/_ValidationScriptsPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Views/_ViewImports.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvX1ZpZXdJbXBvcnRzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Views/_ViewStart.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvX1ZpZXdTdGFydC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/apple/System/AI_Related/TenantPortalWithAI/TenantPortalWIthAI/UBSProptTenantPortal/Views/Shared/_Layout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19MYXlvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = b-1ebhsmm069

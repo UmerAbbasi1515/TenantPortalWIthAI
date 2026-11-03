@@ -1,0 +1,266 @@
+﻿
+.dsplayBlok {
+    display: block;
+}
+
+.ms-parent, .ms-choice, .ms-drop {
+    width: 100% !important;
+}
+
+.tooltip-arrow:before {
+    border: transparent !important;
+}
+/**==tooltip css start==**/
+.tooltip.bs-tooltip-top .tooltip-arrow:before, .tooltip.bs-tooltip-auto[data-popper-placement^=top] .tooltip-arrow:before {
+    border-top-color: #fff;
+}
+
+.tooltip.bs-tooltip-bottom .tooltip-arrow:before, .tooltip.bs-tooltip-auto[data-popper-placement^=bottom] .tooltip-arrow:before {
+    border-bottom-color: #fff;
+    border-top-color: transparent;
+}
+
+.tooltip.bs-tooltip-start .tooltip-arrow:before, .tooltip.bs-tooltip-auto[data-popper-placement^=left] .tooltip-arrow:before {
+    border-left-color: #fff;
+    border-top-color: transparent;
+}
+
+.tooltip.bs-tooltip-end .tooltip-arrow:before, .tooltip.bs-tooltip-auto[data-popper-placement^=right] .tooltip-arrow:before {
+    border-right-color: #fff;
+    border-top-color: transparent;
+}
+
+.tooltip .tooltip-inner {
+    background-color: #fff;
+    color: #000;
+    border: 1px solid black;
+}
+
+.tooltip.show {
+    opacity: 1;
+}
+.text-red {
+    color: red;
+}
+
+.Draft, .Draft:hover, .Draft:focus, .Draft:active:focus, .Draft:active {
+    background-color: rgba(253, 126, 64, 0.1);
+    color: #FD7E40 !important;
+}
+
+
+
+.Offered, .Offered:hover, .Offered:focus, .Offered:active:focus, .Offered:active {
+    background-color: rgba(253, 126, 64, 0.1);
+    color: #FD7E40 !important;
+}
+.Legal, .Legal:hover, .Legal:focus, .Legal:active:focus, .Legal:active {
+    background-color: rgba(253, 126, 64, 0.1);
+    color: #FD7E40 !important;
+}
+.Posted, .Posted:hover, .Posted:focus, .Posted:active:focus, .Posted:active {
+    background-color: rgba(67, 185, 178, 0.1);
+    color: #43B9B2 !important;
+}
+.Booked, .Booked:hover, .Booked:focus, .Booked:active:focus, .Booked:active {
+    background-color: rgba(67, 185, 178, 0.1);
+    color: #43B9B2 !important;
+}
+.Cleared, .Cleared:hover, .Cleared:focus, .Cleared:active:focus, .Cleared:active {
+    background-color: rgba(67, 185, 178, 0.1);
+    color: #43B9B2 !important;
+}
+.Accepted, .Accepted:hover, .Accepted:focus, .Accepted:active:focus, .Accepted:active {
+    background-color: rgba(67, 185, 178, 0.1);
+    color: #43B9B2 !important;
+}
+.Vacant, .Vacant:hover, .Vacant:focus, .Vacant:active:focus, .Vacant:active {
+    background-color: rgba(67, 185, 178, 0.1);
+    color: #43B9B2 !important;
+}
+.Rejected, .Rejected:hover, .Rejected:focus, .Rejected:active:focus, .Rejected:active {
+    background-color: rgba(196, 42, 2, 0.1);
+    color: #C42A02 !important;
+}
+.Bounced, .Bounced:hover, .Bounced:focus, .Bounced:active:focus, .Bounced:active {
+    background-color: rgba(196, 42, 2, 0.1);
+    color: #C42A02 !important;
+}
+.Contract, .Contract:hover, .Contract:focus, .Contract:active:focus, .Contract:active {
+    background-color: rgba(67, 185, 178, 0.1);
+    color: #43B9B2 !important;
+}
+.Cancelled, .Cancelled:hover, .Cancelled:focus, .Cancelled:active:focus, .Cancelled:active {
+    background-color: rgba(196, 42, 2, 0.1);
+    color: #C42A02 !important;
+}
+.Expired, .Expired:hover, .Expired:focus, .Expired:active:focus, .Expired:active {
+    background-color: rgba(196, 42, 2, 0.1);
+    color: #C42A02 !important;
+}
+.Reserved, .Reserved:hover, .Reserved:focus, .Reserved:active:focus, .Reserved:active {
+    background-color: #d160ed26;
+    color: #C280D2 !important;
+}
+.Occupied, .Occupied:hover, .Occupied:focus, .Occupied:active:focus, .Occupied:active {
+    background-color: #d160ed26;
+    color: #C280D2 !important;
+}
+.Renewed, .Renewed:hover, .Renewed:focus, .Renewed:active:focus, .Renewed:active {
+    background-color: rgba(67, 185, 178, 0.1) !important;
+    color: #43B9B2 !important;
+}
+
+.CourtOrderExtension, .CourtOrderExtension:hover, .CourtOrderExtension:focus, .CourtOrderExtension:active:focus, .CourtOrderExtension:active {
+    background-color: #d160ed26 !important;
+    color: #C280D2 !important
+}
+
+
+    .Extended, .Extended:hover, .Extended:focus, .Extended:active:focus, .Extended:active {
+        background-color: rgba(46, 141, 211, 0.1) !important;
+        color: #2E8DD3 !important;
+    }
+
+
+.Withdrawn, .Withdrawn:hover, .Withdrawn:focus, .Withdrawn:active:focus, .Withdrawn:active {
+    background-color: rgba(44, 44, 49, 0.1) !important;
+    color: #2C2C31 !important;
+}
+.Ended, .Ended:hover, .Ended:focus, .Ended:active:focus, .Ended:active {
+    background-color: rgba(44, 44, 49, 0.1) !important;
+    color: #2C2C31 !important;
+}
+.Terminated, .Terminated:hover, .Terminated:focus, .Terminated:active:focus, .Terminated:active {
+    background-color: rgba(44, 44, 49, 0.1) !important;
+    color: #2C2C31 !important;
+}
+.Replaced, .Replaced:hover, .Replaced:focus, .Replaced:active:focus, .Replaced:active {
+    background-color: rgba(44, 44, 49, 0.1) !important;
+    color: #2C2C31 !important;
+}
+.Refunded, .Refunded:hover, .Refunded:focus, .Refunded:active:focus, .Refunded:active {
+    background-color: rgba(44, 44, 49, 0.1) !important;
+    color: #2C2C31 !important;
+}
+
+.Deposited, .Deposited:hover, .Deposited:focus, .Deposited:active:focus, .Deposited:active {
+    background-color: rgba(46, 141, 211, 0.1) !important;
+    color: #2E8DD3 !important;
+}
+.Received, .Received:hover, .Received:focus, .Received:active:focus, .Received:active {
+    background-color: rgba(46, 141, 211, 0.1) !important;
+    color: #2E8DD3 !important;
+}
+.Approval, .Approval:hover, .Approval:focus, .Approval:active:focus, .Approval:active {
+    background-color: rgba(253, 126, 64, 0.1);
+    color: #FD7E40 !important;
+}
+
+.Hold, .Hold:hover, .Hold:focus, .Hold:active:focus, .Hold:active {
+    background-color: rgba(253, 126, 64, 0.1);
+    color: #FD7E40 !important;
+}
+.Case, .Case:hover, .Case:focus, .Case:active:focus, .Case:active {
+    background-color: rgba(196, 42, 2, 0.1);
+    color: #C42A02 !important;
+}
+.Handed, .Handed:hover, .Handed:focus, .Handed:active:focus, .Handed:active {
+    background-color: rgba(44, 44, 49, 0.1) !important;
+    color: #2C2C31 !important;
+}
+
+
+
+.NotFound {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    gap: 5px;
+    font-size: medium;
+    padding: 10px;
+    align-items: center;
+}
+
+    .NotFound i {
+        font-size: small;
+    }
+
+.row:has(div.table-responsive) {
+    --bs-gutter-x: 1.5rem;
+    --bs-gutter-y: 0;
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: calc(-1 * var(--bs-gutter-y));
+    margin-right: calc(-0.5 * var(--bs-gutter-x));
+    margin-left: calc(-0.5 * var(--bs-gutter-x));
+}
+
+.table-responsive {
+    padding: 0px;
+}
+
+.form-sm .checkbox-checked {
+    display: flex;
+    align-items: end;
+}
+
+.subtitle {
+    padding: 0px !important;
+    height: 46px;
+    align-items: center;
+}
+.form-sm .form-control, .form-sm .ms-choice {
+    min-height: calc(1.5em + 0.5rem + calc(var(--bs-border-width)* 2));
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: var(--bs-border-radius-sm);
+}
+
+.form-sm .ms-choice {
+    height: auto;
+}
+
+.form-sm .select2-container--default .select2-selection--single {
+    height: calc(1.8125rem + 2px) !important;
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.875rem !important;
+}
+
+.form-sm .select2-container {
+    height: 30px !important;
+}
+.form-sm .ms-choice > span.placeholder {
+    font-size: 0.875rem;
+}
+.form-sm .ms-choice > span {
+    margin-top: 2px;
+}
+
+.form-sm span.field-validation-valid {
+    display: flex;
+}
+
+.form-sm span.field-validation-error {
+    font-size: small;
+}
+
+span.statusContainer {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-weight: 700;
+}
+.form-sm  .select2-selection__arrow {
+    height: 30px !important;
+}
+.form-sm .select2-container--default .select2-selection--single .select2-selection__arrow {
+    top: 1px;
+}
+
+.select2-container--default.select2-container--focus .select2-selection--multiple {
+    box-shadow: none;
+    border-color: var(--theme-default);
+    outline: none !important;
+    color: var(--body-font-color);
+}

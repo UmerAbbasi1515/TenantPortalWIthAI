@@ -1,0 +1,740 @@
+@using UBSProptTenantPortal
+@model ContractDetailViewModel
+@{
+    var contractNo = @ViewData["ContractNoTitle"];
+    ViewData["Title"] = $"Contract No. {contractNo}";
+    var idexForShowRecipt = 0;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var status = @Model?.ContractDetail?.Contract?.ContractStatus;
+    string statusClass = @LabelsTenantPortal.GetStatusCssClass(status);
+}
+
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="~/css/site.css"> <!-- Link to your CSS file -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        .tab-container {
+            margin: 20px;
+        }
+
+        .tabs {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: lightgray;
+            border: 1px solid #ccc;
+            border-bottom: none;
+            margin-right: 5px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .property-details {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+
+        .property-details-row {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .detail {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .list-group-item {
+            transition: background-color 0.3s ease;
+        }
+
+        .list-group-item:hover {
+             background-color: #bfd1ec;
+        }
+
+        .circle {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background-color: #43B9B2;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 5px;
+        }
+
+        .circle-charges {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background-color: #98f4ee;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 5px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        .modal-content {
+            background-color: #ffffff;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+        }
+
+        .close-custom {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+        }
+
+         .close-custom:hover {
+            color: #000;
+         }
+
+        .detail {
+            margin-bottom: 10px;
+        }
+
+        .detail p {
+            margin: 0;
+        }
+
+        .p-style {
+            padding-left: 23px
+        }
+    </style>
+
+</head>
+<div class="text-center" style="height: 100vh;">
+    <div class="card pageheader">
+        <div class="card-header">
+            <div class="row">
+                <div class="col-12 text-start" style="display:flex; flex-direction:row; justify-content:space-between">
+                    <a class="sidebar-link" href="@Url.Action("ContractsN", "Contract", new { area = "Contracts" })">
+                        <h4><i class="fa fa-arrow-left"></i> Contract No: @contractNo</h4>
+                    </a>
+                    <span class="status-custom @statusClass" style=" margin: 10px;">@status</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card custom-card-according-title">
+        <div class="tab-container">
+            <ul class="nav nav-tabs border-tab nav-info border-tab sticky" id="bottom-tab" role="tablist">
+                <li class="nav-item" role="presentation" onclick="openTab(event, 'mainInfo', @ViewBag.PropertyID)">
+                    <a class="nav-link nav-border font-info tab-info active" id="MainInfo-tab" data-bs-toggle="tab"
+                       href="#MainInfo-pane" role="tab" aria-controls="MainInfo-pane"
+                       aria-selected="true"><i class="fa-solid fa-chart-pie"></i>Overview</a>
+                </li>
+                <li class="nav-item" role="presentation" onclick="openTab(event, 'unitInfo', @ViewBag.PropertyID)">
+                    <a class="nav-link nav-border font-info tab-info" id="UnitInfo-tab" data-bs-toggle="tab"
+                       href="#UnitInfo-pane" role="tab" aria-controls="UnitInfo-pane"
+                       aria-selected="false"><i class="fa-solid fa-building"></i>Unit Info</a>
+                </li>
+                <li class="nav-item" role="presentation" onclick="openTab(event, 'paymentInfo', @ViewBag.PropertyID)">
+                    <a class="nav-link nav-border font-info tab-info" id="Payments-tab" data-bs-toggle="tab"
+                       href="#Payments-pane" role="tab" aria-controls="Payments-pane"
+                       aria-selected="false"><i class="fa-solid fa-credit-card"></i>Payments</a>
+                </li>
+                <li class="nav-item" role="presentation" onclick="openTab(event, 'chargesInfo', @ViewBag.PropertyID)">
+                    <a class="nav-link nav-border font-info tab-info" id="Charges-tab" data-bs-toggle="tab"
+                       href="#Charges-pane" role="tab" aria-controls="Charges-pane"
+                       aria-selected="false"><i class="fa-solid fa-file-invoice-dollar"></i>Charges</a>
+                </li>
+            </ul>
+
+
+            @* Main Info *@
+
+            <div id="mainInfo" class="tab-content active" style="background: transparent !important; color: inherit !important;" >
+                @if (ViewBag.errorContractDetail != "")
+                {
+                    <div class="card-header pb-0" style="flex-shrink: 0;">
+                        <center style="padding-top: 50px;">
+                            <h4 style="padding-top: 5px;">@ViewBag.errorContractDetail</h4>
+                        </center>
+                        <i class="fa fa-refresh" aria-hidden="true" style="padding-top: 5px; font-size: 18px; color: black;"
+                           onclick="window.location.href = '@Url.Action("ContractsN", "Contract" , new { area = "Contracts" })'"></i>
+                    </div>
+                    }
+                    else
+                    { 
+            <div style="background-color: white;">
+                <div class="property-details">
+                    <div class="property-details" style="text-align: left;">
+                        @*<p>Contract Length</p>*@
+                        <div class="row alert alert-light-primary  subtitle" role="alert">
+                            <div class="col-sm-6">
+                                <h5 style=" text-align: left; padding-left: 20px;">Contract Info</h5>
+                            </div>
+                        </div>
+                        <div class="property-details-row">
+                            <div></div>
+                            <p>
+                                <strong>
+                                    @Model?.ContractDetail?.DaysPassed /
+                                    @Model?.ContractDetail?.Contract?.NoOfDays
+                                </strong>
+                            </p>
+                        </div>
+                        <div class="progress-showcase">
+                            <div class="progress sm-progress-bar progress-border-primary">
+                                <div class="progress-bar" role="progressbar" aria-valuenow="" aria-valuemin="0"
+                                     aria-valuemax="@Model?.ContractDetail?.DaysPassedPercentage">
+                                    @Model?.ContractDetail?.DaysPassedPercentage
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="height: 10px;"></div>
+                    <div class="property-details-row">
+                        <div class="property-details" style="text-align: left;">
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <i class="fa fa-calendar" aria-hidden="true"></i>
+                                <span>Issue Date</span>
+                            </div>
+                            <p class="p-style"><strong>@Model?.ContractDetail?.Contract?.ContractDate</strong></p>
+                        </div>
+
+                        <div class="property-details" style="text-align: left;">
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <i class="fa fa-calendar" aria-hidden="true"></i>
+                                <span>Start Date</span>
+                            </div>
+                            <p class="p-style"><strong>@Model?.ContractDetail?.Contract?.ContractStartDate</strong></p>
+                        </div>
+
+                        <div class="property-details" style="text-align: left;">
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <i class="fa fa-calendar" aria-hidden="true"></i>
+                                <span>End Date</span>
+                            </div>
+                            <p class="p-style"><strong>@Model?.ContractDetail?.Contract?.ContractEndDate</strong></p>
+                        </div>
+                    </div>
+                    <div style="height: 10px;"></div>
+
+                    <div class="property-details-row" style="text-align: left;">
+                        <div class="property-details">
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <i class="fa fa-file-contract" aria-hidden="true"></i>
+                                <span>Contract No</span>
+                            </div>
+                            <p class="p-style"><strong>@Model?.ContractDetail?.Contract?.ContractNo</strong></p>
+                        </div>
+                        <div class="property-details" style="text-align: left;">
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <i class="fa fa-money-bill" aria-hidden="true"></i>
+                                <span>Contract Amount</span>
+                            </div>
+                            <p class="p-style"><strong>@Model?.ContractDetail?.FormattedAmount</strong></p>
+                        </div>
+                        <div class="property-details" style="text-align: left;">
+                        </div>
+                    </div>
+
+                    <div style="height: 10px;"></div>
+                    <div class="property-details-row">
+                        <div class="property-details" style="text-align: left;">
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <i class="fa fa-building" aria-hidden="true"></i>
+                                <span>Property</span>
+                            </div>
+                            <p class="p-style"><strong>@Model?.ContractDetail?.Contract?.UnitName</strong></p>
+                            <p class="p-style"><strong>@Model?.ContractDetail?.Contract?.Address</strong></p>
+                        </div>
+                        <div class="property-details" style="text-align: left;">
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <i class="fa fa-sync" aria-hidden="true"></i>
+                                <span>Status</span>
+                            </div>
+                            <div>
+                                <span class="status-custom @statusClass" style=" margin: 10px;">@status</span>
+                            </div>
+                        </div>
+                        <div class="property-details" style="text-align: left;">
+                        </div>
+                    </div>
+                </div>
+                <hr />
+                @if (ViewBag.errorContractPayable != "No Data Found")
+                {
+
+                    <div class="row alert alert-light-primary  subtitle" role="alert" style="margin: 1px;">
+                        <div class="col-sm-6">
+                            <h5 style=" text-align: left; padding-left: 20px;"> Outstanding Charges</h5>
+                        </div>
+                    </div>
+                }
+
+                <div style="height: 10px;"></div>
+
+                @if (ViewBag.errorContractPayable != "No Data Found")
+                    {
+                    <div class="property-details">
+                        @if (@Model?.ContractDetail?.ContratPayable?.PaymentSummary?.TotalRentalPayment != "0.00")
+                        {
+                            <div class="property-details-row">
+                                <p class="label">Rental Payment</p>
+                                <strong style="color:#198754;">AED @Model?.ContractDetail?.ContratPayable?.PaymentSummary?.TotalRentalPayment</strong>
+                            </div>
+                            }
+                        @if (@Model?.ContractDetail?.ContratPayable?.PaymentSummary?.TotalAdditionalCharges != "0.00")
+                        {
+                            <div class="property-details-row">
+                                <p class="label">Additional Charges</p>
+                                <strong style="color:#198754;">AED @Model?.ContractDetail?.ContratPayable?.PaymentSummary?.TotalAdditionalCharges</strong>
+                            </div>
+                            }
+                        @if (@Model?.ContractDetail?.ContratPayable?.PaymentSummary?.TotalVatOnRent != "0.00")
+                        {
+                            <div class="property-details-row">
+                                <p class="label">Totalt VAT on Rent</p>
+                                <strong style="color:#198754;">AED @Model?.ContractDetail?.ContratPayable?.PaymentSummary?.TotalVatOnRent</strong>
+                            </div>
+                            }
+                        @if (@Model?.ContractDetail?.ContratPayable?.PaymentSummary?.TotalVatOnCharges != "0.00")
+                        {
+                            <div class="property-details-row">
+                                <p class="label">Totalt VAT on Charges</p>
+                                <strong style="color:#198754;">AED @Model?.ContractDetail?.ContratPayable?.PaymentSummary?.TotalVatOnCharges</strong>
+                            </div>
+                            }
+                        @if (@Model?.ContractDetail?.ContratPayable?.PaymentSummary?.SumOfAllPayments != "0.00")
+                        {
+                            <div class="property-details-row">
+                                <strong style="color:#198754;">Total Payments</strong>
+                                <strong style="color:#198754;">AED @Model?.ContractDetail?.ContratPayable?.PaymentSummary?.SumOfAllPayments</strong>
+                            </div>
+                            }
+                    </div>
+
+                    <div class="text-end mt-1 pb-5" style="margin-top: 20px; margin-left: 30%; margin-right: 30%;">
+                        <a class="btn btn-primary btn-block w-100 text-white"
+                           href="@Url.Action("OutStandingPayments", "Renewal", new { area = "RenewalFlow", ContractId = @Model?.ContractDetail?.Contract?.ContractID, ContractNo = @Model?.ContractDetail?.Contract?.ContractNo , callingFrom = "ContractDetail" })">
+                            Proceed To Pay
+                        </a>
+                    </div>
+                    }
+                </div>
+                }
+            </div>
+            @* Unit Info *@
+            <div id="unitInfo" class="tab-content" style="background: transparent !important; color: inherit !important;" >
+                @if (ViewBag.errorContractDetailUnits != "")
+                {
+                    <div class="card-header pb-0" style="flex-shrink: 0;">
+                        <center style="padding-top: 50px;">
+                            <h4 style="padding-top: 5px;">@ViewBag.errorContractDetailUnits</h4>
+                        </center>
+                        <i class="fa fa-refresh" aria-hidden="true" style="padding-top: 5px; font-size: 18px; color: black;"
+                           onclick="window.location.href = '@Url.Action("ContractsN", "Contract" , new { area = "Contracts" })'"></i>
+                    </div>
+                }
+                else
+                {
+                    <center>
+                        <div class="loader-wrapper-custom" id="unitInfoloadingIndicator"
+                             style="display:none; padding-top: 80px;">
+                            <div class="loader"></div>
+                        </div>
+                    </center>
+                    <div class="card">
+                        @foreach (var unit in Model?.ContractUnits?.ContractUnits!)
+                        {
+                            @*<div class="left-part" style="height: 300px; width: 100%; background-color: #ebe9e9;">
+                        <div style="height: 250px; text-align: center; padding-top: 120px;">
+                            @unit.PropertyName
+                        </div>
+                    </div>*@
+                            <div class="row alert alert-light-primary  subtitle" role="alert" style="margin: 1px;">
+                                <div class="col-sm-6">
+                                    <h5 style=" text-align: left; padding-left: 20px;"> @unit.PropertyName</h5>
+                                </div>
+                            </div>
+                            <div style="height: 10px;"></div>
+                            <div class="property-details">
+                                <div class="property-details-row">
+                                    <p class="label">Unit Ref No</p>
+                                    <a href="javascript:void(0);" onClick="unitDetail(@unit.UnitID)">
+                                        <strong style="color:#198754;">@unit.UnitRefNo</strong>
+                                    </a>
+                                </div>
+                                <div class="property-details-row">
+                                    <p class="label">Unit Type</p>
+                                    <p class="value"><strong>@unit.UnitType</strong></p>
+                                </div>
+                                <div class="property-details-row">
+                                    <p class="label">Rent</p>
+                                    <p class="value"><strong>@Model?.ContractUnits?.FormatedAmount</strong></p>
+                                </div>
+                            </div>
+                        }
+
+                        @*<div class="left-part" style="height: 300px; width: 100%; background-color: #ebe9e9;">
+                            <div style="height: 250px; text-align: center; padding-top: 120px;">
+                                @Model?.ContractUnits?.ContractUnits?[0].PropertyName
+                            </div>
+                            </div>
+                            <div style="height: 10px;"></div>
+                            <div class="property-details">
+                            <div class="property-details-row">
+                                <p class="label">Unit Ref No</p>
+                                <a href="javascript:void(0);"
+                                   onClick="unitDetail(@Model?.ContractUnits?.ContractUnits?[0].UnitID)">
+                                    <strong style="color:#198754;">@Model?.ContractUnits?.ContractUnits?[0].UnitRefNo</strong>
+                                </a>
+                            </div>
+                            <div class=" property-details-row">
+                                <p class="label">Unit Type</p>
+                                <p class="value">
+                                    <strong>@Model?.ContractUnits?.ContractUnits?[0].UnitType</strong>
+                                </p>
+                            </div>
+                            <div class="property-details-row">
+                                <p class="label">Rent</p>
+                                <p class="value"><strong>@Model?.ContractUnits?.FormatedAmount</strong></p>
+                            </div>
+                       </div>*@
+
+                    </div>
+                }
+            </div>
+
+            @* Payment Info *@
+            <div id="paymentInfo" class="tab-content" style="background: transparent !important; color: inherit !important;" >
+                @if (ViewBag.errorContractDetailPayments != "")
+                {
+                    <div class="card-header pb-0" style="flex-shrink: 0;">
+                        <center style="padding-top: 50px;">
+                            <h4 style="padding-top: 5px;">@ViewBag.errorContractDetailPayments</h4>
+                        </center>
+                        <i class="fa fa-refresh" aria-hidden="true" style="padding-top: 5px;padding-bottom:60px; font-size: 18px; color: black;"
+                           onclick="window.location.href = '@Url.Action("ContractsN", "Contract" , new { area = "Contracts" })'"></i>
+                    </div>
+                }
+                else
+                {
+                    <center>
+                        <div class="loader-wrapper-custom" id="paymentInfoloadingIndicator"
+                             style="display:none; padding-top: 80px;">
+                            <div class="loader"></div>
+                        </div>
+                    </center>
+                    <div style="background-color: white; padding: 0px; margin:0px !important">
+                        <div class="">
+                            <ul class="list-group ui-sortable">
+                                @for (int i = 0; i < Model?.ContractPayments?.Payments?.Count; i++)
+                                {
+                                    var rowClass = (i % 2 == 0) ? "even" : "odd";
+                                    var type = @Model.ContractPayments?.Payments[i].PaymentType;
+                                    var transactionID = @Model.ContractPayments?.Payments[i].TransactionId;
+                                    var payment = @Model.ContractPayments?.Payments[i];
+                                    var index = i + 1;
+                                   <a href="#" onclick="if ('@type' === 'Cheque') { window.fetchPaymentChequesInfo(@transactionID); }">
+                                    <li class="list-group-item @rowClass" style="margin-bottom: 10px; margin-top: 4px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <div style="flex-grow: 1;">
+                                                <div class="property-details-row  d-flex align-items-center"
+                                                     style="justify-content: center;">
+                                                    <div class="circle">@index</div>
+                                                    <div class="property-details">
+                                                        <div class="detail" style=" padding-left: 15px;">
+                                                            <p>Amount</p>
+                                                            <p class="datatableMultiLines">
+                                                                <strong>@payment?.FormatedAmount</strong>
+                                                            </p>
+                                                        </div>
+                                                        <div class="detail" style=" padding-left: 15px;">
+                                                            <p>Payment Type</p>
+                                                            <p class="datatableMultiLines">
+                                                                <strong>@payment?.PaymentType</strong>
+                                                            </p>
+                                                        </div>
+                                                        <div class="detail" style=" padding-left: 15px;">
+                                                            <p>Receipt Number</p>
+                                                            <p class="datatableMultiLines">
+                                                                <strong>@payment?.ReceiptNo</strong>
+                                                            </p>
+                                                        </div>
+                                                        <div class="detail" style=" padding-left: 15px;">
+                                                            <p>Receipt Date</p>
+                                                            <p class="datatableMultiLines">
+                                                                <strong>@payment?.PaymentDate</strong>
+                                                            </p>
+                                                        </div>
+                                                        <div class="detail" style=" padding-left: 15px;">
+                                                            <p>Payment For</p>
+                                                            <p class="datatableMultiLines">
+                                                                <strong>@payment?.PaymentFor</strong>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                   </a>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            @* Charges Info *@
+            <div id="chargesInfo" class="tab-content" style="background: transparent !important; color: inherit !important;">
+                @if (ViewBag.errorContractDetailCharges != "")
+                {
+                    <div class="card-header pb-0" style="flex-shrink: 0;">
+                        <center style="padding-top: 50px;">
+                            <h4 style="padding-top: 5px;">@ViewBag.errorContractDetailCharges</h4>
+                        </center>
+                        <i class="fa fa-refresh" aria-hidden="true" style="padding-top: 5px; padding-bottom: 60px; font-size: 18px; color: black;"
+                           onclick="window.location.href = '@Url.Action("ContractsN", "Contract" , new { area = "Contracts" })'"></i>
+                    </div>
+                }
+                else
+                {
+                    <center>
+                        <div class="loader-wrapper-custom" id="chargesInfoloadingIndicator"
+                             style="display:none; padding-top: 80px;">
+                            <div class="loader"></div>
+                        </div>
+                    </center>
+                    <div style="display:flex;flex-direction:row;justify-content:space-between">
+                        <div style="display: flex; flex-direction: Column; padding-top: 60px; padding-left: 20px;">
+                            <div style="display: flex; flex-direction: Row; gap: 10px;">
+                                <div style="width: 10px;height: 10px; background-color: rgba(0, 98, 255, 1);margin-top: 5px; border-radius: 20px;">
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 5px;">
+                                    <p style="margin: 0;  text-align: left;">Paid Charges</p>
+                                    <p style="margin: 0;  text-align: left;">
+                                        <strong>@Model?.ContractCharges?.FormatedPaidCharges</strong>
+                                    </p>
+                                </div>
+                            </div>
+                            <div style="display: flex; flex-direction: Row; gap: 10px;">
+                                <div style="width: 10px;height: 10px; background-color: rgba(255, 179, 0, 1);margin-top: 5px; border-radius: 20px;">
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 5px;">
+                                    <p style="margin: 0;   text-align: left;">Outstanding</p>
+                                    <p style="margin: 0;  text-align: left;">
+                                        <strong>@Model?.ContractCharges?.FormatedOutstandingCharges</strong>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="width:240px"></div>
+                        <div style="flex: 1 1 240px; max-width: auto; padding-left:100px">
+                            <div style="max-width: 100%; height: 240px;">
+                                <canvas id="myDonutChart" style="max-width: 100%; height: auto;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="height: 20px;"></div>
+                    <div class="listScroll">
+                        <ul class="list-group ui-sortable">
+                            @for (int i = 0; i < Model?.ContractCharges?.ContractCharges?.Count; i++)
+                            {
+                                var rowClass = (i % 2 == 0) ? "even" : "odd";
+                                var charges = @Model?.ContractCharges?.ContractCharges[i];
+                                var index = i + 1;
+                                <li class="list-group-item @rowClass" style="margin-bottom: 10px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <div style="flex-grow: 1;">
+                                            <div class="property-details-row  d-flex align-items-center"
+                                                 style="justify-content: center;">
+                                                <div class="circle">@index</div>
+                                                <div class="property-details">
+                                                    <div class="detail" style=" padding-left: 15px;">
+                                                        <p>Date</p>
+                                                        <p class="datatableMultiLines-15px">
+                                                            <strong>@charges?.CreatedOn</strong>
+                                                        </p>
+                                                    </div>
+                                                    <div class="detail" style=" padding-left: 15px;">
+                                                        <p>Amount</p>
+                                                        <p class="datatableMultiLines-15px">
+                                                            <strong>@charges?.FormatedAmount</strong>
+                                                        </p>
+                                                    </div>
+                                                    <div class="detail" style=" padding-left: 15px;">
+                                                        <p>VAT Amount</p>
+                                                        <p class="datatableMultiLines-15px">
+                                                            <strong>@charges?.FormatedVatAmount</strong>
+                                                        </p>
+                                                    </div>
+                                                    <div class="detail" style=" padding-left: 15px;">
+                                                        <p>Charges Type</p>
+                                                        <p class="datatableMultiLines-15px">
+                                                            <strong>@charges?.ChargesType</strong>
+                                                        </p>
+                                                    </div>
+                                                    <div class="detail" style=" padding-left: 15px;">
+                                                        <p>Total Amount</p>
+                                                        <p class="datatableMultiLines-15px">
+                                                            <strong>@charges?.FormattedTotalAmount</strong>
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <div></div>
+                                                        <a href="#" style="text-decoration: underline;color: rgb(49, 140, 236)"
+                                                           onclick="showPopup(@index)">
+                                                            Show
+                                                            Receipt
+                                                        </a>
+                                                        <div></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+
+                    @*<div id="myModal" class="modal card" style="padding: 20px;">
+                            <div class="popupForContractPayments">
+                                <ul class="list-group ui-sortable">
+                                    <li class="list-group-item" style="margin-bottom: 0px;">
+                                        <div class="detail" style=" padding-left: 15px;">
+                                            <p></p>
+                                            <span class="close-custom " onclick="closePopup()">&times;</span>
+                                        </div>
+                                        <div class="detail" style=" padding-left: 15px;">
+                                            <p>Date</p>
+                                            <p class="datatableMultiLines">
+                                                @Model?.ContractCharges?.ContractCharges?[idexForShowRecipt].CreatedOn
+                                            </p>
+                                        </div>
+                                        <div class="detail" style=" padding-left: 15px;">
+                                            <p>Amount</p>
+                                            <p class="datatableMultiLines">
+                                                @Model?.ContractCharges?.ContractCharges?[idexForShowRecipt].FormatedAmount
+                                            </p>
+                                        </div>
+                                        <div class="detail" style=" padding-left: 15px;">
+                                            <p>VAT Amount</p>
+                                            <p class="datatableMultiLines">
+                                                @Model?.ContractCharges?.ContractCharges?[idexForShowRecipt].FormatedVatAmount
+
+                                            </p>
+                                        </div>
+                                        <div class="detail" style=" padding-left: 15px;">
+                                            <p>Charges Type</p>
+                                            <p class="datatableMultiLines">
+                                                @Model?.ContractCharges?.ContractCharges?[idexForShowRecipt].ChargesType
+                                            </p>
+                                        </div>
+                                        <div class="detail" style=" padding-left: 15px;">
+                                            <p>Total Amount</p>
+                                            <p class="datatableMultiLines">
+                                                <strong>@Model?.ContractCharges?.ContractCharges?[idexForShowRecipt].FormattedTotalAmount</strong>
+                                            </p>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>*@
+
+                    <!-- Modal Overlay -->
+                    <div id="myModal" class="modal-overlay" style="display: none;">
+                        <!-- Modal Content -->
+                        <div class="modal-content card">
+                            <span class="close-custom" onclick="closePopup()">&times;</span>
+
+                            <div class="popupForContractPayments">
+                                <ul class="list-group">
+                                    <li class="list-group-item">
+                                        <div class="detail">
+                                            <p>Date</p>
+                                            <p class="datatableMultiLines">
+                                                @Model?.ContractCharges?.ContractCharges?[idexForShowRecipt].CreatedOn
+                                            </p>
+                                        </div>
+                                        <div class="detail">
+                                            <p>Amount</p>
+                                            <p class="datatableMultiLines">
+                                                @Model?.ContractCharges?.ContractCharges?[idexForShowRecipt].FormatedAmount
+                                            </p>
+                                        </div>
+                                        <div class="detail">
+                                            <p>VAT Amount</p>
+                                            <p class="datatableMultiLines">
+                                                @Model?.ContractCharges?.ContractCharges?[idexForShowRecipt].FormatedVatAmount
+                                            </p>
+                                        </div>
+                                        <div class="detail">
+                                            <p>Charges Type</p>
+                                            <p class="datatableMultiLines">
+                                                @Model?.ContractCharges?.ContractCharges?[idexForShowRecipt].ChargesType
+                                            </p>
+                                        </div>
+                                        <div class="detail">
+                                            <p>Total Amount</p>
+                                            <p class="datatableMultiLines">
+                                                <strong>@Model?.ContractCharges?.ContractCharges?[idexForShowRecipt].FormattedTotalAmount</strong>
+                                            </p>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                }
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="~/js/contracts.js"></script>
+

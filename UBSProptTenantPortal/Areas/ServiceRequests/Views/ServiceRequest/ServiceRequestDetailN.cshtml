@@ -1,0 +1,2456 @@
+﻿@using UBSProptTenantPortal
+@model SrReqDetailMainDocumentCommunication
+@{
+    string tabname = ViewBag.TabName;
+    string callingFrom = ViewBag.CallingFrom;
+    var ServiceRequestNo = ViewData["ServiceReqNoTitle"];
+
+    ViewData["Title"] = $"Request No. {ServiceRequestNo}";
+    ViewBag.ServiceRequestNo = ServiceRequestNo;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var detail = Model?.mainInfo?.Detail;
+    string statusClass = LabelsTenantPortal.GetStatusCssClass(detail?.Status ?? "");
+
+    // Back link: renewal flow when opened from Renewal / New, otherwise the service request list
+    var backUrl = (callingFrom == "Renewal" || callingFrom == "New")
+        ? Url.Action("ContractAction", "Renewal", new { area = "RenewalFlow", tab = callingFrom == "Renewal" ? "RCF" : "NCF" })
+        : Url.Action("ServiceRequests", "ServiceRequest", new { area = "ServiceRequests", tab = tabname });
+
+    // FM requests have no Documents tab
+    var showDocumentsTab = tabname != "FM";
+}
+
+@* =====================================================================
+    STYLES / VENDOR RESOURCES
+    ===================================================================== *@
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" href="~/css/site.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+<link rel="stylesheet" href="../assets/css/style.css">
+
+<style>
+    /* ---------- Tabs ---------- */
+    .tab-container {
+        margin: 20px;
+    }
+
+    .tabs {
+        list-style-type: none;
+        padding: 0;
+        display: flex;
+    }
+
+    .tab {
+        padding: 10px 20px;
+        cursor: pointer;
+        background-color: lightgray;
+        border: 1px solid #ccc;
+        border-bottom: none;
+        margin-right: 5px;
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+        /* This is basically for show */
+        .tab-content.active {
+            display: block;
+        }
+
+    .sticky-header {
+        position: sticky;
+        top: 0;
+        background-color: white;
+    }
+
+    /* ---------- Property / detail layout ---------- */
+    .property-details {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .property-details-row {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .detail {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+
+        .detail p {
+            margin: 0;
+        }
+
+    .list-group-item {
+        transition: background-color 0.3s ease; /* Smooth transition for background color */
+    }
+
+        .list-group-item:hover {
+            background-color: #bfd1ec;
+        }
+
+    .circle {
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        background-color: #43B9B2;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-right: 5px;
+    }
+
+    .circle-charges {
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        background-color: #98f4ee;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-right: 5px;
+    }
+
+    .card {
+        transition: all 0.2s ease-in-out;
+    }
+
+        .card:hover {
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+    .p-style {
+        padding-left: 23px;
+    }
+
+    /* ---------- Modals ---------- */
+    .modal-content {
+        background-color: #ffffff;
+        width: 90%;
+        max-width: 800px;
+        border-radius: 12px;
+        position: relative;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    .close-custom {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 24px;
+        font-weight: bold;
+        color: #aaa;
+        cursor: pointer;
+    }
+
+        .close-custom:hover {
+            color: #000;
+        }
+
+    .cancel-modal {
+        display: none;
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .cancel-modal-content {
+        background-color: #fefefe;
+        margin: 5% auto;
+        padding: 30px;
+        border: 1px solid #888;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 400px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        position: relative;
+    }
+
+        .cancel-modal-content button {
+            margin: 5px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+            .cancel-modal-content button:first-of-type {
+                background-color: #43B9B2;
+                color: white;
+            }
+
+            .cancel-modal-content button:hover {
+                opacity: 0.8;
+            }
+
+    .close-modal {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        line-height: 20px;
+        cursor: pointer;
+    }
+
+        .close-modal:hover,
+        .close-modal:focus {
+            color: #000;
+        }
+
+    /* ---------- Documents ---------- */
+    .upload-small {
+        height: 60px !important;
+        transition: height 0.3s ease;
+    }
+
+    .uploadDoc {
+        background-color: #42ae950f !important;
+        border: 2px dashed #bbd9d7a6 !important;
+        border-radius: 12px;
+    }
+
+        .uploadDoc:hover {
+            background-color: #42ae950f !important;
+            border: 2px dashed #43B9B2 !important;
+            border-radius: 12px;
+        }
+
+    .uploadDocN {
+        border-radius: 10px;
+        overflow: hidden;
+        background: #f8f9fa;
+        text-align: center;
+        height: 320px; /* Fixed card height */
+        cursor: pointer;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    /* Preview area */
+    .preview-box {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 180px; /* makes sure preview has height */
+        background: #e9eef3;
+        position: relative;
+    }
+
+    .doc-img {
+        max-height: 100%;
+        max-width: 100%;
+        object-fit: contain;
+    }
+
+    .doc-icon {
+        font-size: 4rem;
+        color: gray;
+    }
+
+    /* Hover overlay */
+    .overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, .35);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+    }
+
+    .preview-box:hover .overlay {
+        opacity: 1;
+    }
+
+    .doc-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Footer fixed at bottom */
+    .doc-footer {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 10px;
+        background: #fff;
+        font-size: 14px;
+        border-top: 1px solid #eee;
+    }
+
+    .photo-container {
+        display: inline-block;
+        transition: transform 0.2s;
+    }
+
+        .photo-container:hover {
+            transform: scale(1.05);
+        }
+
+    .delete-btn {
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 50%;
+        padding: 2px;
+        transition: background-color 0.2s;
+    }
+
+        .delete-btn:hover {
+            background-color: rgba(255, 255, 255, 1);
+        }
+
+    .delete-icon {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: transparent;
+        border: none;
+        color: #e74c3c; /* red */
+        font-size: 18px;
+        cursor: pointer;
+    }
+
+        .delete-icon:hover {
+            color: #c0392b; /* darker red */
+        }
+
+    /* ---------- Buttons / colors ---------- */
+    .bg-teal {
+        background-color: #43B9B2;
+    }
+
+    .btn-download {
+        background-color: #ffffff;
+        color: #000000;
+        border: 1px solid #ccc;
+    }
+
+        .btn-download:hover {
+            background-color: #eee5e5;
+            color: #000000;
+            border-color: #999;
+        }
+
+    .btn-teal {
+        background: #009688;
+        color: #fff;
+    }
+
+        .btn-teal:hover {
+            background: #00796B;
+            color: #fff;
+        }
+
+    /* ---------- Forms ---------- */
+    /* Make the label required with red * */
+    label.required::after {
+        content: " *";
+        color: red;
+    }
+
+    /* Stack label + input vertically */
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 1rem;
+    }
+</style>
+
+@* =====================================================================
+    SHARED HELPERS (loaders + safe JSON reader)
+    ===================================================================== *@
+<script>// Reads a fetch Response body once and never throws on empty / non-JSON bodies.
+    async function readJsonSafely(response, fallback = {}) {
+        try {
+            const text = await response.text();
+            return text ? JSON.parse(text) : fallback;
+        } catch (error) {
+            console.error('Invalid JSON response:', error);
+            return fallback;
+        }
+    }
+
+    function showLoader() {
+        const loader = document.getElementById('fullPageLoader');
+        if (loader) loader.style.display = 'flex';
+    }
+
+    function hideLoader() {
+        const loader = document.getElementById('fullPageLoader');
+        if (loader) loader.style.display = 'none';
+    }
+
+    function showLoaderEID() {
+        const loader = document.getElementById('fullPageLoaderEID');
+        if (loader) loader.style.display = 'flex';
+    }
+
+    function hideLoaderEID() {
+        const loader = document.getElementById('fullPageLoaderEID');
+        if (loader) loader.style.display = 'none';
+    }</script>
+
+@* =====================================================================
+    PAGE
+    ===================================================================== *@
+<div class="text-center" style="height: 100vh;">
+
+    @* ---------- Page header ---------- *@
+    <div class="card pageheader" style="box-shadow: none;">
+        <div class="card-header">
+            <div class="row">
+                <div class="col-12 text-start" style="display:flex; flex-direction:row; justify-content:space-between">
+                    <a class="sidebar-link" href="@backUrl">
+                        <h4><i class="fa fa-arrow-left"></i> Request No: @ServiceRequestNo</h4>
+                    </a>
+                    <span class="status-custom @statusClass" style="margin: 10px;">@detail?.Status</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card custom-card-according-title">
+
+        @* ---------- Tabs ---------- *@
+        <div class="tab-container sticky-header">
+            <ul class="nav nav-tabs border-tab nav-info border-tab sticky" id="bottom-tab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link nav-border font-info tab-info active" id="MainInfo-tab" data-bs-toggle="tab"
+                       href="#MainInfo-pane" role="tab" aria-controls="MainInfo-pane"
+                       aria-selected="true" onclick="loadMainInfo()">
+                        <i class="fa-solid fa-chart-pie"></i>Overview
+                    </a>
+                </li>
+
+                @if (showDocumentsTab)
+                {
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link nav-border font-info tab-info" id="UnitInfo-tab" data-bs-toggle="tab"
+                           href="#UnitInfo-pane" role="tab" aria-controls="UnitInfo-pane"
+                           aria-selected="false" onclick="loadDocuments()">
+                            <i class="fa-solid fa-file-alt"></i>Documents
+                        </a>
+                    </li>
+                }
+
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link nav-border font-info tab-info" id="Payments-tab" data-bs-toggle="tab"
+                       href="#Payments-pane" role="tab" aria-controls="Payments-pane"
+                       aria-selected="false" onclick="loadCommunications()">
+                        <i class="fa-solid fa-comments"></i>Communications
+                    </a>
+                </li>
+            </ul>
+
+            @* Main Info *@
+            <div id="mainInfo" class="tab-content" style="background: transparent !important; color: inherit !important;">
+                @await Html.PartialAsync("_MainInfoPartial", Model)
+            </div>
+
+            @* Documents *@
+            @if (showDocumentsTab)
+            {
+                <div id="unitInfo" class="tab-content" style="background: transparent !important; color: inherit !important; height: 390px;">
+                    @await Html.PartialAsync("_DocumentPartial", Model?.uploadDocResponse)
+                </div>
+            }
+
+            @* Communications *@
+            <div id="paymentInfo" class="tab-content">
+                @await Html.PartialAsync("_CommunicationPartial", Model?.CoomunicationResponse)
+            </div>
+        </div>
+
+        @* ---------- Modal: upload / replace document ---------- *@
+        <div class="modal fade" id="uploadModel_" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+
+                    <div class="modal-header bg-teal text-white">
+                        <h5 class="modal-title" id="modalTitle" style="color:white">Replace — Document</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <input type="hidden" name="uploadReqNo" id="uploadReqNo" />
+                        <input type="hidden" name="uploadDocTypeId" id="uploadDocTypeId" />
+
+                        <div class="mb-1 text-start">
+                            <label class="form-label" style="display: contents;">Select a file for <strong id="docNameLabel">Document </strong> <span class="text-danger">*</span></label>
+                            <input type="file" name="UploadFile" id="UploadFile" class="form-control" accept=".jpg,.jpeg,.png,.pdf" />
+                            <div class="form-text">Accepted: JPG, PNG, PDF · up to 10 MB</div>
+                        </div>
+
+                        @* Expiry date + upload button in one row *@
+                        <div class="row align-items-end mb-1">
+                            <div class="col-md-8 text-start">
+                                <label class="form-label fw-semibold" style="margin-bottom: 0px;">
+                                    Expiry Date <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <input type="date"
+                                           class="form-control expiryDate"
+                                           id="expiryDateInput"
+                                           name="expiryDateInput" />
+                                </div>
+                            </div>
+                            <input type="hidden" name="isRejected" id="isRejected" />
+
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button type="button" id="uploadBtn" onclick="submitUpload()" class="btn btn-primary w-100" disabled>
+                                    Upload
+                                </button>
+                            </div>
+
+                            @* Progress UI *@
+                            <div id="progressContainer" class="progress mt-2" style="display:none; height: 20px;">
+                                <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%; color: #43B9B2">
+                                    0%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        @* ---------- Modal: survey success ---------- *@
+        <div class="modal fade" id="surveySuccessModal">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body success-modal-survey">
+                        <div class="success-icon-survey">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h5 class="success-title-survey">
+                            "Survey Completed"
+                        </h5>
+                        <p class="success-message-survey">
+                            Thank you for completing the survey. Your feedback is valuable to us.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* ---------- Modal: delete confirmation ---------- *@
+        <div class="modal fade" id="confirmationModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-3" style="padding: 30px;">
+
+                    <div class="modal-header border-0">
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <input type="hidden" name="uploadAttachmentId" id="uploadAttachmentId" />
+
+                    <p class="mb-2 text-center">
+                        Are you sure, you want to delete
+                        <span id="uploadeddocName" class="fw-bold"><strong>File</strong></span>?
+                    </p>
+
+                    <div class="d-flex justify-content-center gap-3">
+                        <a class="btn btn-danger w-100 text-white"
+                           href="#" onclick="removeDocument()" id="btn-delete">
+                            Delete
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ---------- Modal: Emirates ID sample ---------- *@
+    <div class="modal fade" id="emirateIDSampleModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-3">
+
+                <div class="modal-header border-0">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <p style="margin: 10px">Please scan front & back side of your Emirates ID SEPARATELY as shown below</p>
+
+                <div class="modal-body text-center">
+                    <div style="max-height: 400px; overflow: hidden;">
+                        <img src="~/assets/images/emiratesID.png"
+                             alt="Emirate ID Sample"
+                             class="img-fluid"
+                             style="object-fit: contain; max-height: 350px;" />
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-center gap-3 mb-2" style="margin-left: 20px; margin-right: 20px; margin-bottom: 15px">
+                    <a class="btn btn-primary w-100 text-white"
+                       href="#" onclick="openUploadEIDModal()" id="btn-next">
+                        Next
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ---------- Modal: upload Emirates ID (front + back) ---------- *@
+    <div class="modal fade" id="uploadModelEID_" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+
+                <div class="modal-header bg-teal text-white">
+                    <h5 class="modal-title" id="modalEIDTitle" style="color:white">Replace — Document</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <input type="hidden" name="uploadEIDReqNo" id="uploadEIDReqNo" />
+                    <input type="hidden" name="uploadEIDDocTypeId" id="uploadEIDDocTypeId" />
+                    <input type="hidden" name="IDD" id="IDD" />
+
+                    @* Front side *@
+                    <div class="mb-2 text-start">
+                        <label class="form-label" style="display: contents;">Select a Front Side for <strong id="docEIDNameLabel">Document </strong> <span class="text-danger">*</span></label>
+                        <input type="file" name="UploadFile" id="UploadEIDFrontFile" class="form-control" accept=".jpg,.jpeg,.png,.pdf" />
+                    </div>
+
+                    @* Back side *@
+                    <div class="mb-1 text-start">
+                        <label class="form-label" style="display: contents;">Select a Back Side for <strong id="docEIDNameLabel1">Document </strong> <span class="text-danger">*</span></label>
+                        <input type="file" name="UploadFile" id="UploadEIDBackFile" class="form-control" accept=".jpg,.jpeg,.png,.pdf" />
+                        <div class="form-text mt-1">Accepted: JPG, PNG, PDF · up to 10 MB</div>
+                    </div>
+
+                    @* Expiry date + next button in one row *@
+                    <div class="row align-items-end mb-1">
+                        <div class="col-md-8 text-start">
+                            <label class="form-label fw-semibold" style="margin-bottom: 0px;">
+                                Expiry Date <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <input type="date"
+                                       class="form-control expiryDate"
+                                       id="expiryEIDDateInput"
+                                       name="expiryEIDDateInput" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="button" id="nextEIDBtn" onclick="openConfirmationEIDModal()" class="btn btn-primary w-100" disabled>
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    @* ---------- Modal: confirm scanned Emirates ID data ---------- *@
+    <div class="modal fade" id="confirmationModelEID_" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+
+                <div class="modal-header bg-teal text-white">
+                    <h5 class="modal-title" style="color:white">Confirm Data</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row align-items-end mb-1">
+
+                        <p class="mb-1">Please Verify the below data specially dates</p>
+                        <div class="mb-1" style="padding: 15px; text-align: left;">
+                            <div class="form-group">
+                                <label class="required">Name</label>
+                                <input class="form-control" id="Name" />
+                            </div>
+
+                            <div class="form-group">
+                                <label class="required">ID Number</label>
+                                <input class="form-control" id="IDNumber" />
+                            </div>
+
+                            <div class="form-group">
+                                <label class="required">Date of Birth</label>
+                                <div class="input-group">
+                                    <input type="date"
+                                           class="form-control birthDate"
+                                           id="DOBDate"
+                                           name="DOBDate" />
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="required">Expiry Date</label>
+                                <div class="input-group">
+                                    <input type="date"
+                                           class="form-control expiryDate"
+                                           id="ExpiryDateConfirmation"
+                                           name="ExpiryDateConfirmation" />
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="display:none">
+                                <label>Issuing Date</label>
+                                <div class="input-group">
+                                    <input type="date"
+                                           class="form-control expiryDate"
+                                           id="IssuingDate"
+                                           name="IssuingDate" />
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="required">Nationality</label>
+                                <input class="form-control" id="Nationality" />
+                            </div>
+
+                            <div class="form-group">
+                                <label>Sex</label>
+                                <input class="form-control" id="Sex" />
+                            </div>
+                        </div>
+
+                        <div class="row mb-1 justify-content: center;">
+                            <div></div>
+                            <canvas id="mergedCanvas" style="display:none"></canvas>
+                            <img id="mergedImage" style="width: 200px" />
+                            <div></div>
+                        </div>
+                        <input type="hidden" name="isRejectedEID" id="isRejectedEID" />
+
+                        <div class="col-md-12 d-flex align-items-end mt-1">
+                            <button type="button" id="uploadEIDBtn" onclick="submitUploadEID()" class="btn btn-primary w-100">
+                                Upload
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    @* ---------- Modal: documents submitted (stage updated) ---------- *@
+    <div class="modal fade" id="stageConfirmationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-3" style="padding: 30px;">
+
+                <div class="modal-header border-0">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <img src="~/assets/images/bluetick.png"
+                     alt="Check"
+                     class="img-fluid"
+                     style="object-fit: contain; max-height: 113px; padding-bottom: 10px;" />
+
+                <label><strong>Documents submitted successfully</strong></label>
+                <p class="mb-4">
+                    The documents have been successfully submitted. You will be notified within 2 working days once the verification is completed by the FABP team.
+                </p>
+
+                <div class="d-flex justify-content-center gap-3">
+                    <button type="button" class="btn btn-primary text-white" onclick="closeConfirmationModel()">Back</button>
+                    <button type="button" class="btn btn-primary" onclick="cancelConfirmationModel()" aria-label="Close">Stay on Page</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <input type="hidden" id="photoID" />
+
+    @* ---------- Full page loaders ---------- *@
+    <div id="fullPageLoader" style="
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0,0,0,0.5);
+                    z-index: 99999;
+                    display: none;
+                    justify-content: center;
+                    align-items: center;
+                    text-align: center;
+                    font-size: 20px;
+                    color: white;
+                ">
+        <div>
+            <div class="spinner-border text-light" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <div style="margin-top: 15px;">Loading...</div>
+        </div>
+    </div>
+
+    <div id="fullPageLoaderEID" style="
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0,0,0,0.5);
+                    z-index: 99999;
+                    display: none;
+                    justify-content: center;
+                    align-items: center;
+                    text-align: center;
+                    font-size: 20px;
+                    color: white;
+                ">
+        <div>
+            <div class="spinner-border text-light" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <div style="margin-top: 15px;">Scanning...</div>
+        </div>
+    </div>
+
+</div>
+
+@* =====================================================================
+    SCRIPTS SECTION (rendered by the layout)
+    Emirates ID number formatting + tab loading (Overview / Documents / Communications)
+    ===================================================================== *@
+@section Scripts {
+
+    <script src="https://cdn.jsdelivr.net/npm/inputmask@5.0.8/dist/inputmask.min.js"></script>
+    <script>// Auto-format Emirates ID number while typing (xxx-xxxx-xxxxxxx-x)
+        $('#IDNumber').on('input', function () {
+            let value = $(this).val().replace(/[^0-9]/g, ''); // Remove non-digits
+
+            if (value.length > 0) {
+                let formatted = '';
+                if (value.length <= 3) {
+                    formatted = value;
+                } else if (value.length <= 7) {
+                    formatted = value.slice(0, 3) + '-' + value.slice(3);
+                } else if (value.length <= 14) {
+                    formatted = value.slice(0, 3) + '-' + value.slice(3, 7) + '-' + value.slice(7);
+                } else {
+                    formatted = value.slice(0, 3) + '-' + value.slice(3, 7) + '-' + value.slice(7, 14) + '-' + value.slice(14, 15);
+                    value = value.slice(0, 15); // Limit to 15 digits
+                }
+                $(this).val(formatted);
+            }
+        });</script>
+
+    <script>
+        var caseNo = '@ViewData["ServiceReqNoTitle"]';
+        var documentsLoaded = false;
+        var communicationsLoaded = false;
+        var communicationRefreshInterval;
+
+        // Show one tab, hide the others
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(function (tab) {
+                tab.style.display = 'none';
+                tab.classList.remove('active');
+            });
+
+            var selectedTab = document.getElementById(tabId);
+            if (selectedTab) {
+                selectedTab.style.display = 'block';
+                selectedTab.classList.add('active');
+            }
+
+            document.querySelectorAll('.nav-link').forEach(function (link) {
+                link.classList.remove('active');
+            });
+        }
+
+        // Overview tab (already rendered on page load)
+        function loadMainInfo() {
+            showLoader();
+            showTab('mainInfo');
+            document.getElementById('MainInfo-tab').classList.add('active');
+
+            // Stop communication refresh if running
+            stopCommunicationRefresh();
+            hideLoader();
+        }
+
+        // Documents tab (loaded only once)
+        async function loadDocuments() {
+            showLoader();
+            showTab('unitInfo');
+            document.getElementById('UnitInfo-tab').classList.add('active');
+
+            if (!documentsLoaded) {
+                try {
+                    const response = await fetch('/ServiceRequests/ServiceRequest/_ServiceRequestDocuments?caseNo=' + caseNo);
+                    if (response.ok) {
+                        const html = await response.text();
+                        document.getElementById('unitInfo').innerHTML = html;
+                        documentsLoaded = true;
+                    } else {
+                        document.getElementById('unitInfo').innerHTML =
+                            '<div class="alert alert-danger">Error loading documents. Please try again.</div>';
+                    }
+                } catch (error) {
+                    console.error('Error loading documents:', error);
+                    document.getElementById('unitInfo').innerHTML =
+                        '<div class="alert alert-danger">Error loading documents: ' + error.message + '</div>';
+                }
+            }
+            hideLoader();
+        }
+
+        // Communications tab (always refreshed to get the latest messages)
+        async function loadCommunications() {
+            showLoader();
+            showTab('paymentInfo');
+            document.getElementById('Payments-tab').classList.add('active');
+
+            await refreshCommunications();
+
+            // Start auto-refresh
+            startCommunicationRefresh();
+            hideLoader();
+        }
+
+        // Refresh only the chat container so the rest of the tab is untouched
+        async function refreshCommunications() {
+            try {
+                const response = await fetch('/ServiceRequests/ServiceRequest/_ServiceRequestCommunications?caseNo=' + caseNo);
+
+                if (response.ok) {
+                    const html = await response.text();
+
+                    // Parse the response and extract only the ChatContainer HTML
+                    const tempDiv = document.createElement("div");
+                    tempDiv.innerHTML = html;
+
+                    const newChat = tempDiv.querySelector("#ChatContainer");
+                    const oldChat = document.getElementById("ChatContainer");
+
+                    if (!newChat || !oldChat) return;
+
+                    // Check scroll position before update
+                    const isNearBottom = oldChat.scrollTop + oldChat.clientHeight >= oldChat.scrollHeight - 50;
+
+                    // Replace ChatContainer content only
+                    oldChat.innerHTML = newChat.innerHTML;
+
+                    // Restore scroll
+                    if (!communicationsLoaded || isNearBottom) {
+                        oldChat.scrollTop = oldChat.scrollHeight;
+                    }
+
+                    communicationsLoaded = true;
+                }
+            } catch (error) {
+                console.error("Error loading communications:", error);
+            }
+        }
+
+        // Auto-refresh communications (every 2 seconds)
+        function startCommunicationRefresh() {
+            stopCommunicationRefresh(); // clear any existing interval
+
+            communicationRefreshInterval = setInterval(function () {
+                refreshCommunications();
+            }, 2000);
+
+            console.log('Communication auto-refresh started');
+        }
+
+        function stopCommunicationRefresh() {
+            if (communicationRefreshInterval) {
+                clearInterval(communicationRefreshInterval);
+                communicationRefreshInterval = null;
+                console.log('Communication auto-refresh stopped');
+            }
+        }
+
+        // Initial tab selection based on the SelectedTab value from the server
+        document.addEventListener("DOMContentLoaded", function () {
+            var selectedTab = @(ViewData["SelectedTab"] ?? 1);
+
+            if (selectedTab === 1) {
+                loadMainInfo();
+            } else if (selectedTab === 2) {
+                loadDocuments();
+            } else if (selectedTab === 3) {
+                loadCommunications();
+            } else {
+                loadMainInfo(); // default
+            }
+        });
+
+        // Stop refresh when the user leaves the page
+        window.addEventListener('beforeunload', function () {
+            stopCommunicationRefresh();
+        });
+
+        // Pause refresh when the browser tab is hidden
+        document.addEventListener('visibilitychange', function () {
+            if (document.hidden) {
+                stopCommunicationRefresh();
+            } else {
+                // Resume if the communication tab is active
+                var commTab = document.getElementById('paymentInfo');
+                if (commTab && commTab.classList.contains('active')) {
+                    startCommunicationRefresh();
+                }
+            }
+        });
+    </script>
+}
+
+@* =====================================================================
+    SERVICE REQUEST ACTIONS
+    Cancel request · Survey (load / hide / select answer / next question)
+    Reload overview · Feedback · Upload photo · Open image · Delete photo popup
+    ===================================================================== *@
+<script>
+    var caseNo1 = '@ViewData["ServiceReqNoTitle"]';
+
+    // Cancel modal open / close
+    document.addEventListener('DOMContentLoaded', function () {
+        window.showPopup = function () {
+            document.getElementById('cancelModal').style.display = 'block';
+            vendorSignatureCapture();
+        };
+
+        window.closePopup = function () {
+            document.getElementById('cancelModal').style.display = 'none';
+        };
+    });
+
+    async function CancelServiceRequestDetail() {
+        showLoader();
+        const formData = new FormData();
+        formData.append("caseNo", caseNo1);
+        try {
+            const response = await fetch('/ServiceRequests/ServiceRequest/CancelServiceRequestDetail', {
+                method: 'POST',
+                body: formData
+            });
+            if (response.ok) {
+                const result = await readJsonSafely(response);
+                if (result.success) {
+                    document.getElementById('cancelModal').style.display = 'none';
+                    toastr.success("Cancelled Successfully");
+                } else {
+                    document.getElementById('cancelModal').style.display = 'none';
+                    toastr.error("Cancelled failed: " + result.message);
+                }
+            } else {
+                const errorText = await response.text();
+                toastr.error("Server error: " + errorText);
+            }
+        } catch (error) {
+            // network error is ignored (page reloads below)
+        } finally {
+            window.location.reload();
+            hideLoader();
+        }
+    }
+
+    // ---------- Survey ----------
+    async function loadSurvey() {
+        showLoader();
+        document.getElementById('surveyContainer').style.display = 'block';
+        const formData = new FormData();
+        formData.append("caseNo", caseNo1);
+        try {
+            const response = await fetch('/ServiceRequests/ServiceRequest/LoadSurveyPartial', {
+                method: 'POST',
+                body: formData
+            });
+
+            // Read HTML from the partial and insert it into the page
+            const html = await response.text();
+            document.getElementById("surveyContainer").innerHTML = html;
+
+            // Hide the Survey button after loading the partial
+            const surveyButton = document.querySelector("button[onclick='loadSurvey()']");
+            if (surveyButton) {
+                surveyButton.style.display = "none";
+            }
+        } catch (error) {
+            // network error is ignored
+        } finally {
+            hideLoader();
+        }
+    }
+
+    function hideSurvey() {
+        hideLoader();
+        document.getElementById('surveyContainer').style.display = 'none';
+        document.getElementById('surveybuttonId').style.display = 'block';
+    }
+
+    function selectSurveyAnswer(answerId, optionId, questionID, isCompleted) {
+        showLoader();
+
+        // Fill the hidden fields
+        document.getElementById("answerId").value = answerId;
+        document.getElementById("customerChoice").value = optionId;
+        document.getElementById("descriptionInput").value = "desc";
+        document.getElementById("questionIDInut").value = questionID;
+        document.getElementById("isCompletedIDInut").value = isCompleted;
+
+        // questionID == -1 means this was the last question
+        document.getElementById("isLastQuestion").value = (questionID != -1) ? "0" : "1";
+
+        console.log("Selected values:", { answerId, optionId, questionID, isCompleted });
+        hideLoader();
+    }
+
+    async function nextSurveyQuestion() {
+        showLoader();
+        var answerId = document.getElementById("answerId").value;
+        var customerChoice = document.getElementById("customerChoice").value;
+        var description = document.getElementById("descriptionInput").value;
+        var IsCompleted = document.getElementById("isCompletedIDInut").value;
+        var QuestionId = document.getElementById("questionIDInut").value;
+
+        var payload;
+        if (answerId != '' && customerChoice != '' && IsCompleted != '' && QuestionId != '') {
+            payload = {
+                answerId: answerId,
+                customerChoice: customerChoice,
+                description: description,
+                IsCompleted: IsCompleted,
+                QuestionId: QuestionId,
+            };
+        } else {
+            toastr.warning("Please choose correct one");
+            return;
+        }
+
+        try {
+            const response = await fetch('/ServiceRequests/ServiceRequest/NextQuestion', {
+                method: 'POST',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            // Last question: show the success modal
+            if (document.getElementById("isLastQuestion").value === "1") {
+                const surveyModal = new bootstrap.Modal(document.getElementById('surveySuccessModal'));
+                surveyModal.show();
+            }
+
+            const html = await response.text();
+            document.getElementById("surveyContainer").innerHTML = html;
+        } catch (error) {
+            console.error("Network error:", error);
+        } finally {
+            hideLoader();
+        }
+    }
+
+    // ---------- Overview reload ----------
+    function reloadTab1(caseNo) {
+        showLoader();
+
+        fetch(`/ServiceRequests/ServiceRequest/_ServiceRequestMainInfo?caseNo=${caseNo}`)
+            .then(r => {
+                if (!r.ok) throw new Error("Failed to reload partial");
+                return r.text();
+            })
+            .then(html => {
+                const tab1 = document.getElementById('mainInfo');
+                if (!tab1) {
+                    console.error("Tab2Container not found in DOM!");
+                    return;
+                }
+                tab1.innerHTML = html;
+            })
+            .catch(err => {
+                console.error("Error reloading tab:", err);
+            })
+            .finally(() => {
+                hideLoader(); // success or error
+            });
+    }
+
+    // ---------- Feedback ----------
+    function loadFeedback() {
+        document.getElementById('feedbackContainer').style.display = 'block';
+        document.getElementById('feedbackButton').style.display = 'none';
+    }
+
+    function hideFeedback() {
+        document.getElementById('feedbackContainer').style.display = 'none';
+        document.getElementById('feedbackButton').style.display = 'block';
+    }
+
+    function feedbackDataValues() {
+        const form = document.getElementById('feedbackForm');
+        const formData = new FormData(form);
+
+        const rating = formData.get('Rating');
+        const description = formData.get('Description');
+
+        console.log('Rating:', rating);
+        console.log('Description:', description);
+
+        // Validate
+        if (!rating || rating === '0') {
+            document.getElementById('ratingError3').style.display = 'block';
+            return;
+        }
+
+        if (!description || description === '') {
+            document.getElementById('descriptionError').style.display = 'block';
+            return;
+        }
+
+        submitFeedbackValues(rating, description);
+    }
+
+    async function submitFeedbackValues(rating, description) {
+        showLoader();
+        var payload = {
+            caseId: caseNo1,
+            description: description,
+            rating: rating,
+        };
+        try {
+            const response = await fetch('/ServiceRequests/ServiceRequest/SubmitFeedBack', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (response.ok) {
+                const result = await readJsonSafely(response);
+                if (result.success) {
+                    document.getElementById('feedbackContainer').style.display = 'none';
+                    document.getElementById('feedbackButton').style.display = 'none';
+                    toastr.success("Feedback submitted Successfully");
+                } else {
+                    toastr.error("Feedback submitted failed: " + result.message);
+                }
+            } else {
+                const errorText = await response.text();
+                toastr.error("Server error: " + errorText);
+            }
+        } catch (error) {
+            toastr.error("Server error: " + error);
+        } finally {
+            window.location.reload();
+            hideLoader();
+        }
+    }
+
+    // ---------- Photo ----------
+    async function uploadPhoto(documentTypeID, attachementType) {
+        showLoader();
+        const fileInput = document.getElementById(`photoInput`);
+        const expiryDate = "";
+        if (!fileInput.files.length) {
+            toastr.warning("Please select a photo.");
+            return;
+        }
+
+        const file = fileInput.files[0];
+        const formData = new FormData();
+        formData.append("caseNo", caseNo1);
+        formData.append("expiry", expiryDate);
+        formData.append("attachementType", attachementType);
+        formData.append("documentTypeId", documentTypeID);
+        formData.append("file", file);
+
+        try {
+            const response = await fetch('/ServiceRequests/ServiceRequest/ServiceRequestUploadReportDoc', {
+                method: 'POST',
+                body: formData
+            });
+            if (response.ok) {
+                const result = await readJsonSafely(response);
+                if (result.success) {
+                    toastr.success("Photo Uploaded successfully");
+                } else {
+                    toastr.error("Upload failed: " + result.message);
+                }
+            } else {
+                const errorText = await response.text();
+                toastr.error("Server error: " + errorText);
+            }
+        } catch (error) {
+            toastr.error("Network error: " + error);
+        } finally {
+            window.location.reload();
+            hideLoader();
+        }
+    }
+
+    function openImageInNewTab(imageSrc) {
+        window.open(imageSrc, '_blank');
+    }
+
+    window.showPopupDelete = function (photoId) {
+        console.log("Photo ID:", photoId);
+
+        document.getElementById('photoID').value = photoId;
+        document.getElementById('deleteModal').style.display = 'block';
+    };
+
+    window.closePopupDelete = function () {
+        document.getElementById('deleteModal').style.display = 'none';
+    };
+
+    // Delete photo with confirmation
+    async function deletePhoto() {
+        showLoader();
+
+        var photoID = document.getElementById('photoID').value;
+        const formData = new FormData();
+        formData.append("PhotoId", photoID);
+
+        try {
+            const response = await fetch('/ServiceRequests/ServiceRequest/ServiceRequestDeleteReportDoc', {
+                method: 'POST',
+                body: formData
+            });
+            if (response.ok) {
+                const result = await readJsonSafely(response);
+                if (result.success) {
+                    toastr.success("Photo deleted successful");
+                    closePopupDelete();
+                } else {
+                    toastr.error("Photo deleted failed: " + result.message);
+                    closePopupDelete();
+                }
+            } else {
+                const errorText = await response.text();
+                toastr.error("Server error: " + errorText);
+            }
+        } catch (error) {
+            toastr.error("Server error: " + error);
+        } finally {
+            window.location.reload();
+            hideLoader();
+        }
+    }
+</script>
+
+@* =====================================================================
+    FEEDBACK STAR RATING
+    ===================================================================== *@
+<script>document.addEventListener('DOMContentLoaded', function () {
+        const starsContainer = document.getElementById('starsRating');
+        if (starsContainer) {
+            const stars = starsContainer.querySelectorAll('i');
+            const ratingInput = document.getElementById('ratingValue');
+            let selectedRating = 0;
+
+            stars.forEach(star => {
+                star.addEventListener('click', function () {
+                    selectedRating = parseInt(this.getAttribute('data-rating'));
+                    ratingInput.value = selectedRating;
+                    updateStars(selectedRating);
+                    document.getElementById('ratingError').style.display = 'none';
+                });
+
+                star.addEventListener('mouseenter', function () {
+                    const rating = parseInt(this.getAttribute('data-rating'));
+                    updateStars(rating);
+                });
+            });
+
+            starsContainer.addEventListener('mouseleave', function () {
+                updateStars(selectedRating);
+            });
+
+            function updateStars(rating) {
+                stars.forEach((star, index) => {
+                    if (index < rating) {
+                        star.classList.remove('far');
+                        star.classList.add('fas');
+                    } else {
+                        star.classList.remove('fas');
+                        star.classList.add('far');
+                    }
+                });
+            }
+
+            // Form validation
+            const form = document.getElementById('feedbackForm');
+            if (form) {
+                form.addEventListener('submit', function (e) {
+                    if (selectedRating === 0) {
+                        e.preventDefault();
+                        document.getElementById('ratingError').style.display = 'block';
+                    }
+                });
+            }
+        }
+    });</script>
+
+@* =====================================================================
+    EMIRATES ID SCANNING (Tesseract OCR)
+    ===================================================================== *@
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+
+<script>// Attach events to the file inputs
+    document.getElementById("UploadEIDFrontFile").addEventListener("change", function () {
+        scanIDCard(this, "front");
+    });
+
+    document.getElementById("UploadEIDBackFile").addEventListener("change", function () {
+        scanIDCard(this, "back");
+    });
+
+    // Main scan function (Tesseract)
+    let frontSideData = null;
+    let backSideData = null;
+
+    async function scanIDCard(fileInput, side) {
+        showLoaderEID();
+        const file = fileInput.files[0];
+        if (!file) {
+            toastr.warning("Please select a file.");
+            hideLoaderEID();
+            return null;
+        }
+
+        console.log(`📄 Scanning ${side.toUpperCase()} side...`);
+
+        try {
+            const result = await Tesseract.recognize(file, 'eng', {
+                tessedit_char_whitelist: '0123456789/-',
+                logger: console.log,
+                tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE // or .SINGLE_BLOCK
+            });
+
+            const text = result.data.text;
+            console.log("🔍 Extracted Text:", text);
+
+            let parsedData;
+            if (side == "front") {
+                parsedData = await emirateIDParsingFrontSide(text);
+            } else {
+                parsedData = await emirateIDParsingBackSide(text);
+            }
+
+            // Check if the user uploaded the wrong side
+            if (parsedData && parsedData.detectedSide) {
+                if (side === "front" && parsedData.detectedSide === "back") {
+                    toastr.warning("⚠️ It looks like you uploaded the BACK side instead of the FRONT side. Please upload the correct side.");
+                    fileInput.value = ""; // Clear the file
+                    hideLoaderEID();
+                    return;
+                }
+
+                if (side === "back" && parsedData.detectedSide === "front") {
+                    toastr.warning("⚠️ It looks like you uploaded the FRONT side instead of the BACK side. Please upload the correct side.");
+                    fileInput.value = ""; // Clear the file
+                    hideLoaderEID();
+                    return;
+                }
+
+                if (parsedData.detectedSide === "unknown") {
+                    toastr.warning("⚠️ Unable to detect Emirates ID information. Please ensure the image is clear and try again. Please upload the correct side");
+                    fileInput.value = ""; // Clear the file
+                    hideLoaderEID();
+                    return;
+                }
+            }
+
+            return null;
+
+        } catch (err) {
+            console.error("❌ OCR ERROR:", err);
+            toastr.error("Error while scanning: " + err.message);
+            return null;
+        } finally {
+            hideLoaderEID();
+        }
+    }
+
+    async function emirateIDParsingFrontSide(text) {
+        showLoaderEID();
+        const formData = new FormData();
+        formData.append("text", text);
+        try {
+            const response = await fetch('/ServiceRequests/ServiceRequest/ParseFront', {
+                method: 'POST',
+                body: formData
+            });
+            if (response.ok) {
+                const result = await readJsonSafely(response);
+                populateFields(result);
+                return result;
+            } else {
+                const errorText = await response.text();
+                return null;
+            }
+        } catch (error) {
+            return null;
+        } finally {
+            hideLoaderEID();
+        }
+    }
+
+    async function emirateIDParsingBackSide(text) {
+        showLoaderEID();
+        const formData = new FormData();
+        formData.append("text", text);
+        try {
+            const response = await fetch('/ServiceRequests/ServiceRequest/ParseBack', {
+                method: 'POST',
+                body: formData
+            });
+            if (response.ok) {
+                const result = await readJsonSafely(response);
+                populateFields(result);
+                return result;
+            } else {
+                const errorText = await response.text();
+                return null;
+            }
+        } catch (error) {
+            return null;
+        } finally {
+            hideLoaderEID();
+        }
+    }
+
+    // Push parsed values into the form fields
+    async function populateFields(data) {
+        const map = {
+            fullName: "Name",
+            idNumber: "IDNumber",
+            dateOfBirth: "DOBDate",
+            expiryDateConfirmation: "ExpiryDateConfirmation",
+            IssuingDate: "IssuingDate",
+            expiryDate: "expiryEIDDateInput",
+            nationality: "Nationality",
+            sex: "Sex",
+            cardNumber: "CardNumber"
+        };
+
+        Object.keys(map).forEach(k => {
+            if (data[k] && document.getElementById(map[k])) {
+                document.getElementById(map[k]).value = data[k];
+            }
+        });
+
+        var frontImg = document.getElementById("UploadEIDFrontFile").value;
+        var backImg = document.getElementById("UploadEIDBackFile").value;
+        var expiry = document.getElementById("expiryEIDDateInput").value;
+
+        const isValid = await validateDate(expiry);
+
+        if (frontImg != "" && backImg != "" && isValid) {
+            document.getElementById("nextEIDBtn").disabled = false;
+        } else {
+            document.getElementById("expiryEIDDateInput").value = "";
+        }
+    }
+
+    // Validate the scanned expiry date on the server
+    async function validateDate(expiry) {
+        if (!expiry) return false;
+
+        try {
+            const response = await fetch('/ServiceRequests/ServiceRequest/ValidateDate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `dateString=${encodeURIComponent(expiry)}`
+            });
+
+            const result = await readJsonSafely(response);
+
+            if (result.isValid) {
+                return true;
+            } else {
+                toastr.error(
+                    `The scanned expiry date (${expiry}) is invalid. Please select the expiry date manually to continue.`
+                );
+                return false;
+            }
+        } catch (error) {
+            console.error('Validation error:', error);
+            toastr.error('Failed to validate date');
+            return false;
+        }
+    }
+
+    // When the user picks the expiry date manually, enable the button
+    document.getElementById("expiryEIDDateInput").addEventListener("change", function () {
+        var frontImg = document.getElementById("UploadEIDFrontFile").value;
+        var backImg = document.getElementById("UploadEIDBackFile").value;
+
+        if (frontImg == "" || backImg == "") {
+            toastr.error("Please select file first");
+            document.getElementById("expiryEIDDateInput").value = "";
+            return;
+        }
+
+        if (this.value && frontImg != "" && backImg != "") {
+            document.getElementById("nextEIDBtn").disabled = false;
+        }
+    });
+
+    document.getElementById("expiryDateInput").addEventListener("change", function () {
+        var file = document.getElementById("UploadFile").value;
+        if (file == "") {
+            toastr.error("Please select file first");
+            document.getElementById("expiryDateInput").value = "";
+            return;
+        }
+        if (this.value && file != "") {
+            document.getElementById("uploadBtn").disabled = false;
+        }
+    });</script>
+
+@* =====================================================================
+    DOCUMENTS: upload / replace / delete / download
+    ===================================================================== *@
+<script>$('#paymentTab').on('click', function () {
+        $('#paymentTabContainer').load('/YourPage?handler=PaymentInfo&serviceRequestNo=123');
+    });
+
+    function openUploadModal(index, reqNo, docTypeId, id, docName, callFrom, isRejected) {
+        // Set modal title + hidden fields
+        document.getElementById("modalTitle").innerText = callFrom + " — " + docName;
+        document.getElementById("docNameLabel").innerText = docName;
+        document.getElementById("uploadReqNo").value = reqNo;
+        document.getElementById("uploadDocTypeId").value = docTypeId;
+        document.getElementById("uploadEIDDocTypeId").value = id;
+        document.getElementById("isRejected").value = isRejected;
+        document.getElementById("IDD").value = id;
+
+        // Reset fields
+        document.getElementById("UploadFile").value = "";
+        document.getElementById("expiryDateInput").value = "";
+        document.getElementById('uploadBtn').innerText = callFrom;
+        document.getElementById("uploadBtn").disabled = true;
+
+        $('#uploadModel_').modal('show');
+    }
+
+    function openEMirateIDSample(index, reqNo, docTypeId, id, docName, callFrom, isRejected) {
+        document.getElementById("modalEIDTitle").innerText = callFrom + " — " + docName;
+        document.getElementById("docEIDNameLabel").innerText = docName;
+        document.getElementById("docEIDNameLabel1").innerText = docName;
+        document.getElementById("uploadEIDReqNo").value = reqNo;
+        document.getElementById("uploadEIDDocTypeId").value = docTypeId;
+        document.getElementById("IDD").value = id;
+        document.getElementById("isRejectedEID").value = isRejected;
+
+        // Reset fields
+        document.getElementById("UploadEIDFrontFile").value = "";
+        document.getElementById("UploadEIDBackFile").value = "";
+        document.getElementById("expiryEIDDateInput").value = "";
+        document.getElementById('uploadEIDBtn').innerText = callFrom;
+        $('#emirateIDSampleModal').modal('show');
+    }
+
+    function openUploadEIDModal() {
+        document.getElementById("nextEIDBtn").disabled = "";
+        document.getElementById("expiryEIDDateInput").value = "";
+        document.getElementById("IDNumber").value = "";
+        document.getElementById("Nationality").innerText = "";
+        document.getElementById("Name").value = "";
+        document.getElementById("Name").innerText = "";
+        document.getElementById("DOBDate").innerText = "";
+        $('#emirateIDSampleModal').modal('hide');
+        $('#uploadModelEID_').modal('show');
+    }
+
+    function openConfirmationEIDModal() {
+        mergeFiles();
+        $('#uploadModelEID_').modal('hide');
+        $('#confirmationModelEID_').modal('show');
+    }
+
+    // Merge front + back images into one canvas (front on top, back below)
+    function mergeFiles() {
+        const frontFile = document.getElementById("UploadEIDFrontFile").files[0];
+        const backFile = document.getElementById("UploadEIDBackFile").files[0];
+
+        if (!frontFile || !backFile) return;
+
+        const frontImg = new Image();
+        const backImg = new Image();
+
+        frontImg.onload = () => {
+            backImg.onload = () => {
+                // Canvas width = max(front, back), height = front + back
+                const canvas = document.getElementById("mergedCanvas");
+                canvas.width = Math.max(frontImg.width, backImg.width);
+                canvas.height = frontImg.height + backImg.height;
+
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(frontImg, 0, 0);
+                ctx.drawImage(backImg, 0, frontImg.height); // draw below front
+
+                // Show as an <img>
+                document.getElementById("mergedImage").src = canvas.toDataURL("image/png");
+            };
+            backImg.src = URL.createObjectURL(backFile);
+        };
+        frontImg.src = URL.createObjectURL(frontFile);
+    }
+
+    function clearExpiryDate() {
+        document.getElementById("expiryDateInput").value = "";
+        document.getElementById("uploadBtn").disabled = true;
+    }
+
+    async function submitUploadEID() {
+        btnshowLoader("uploadEIDBtn");
+        const canvas = document.getElementById("mergedCanvas");
+        let base64 = canvas.toDataURL("image/png");
+
+        // Convert to a real File object
+        let file = base64ToFile(base64, "signature.png");
+
+        // Check file size (10 MB)
+        if (file.size > 10 * 1024 * 1024) {
+            toastr.error("File size must be 10 MB or less. Please upload again.");
+            fileInput.value = ""; // reset file input so user can re-upload
+            return;
+        }
+
+        // Collect form values
+        let reqNo = document.getElementById("uploadEIDReqNo").value;
+        let expiryDate = document.getElementById("ExpiryDateConfirmation").value;
+        let issuingDate = document.getElementById("IssuingDate").value;
+        let docName = document.getElementById("docEIDNameLabel").innerText;
+        let docTypeId = document.getElementById("uploadEIDDocTypeId").value;
+        let emirateIdNumber = document.getElementById("IDNumber").value;
+        let nationality = document.getElementById("Nationality").value;
+        let nameEng = document.getElementById("Name").value;
+        let nameAr = document.getElementById("Name").value;
+        let dOB = document.getElementById("DOBDate").value;
+        let idd = document.getElementById("IDD").value;
+
+        if (!expiryDate || expiryDate.trim() === "") {
+            toastr.error("Expiry Date is required!");
+            btnhideLoader("uploadEIDBtn");
+            return;
+        }
+
+        if (!docName || docName.trim() === "") {
+            toastr.error("Document Name is required!");
+            btnhideLoader("uploadEIDBtn");
+            return;
+        }
+
+        if (!emirateIdNumber || emirateIdNumber.trim() === "") {
+            toastr.error("Emirates ID Number is required!");
+            btnhideLoader("uploadEIDBtn");
+            return;
+        }
+
+        if (!nationality || nationality.trim() === "") {
+            toastr.error("Nationality is required!");
+            btnhideLoader("uploadEIDBtn");
+            return;
+        }
+
+        if (!nameEng || nameEng.trim() === "") {
+            toastr.error("Name (English) is required!");
+            btnhideLoader("uploadEIDBtn");
+            return;
+        }
+
+        if (!nameAr || nameAr.trim() === "") {
+            toastr.error("Name (Arabic) is required!");
+            btnhideLoader("uploadEIDBtn");
+            return;
+        }
+
+        if (!dOB || dOB.trim() === "") {
+            toastr.error("Date of Birth is required!");
+            btnhideLoader("uploadEIDBtn");
+            return;
+        }
+
+        let callingFrom = document.getElementById("modalEIDTitle").innerText;
+        var isRejected = document.getElementById("isRejectedEID").value;
+
+        if (callingFrom.toLowerCase().includes('replace')) {
+            await updateDocument(expiryDate, idd, file, reqNo);
+        } else if (isRejected == "true") {
+            await updateDocument(expiryDate, idd, file, reqNo);
+        } else {
+            await uploadEIDDocument(caseNo1, expiryDate, docName, docTypeId, file, emirateIdNumber, nationality, nameEng, nameAr, dOB);
+        }
+
+        btnhideLoader("uploadEIDBtn");
+    }
+
+    async function uploadEIDDocument(reqNo, expiryDate, docName, docTypeId, file, emirateIdNumber, nationality, nameEng, nameAr, dOB) {
+        showLoader();
+        let formData = new FormData();
+        formData.append("caseNo", reqNo);
+        formData.append("expiry", expiryDate);
+        formData.append("attachementType", docName);
+        formData.append("documentTypeId", docTypeId);
+        formData.append("file", file);
+        formData.append("emirateIdNumber", emirateIdNumber);
+        formData.append("nationality", nationality);
+        formData.append("nameEng", docName);
+        formData.append("nameAr", docName);
+        formData.append("dOB", dOB);
+
+        try {
+            const response = await fetch('/ServiceRequests/ServiceRequest/ServiceRequestUploadEIDDoc', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const result = await readJsonSafely(response);
+                if (result.success) {
+                    toastr.success("Document Uploaded successfully");
+                    await reloadTab2(reqNo);
+                    $('#emirateIDSampleModal').modal('hide');
+                    $('#uploadModelEID_').modal('hide');
+                    $('#confirmationModelEID_').modal('hide');
+                } else {
+                    toastr.error("Upload failed: ", result.message);
+                }
+            } else {
+                const errorText = await response.text();
+                toastr.error("Server error: ", errorText);
+            }
+        } catch (error) {
+            toastr.error("Network error: ", error);
+        } finally {
+            btnhideLoader("uploadBtn");
+            hideLoader();
+        }
+    }
+
+    async function updateDocument(expiryDate, attachementId, file, reqNo) {
+        showLoader();
+
+        let formData = new FormData();
+        formData.append("expiry", expiryDate);
+        formData.append("attachementId", attachementId);
+        formData.append("file", file);
+
+        try {
+            const response = await fetch('/ServiceRequests/ServiceRequest/ServiceRequestUpdateDocument', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const result = await readJsonSafely(response);
+                if (result.success) {
+                    toastr.success("Document Updated successfully");
+                    await reloadTab2(reqNo);
+                    $('#uploadModel_').modal('hide');
+                    $('#confirmationModelEID_').modal('hide');
+                } else {
+                    toastr.error("Upload failed: ", result.message);
+                }
+            } else {
+                const errorText = await response.text();
+                toastr.error("Server error: ", errorText);
+            }
+        } catch (error) {
+            toastr.error("Network error: ", error);
+        } finally {
+            hideLoader();
+        }
+    }
+
+    function base64ToFile(base64, fileName) {
+        let arr = base64.split(',');
+        let mime = arr[0].match(/:(.*?);/)[1];
+        let bstr = atob(arr[1]);
+        let n = bstr.length;
+        let u8arr = new Uint8Array(n);
+
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+
+        return new File([u8arr], fileName, { type: mime });
+    }
+
+    // ---------- Regular document upload ----------
+    function submitUpload() {
+        showLoader();
+        let fileInput = document.getElementById("UploadFile");
+        let file = fileInput.files[0];
+        let fileSizeKB = file.size / 1024;
+
+        // Check file size (10 MB)
+        if (file.size > 10 * 1024 * 1024) {
+            toastr.error("File size must be 10 MB or less. Please upload again.");
+            fileInput.value = ""; // reset file input so user can re-upload
+            return;
+        }
+
+        let reqNo = document.getElementById("uploadReqNo").value;
+        let docTypeId = document.getElementById("uploadDocTypeId").value;
+        let docName = document.getElementById("docNameLabel").innerText;
+        let expiryDate = document.getElementById("expiryDateInput").value;
+        let callingFrom = document.getElementById("modalTitle").innerText;
+        let idd = document.getElementById("IDD").value;
+
+        var isRejected = document.getElementById("isRejected").value;
+        if (callingFrom.toLowerCase().includes('replace')) {
+            updateDocument(expiryDate, idd, file, reqNo);
+        } else if (isRejected == "true") {
+            updateDocument(expiryDate, idd, file, reqNo);
+        } else {
+            uploadDocument(caseNo1, expiryDate, docName, docTypeId, file);
+        }
+    }
+
+    async function uploadDocument(reqNo, expiryDate, docName, docTypeId, file) {
+        showLoader();
+        let formData = new FormData();
+        formData.append("caseNo", reqNo);
+        formData.append("expiry", expiryDate);
+        formData.append("attachementType", docName);
+        formData.append("documentTypeId", docTypeId);
+        formData.append("file", file);
+
+        try {
+            const response = await fetch('/ServiceRequests/ServiceRequest/ServiceRequestUploadReportDoc', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const result = await readJsonSafely(response);
+                if (result.success) {
+                    toastr.success("Document Uploaded successfully");
+                    await reloadTab2(reqNo);
+                    $('#uploadModel_').modal('hide');
+                } else {
+                    toastr.error("Upload failed: ", result.message);
+                }
+            } else {
+                const errorText = await response.text();
+                toastr.error("Server error: ", errorText);
+            }
+        } catch (error) {
+            toastr.error("Network error: ", error);
+        } finally {
+            btnhideLoader("uploadBtn");
+            hideLoader();
+        }
+    }
+
+    // ---------- Stage confirmation ----------
+    function showConfirmationModel() {
+        $('#stageConfirmationModal').modal('show');
+    }
+
+    function cancelConfirmationModel() {
+        $('#stageConfirmationModal').modal('hide');
+    }
+
+    function closeConfirmationModel() {
+        $('#stageConfirmationModal').modal('hide');
+
+        // Wait for the modal to fully close, then redirect
+        $('#stageConfirmationModal').on('hidden.bs.modal', function () {
+            window.location.href = '/RenewalFlow/Renewal/RenewalContracts';
+        });
+    }
+
+    async function UpdateDocumentStage(dueActionID) {
+        btnshowLoader("btn-updateDocStage");
+        const data = {
+            DueActionId: dueActionID.toString()
+        };
+        try {
+            const response = await fetch('/ServiceRequests/ServiceRequest/ServiceRequestUpdateDocumentsStage', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (response.ok) {
+                btnhideLoader("btn-updateDocStage");
+                const data1 = await readJsonSafely(response);
+                if (data1.message == "Stage Updated Successfully") {
+                    toastr.success("Stage Updated Successfully");
+                    await reloadTab2(caseNo1);
+                    showConfirmationModel();
+                } else {
+                    toastr.error("Stage Updated failed: " + data1.message);
+                }
+            } else {
+                btnhideLoader("btn-updateDocStage");
+                toastr.error("Stage Updated failed: " + response.message);
+            }
+        } catch (error) {
+            btnhideLoader("btn-updateDocStage");
+            toastr.error("Stage Updated failed: " + error);
+        }
+    }
+
+    // ---------- Delete document ----------
+    function DeleteDocument(attachmentId, docName) {
+        document.getElementById("uploadAttachmentId").value = attachmentId;
+        document.getElementById("uploadeddocName").innerHTML = "<strong>" + docName + "</strong>";
+
+        $('#confirmationModal').modal('show');
+    }
+
+    async function removeDocument() {
+        showLoader();
+        btnshowLoader("btn-delete");
+        let attachmentId = document.getElementById("uploadAttachmentId").value;
+        const data = {
+            PhotoId: attachmentId.toString()
+        };
+        try {
+            const response = await fetch('/ServiceRequests/ServiceRequest/ServiceRequestRemoveDocuments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (response.ok) {
+                btnhideLoader("btn-delete");
+                const data1 = await readJsonSafely(response);
+                if (data1.status == "file Deleted Successfully") {
+                    toastr.success("Deleted successfully");
+                    await reloadTab2(caseNo1);
+                    $('#confirmationModal').modal('hide');
+                } else {
+                    toastr.error("Deleted failed: " + data1.status);
+                }
+            } else {
+                btnhideLoader("btn-delete");
+                toastr.error("Deleted failed: " + response.message);
+            }
+        } catch (error) {
+            btnhideLoader("btn-delete");
+            toastr.error("Deleted failed: " + error);
+        } finally {
+            hideLoader();
+        }
+    }
+
+    // ---------- Download document ----------
+    async function downloadDocument(attachmentId, reqNo, extentsion, index) {
+        showLoader();
+        var id = "btnDownload_" + index;
+        if (reqNo == "") {
+            reqNo = caseNo1;
+        }
+        btnshowLoader(id);
+        const data = {
+            CaseNo: reqNo.toString(),
+            RoleId: "1",
+            PhotoId: attachmentId.toString()
+        };
+        try {
+            const response = await fetch('/ServiceRequests/ServiceRequest/ServiceRequestDownloadDocuments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (response.ok) {
+                btnhideLoader(id);
+                extentsion = extentsion.toLowerCase();
+                const data1 = await readJsonSafely(response);
+                if (data1.path) {
+                    if (extentsion == "png" || extentsion == "jpg" || extentsion == "jpeg") {
+                        downloadImage(data1.path);
+                    } else {
+                        downloadPdf(data1.path);
+                    }
+                } else {
+                    toastr.error("Download failed: base64 path not found");
+                }
+            } else {
+                btnhideLoader(id);
+                toastr.error("Download failed: " + response.message);
+            }
+        } catch (error) {
+            btnhideLoader(id);
+            toastr.error("Download failed: " + error);
+        } finally {
+            hideLoader();
+        }
+    }
+
+    function downloadPdf(base64StringFromAPI) {
+        const base64String = base64StringFromAPI;
+        const byteCharacters = atob(base64String);
+        const byteNumbers = Array.from(byteCharacters, c => c.charCodeAt(0));
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+
+        // Open in a new tab (preview) and also download
+        const blobUrl = URL.createObjectURL(blob);
+        const newTab = window.open(blobUrl, "_blank");
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'file.pdf';
+        link.click();
+
+        URL.revokeObjectURL(link.href);
+    }
+
+    function downloadImage(base64StringFromAPI) {
+        const base64String = base64StringFromAPI;
+        const byteCharacters = atob(base64String);
+        const byteNumbers = Array.from(byteCharacters, c => c.charCodeAt(0));
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'image/png' });
+
+        // Open in a new tab (preview) and also download
+        const blobUrl = URL.createObjectURL(blob);
+        const newTab = window.open(blobUrl, "_blank");
+
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'file.jpg';
+        link.click();
+
+        URL.revokeObjectURL(link.href);
+
+        // Cleanup after a short delay (give the browser time to load)
+        setTimeout(() => {
+            URL.revokeObjectURL(blobUrl);
+        }, 3000);
+    }
+
+    function resetProgress(progressContainer, progressBar) {
+        progressBar.style.width = "0%";
+        progressBar.innerText = "0%";
+        progressContainer.style.display = "none";
+    }
+
+    // Reload the Documents tab content
+    function reloadTab2(caseNo) {
+        showLoader();
+
+        // Allow the browser to repaint the loader first
+        setTimeout(() => {
+            fetch(`/ServiceRequests/ServiceRequest/_ServiceRequestDocuments?caseNo=${caseNo}`)
+                .then(r => {
+                    if (!r.ok) throw new Error("Failed to reload partial");
+                    return r.text();
+                })
+                .then(html => {
+                    const tab2 = document.getElementById('unitInfo');
+                    if (!tab2) {
+                        console.error("Tab2Container not found in DOM!");
+                        return;
+                    }
+                    tab2.innerHTML = html;
+                })
+                .catch(err => {
+                    toastr.error("Reload failed");
+                    console.error(err);
+                })
+                .finally(() => {
+                    hideLoader();
+                });
+        }, 0);
+    }</script>
+
+@* =====================================================================
+    COMMUNICATION (send message / attachments / ticket reply download)
+    ===================================================================== *@
+<script>async function sendMessage(caseNo) {
+        const UserMessage = document.getElementById(`UserMessage`).value;
+
+        if (!UserMessage) {
+            toastr.warning("Please enter some message");
+            return;
+        }
+        const fileInput = document.getElementById("FileUpload");
+
+        // Get the first file
+        const file = fileInput.files[0];
+
+        const formData = new FormData();
+        formData.append("Message", UserMessage);
+        formData.append("CaseNo", caseNo);
+        formData.append("Attachment", file);
+        try {
+            btnshowLoader("sendBtn");
+            const response = await fetch('/ServiceRequests/ServiceRequest/SendMessage', {
+                method: 'POST',
+                body: formData
+            });
+            btnhideLoader("sendBtn");
+            if (response.ok) {
+                const result = await readJsonSafely(response);
+                if (result.status == "Ok") {
+                    toastr.success("Ticket added successfully");
+                }
+            } else {
+                const errorText = await response.text();
+                toastr.error("Server error: " + errorText);
+            }
+        } catch (error) {
+            toastr.error("Network error: " + error);
+        }
+    }
+
+    function onFileSelected(event) {
+        const input = event.target;
+        const fileName = input.files[0]?.name || '';
+        if (fileName) {
+            document.getElementById('fileName').innerText = fileName;
+            document.getElementById('selectedFileContainer').style.display = 'block';
+        }
+    }
+
+    function removeFile() {
+        const fileInput = document.getElementById('FileUpload');
+        fileInput.value = ''; // Clear input
+        document.getElementById('selectedFileContainer').style.display = 'none';
+    }
+
+    async function downloadFileGetTicket(ticketReplyId, index) {
+        var id = "btnTicketReplyId" + index;
+        btnshowLoader(id);
+        const data = {
+            TicketReplyId: ticketReplyId.toString(),
+        };
+        try {
+            const response = await fetch('/ServiceRequests/ServiceRequest/GetTikcketReplyDownloadDocuments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (response.ok) {
+                btnhideLoader(id);
+                const data1 = await readJsonSafely(response);
+                if (data1.path) {
+                    downloadImage(data1.path);
+                } else {
+                    toastr.error("Download failed: base64 path not found");
+                }
+            } else {
+                btnhideLoader(id);
+                toastr.error("Download failed: " + response.message);
+            }
+        } catch (error) {
+            btnhideLoader(id);
+            toastr.error("Download failed: " + error);
+        }
+    }</script>
+
+@* =====================================================================
+    TABS (legacy openTab) + contract info helpers
+    ===================================================================== *@
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var selectedTab = @(ViewData["SelectedTab"] ?? 1);
+
+        if (selectedTab === 1) {
+            openTab({ currentTarget: document.querySelector('#MainInfo-tab') }, 'mainInfo');
+        } else if (selectedTab === 2) {
+            openTab({ currentTarget: document.querySelector('#UnitInfo-tab') }, 'unitInfo');
+        } else if (selectedTab === 3) {
+            openTab({ currentTarget: document.querySelector('#Payments-tab') }, 'paymentInfo');
+        }
+    });
+
+    function openTab(evt, tabName, propertyID) {
+        // Hide all tab contents
+        var tabContents = document.getElementsByClassName("tab-content");
+        for (var i = 0; i < tabContents.length; i++) {
+            tabContents[i].classList.remove("active");
+        }
+
+        // Remove the active class from all tabs
+        var tabs = document.getElementsByClassName("tab");
+        for (var j = 0; j < tabs.length; j++) {
+            tabs[j].classList.remove("active");
+        }
+
+        // Show the current tab and mark the tab that opened it as active
+        document.getElementById(tabName).classList.add("active");
+        evt.currentTarget.classList.add("active");
+    }
+
+    window.fetchUnitInfo = async function (contractID) {
+        const loadingIndicator = document.getElementById('unitInfoloadingIndicator');
+        const unitInfoList = document.getElementById('unitInfoList');
+        console.log(contractID);
+
+        // Show loading indicator
+        loadingIndicator.style.display = 'block';
+
+        try {
+            var data = {
+                "ContractId": contractID
+            };
+            var response = await fetch('/Contracts/GetContractUnites', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+
+            // Check if the response is OK (status in the range 200-299)
+            if (response.ok) {
+                loadingIndicator.style.display = 'none';
+            } else {
+                console.error('Error in response:', response.status);
+                toastr.error('Error fetching data.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            toastr.error('Failed to fetch data.');
+        } finally {
+            loadingIndicator.style.display = 'none';
+        }
+    }
+
+    window.fetchPaymentInfo = async function (contractID) {
+        const loadingIndicator = document.getElementById('paymentInfoloadingIndicator');
+        const paymentInfo = document.getElementById('paymentInfo');
+        console.log(contractID);
+
+        // Show loading indicator
+        loadingIndicator.style.display = 'block';
+
+        try {
+            var data = {
+                "ContractId": contractID
+            };
+            var response = await fetch('/Contracts/GetContractPayments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+
+            if (response.ok) {
+                loadingIndicator.style.display = 'none';
+            } else {
+                console.error('Error in response:', response.status);
+                toastr.error('Error fetching data.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            toastr.error('Failed to fetch data.');
+        } finally {
+            loadingIndicator.style.display = 'none';
+        }
+    }
+
+    window.fetchPaymentChequesInfo = async function (transactioIDD) {
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const chequeInfo = document.getElementById('chequeInfo');
+        console.log("This Payment is a cheque and its transaction ID is " + transactionID);
+
+        // Show loading indicator
+        loadingIndicator.style.display = 'block';
+
+        try {
+            var data = {
+                "TransactionID": transactioIDD
+            };
+            var response = await fetch('/Contracts/GetContractPaymentsCheques', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+
+            if (response.ok) {
+                loadingIndicator.style.display = 'none';
+            } else {
+                console.error('Error in response:', response.status);
+                toastr.error('Error fetching data.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            toastr.error('Failed to fetch data.');
+        } finally {
+            loadingIndicator.style.display = 'none';
+        }
+    }
+
+    window.fetchChargesInfo = async function (contractIDD) {
+        const loadingIndicator = document.getElementById('chargesInfoloadingIndicator');
+        const chargesInfo = document.getElementById('chargesInfo');
+        console.log(contractIDD);
+
+        // Show loading indicator
+        loadingIndicator.style.display = 'block';
+        try {
+            var data = {
+                "ContractId": contractIDD
+            };
+            var response = await fetch('/Contracts/GetContractCharges', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+
+            if (response.ok) {
+                loadingIndicator.style.display = 'none';
+            } else {
+                console.error('Error in response:', response.status);
+                toastr.error('Error fetching data.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            toastr.error('Failed to fetch data.');
+        } finally {
+            loadingIndicator.style.display = 'none';
+        }
+    }
+
+    function unitDetail(unitID, unitNo) {
+        var pageName = "ContractDetail";
+        var url = '@Url.Action("GetPropertyUnitDetailNew", "Properties")' +
+            '?unitIDParam=' + encodeURIComponent(unitID) +
+            '&pageName=' + pageName;
+        window.location.href = url;
+    }
+</script>
+
+<script>// Load main info automatically
+    document.addEventListener("DOMContentLoaded", function () {
+        loadMainInfo();
+    });</script>
+
+@* =====================================================================
+    RECEIPT POPUP
+    NOTE: showPopup / closePopup are re-assigned for the cancel modal on DOMContentLoaded (above).
+    ===================================================================== *@
+<script>function showPopup(index) {
+        idexForShowRecipt = index;
+        document.getElementById("myModal").style.display = "flex";
+    }
+
+    function closePopup() {
+        document.getElementById("myModal").style.display = "none";
+    }
+
+    // Close the modal when the user clicks outside of it
+    window.onclick = function (event) {
+        const modal = document.getElementById("myModal");
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }</script>

@@ -1,0 +1,329 @@
+﻿@model ServiceRequestViewModel
+@{
+    ViewData["Title"] = "Service Requests";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    string tab = ViewBag.TabName;
+    var isFmTab = tab == "FM";
+    var isPmTab = tab == "PM";
+
+    string errorMessage = ViewBag.errorGetServiceReqPMFM;
+}
+
+@* =====================================================================
+    STYLES / VENDOR RESOURCES
+    ===================================================================== *@
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" href="~/css/site.css">
+
+<style>
+    .tab-container {
+        margin: 0 20px;
+        background-color: white;
+    }
+
+    .nav-tabs .nav-link.active {
+        background-color: white;
+        font-weight: bold;
+    }
+
+    .circle {
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        background-color: #43B9B2;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-right: 5px;
+    }
+
+    .sticky-header {
+        position: sticky;
+        top: 0;
+        background-color: white;
+        border-bottom: 1px solid #ccc;
+    }
+
+    .table-container {
+        margin: 20px;
+    }
+
+    .table thead {
+        background-color: #f0f0f0;
+    }
+</style>
+
+<div class="text-center" style="height: 100vh;">
+
+    @* ---------- Page header ---------- *@
+    <div class="card pageheader" style="box-shadow: none !important;">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <h4><i class="fa fa-scribd"></i> Service Requests</h4>
+            </div>
+            <div class="col-auto text-end">
+                <a href="@Url.Action("AddNewRequest", "ServiceRequest", new { area = "ServiceRequests" })"
+                   class="btn btn-outline-primary animate-download" title="Add Request">
+                    <i class="fa fa-add"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @* ---------- Tabs: FM (Maintenance) / PM (Leasing) ---------- *@
+    <ul class="nav nav-tabs border-tab nav-info tab-container sticky-tabs" id="serviceRequestTabs" role="tablist"
+        style="margin: 0 2px 3px 2px; margin-top: 5px; padding-top: 12px;">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link nav-border font-info tab-info @(isFmTab ? "active" : "")"
+               id="fm-tab" data-bs-toggle="tab" href="#fm" role="tab">
+                <i class="fa-solid fa-screwdriver-wrench"></i> Maintenance
+            </a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link nav-border font-info tab-info @(isPmTab ? "active" : "")"
+               id="pm-tab" data-bs-toggle="tab" href="#pm" role="tab">
+                <i class="fa-solid fa-file-contract"></i> Leasing
+            </a>
+        </li>
+    </ul>
+
+    @* ---------- Search form ---------- *@
+    <div class="card">
+        <div class="card-body">
+            <form id="form-search">
+                <div class="row mt-1">
+                    <div class="col-sm-4 tooltip-custom">
+                        <div class="form-group">
+                            <input type="text" class="form-control fromDate" id="FromDate" asp-for="FromDate"
+                                   placeholder="Select from date" value="@Model?.serviceRequestFilter?.FromDate">
+                            <div id="fromDateErrorID" style="display:none; color:red">Please select from date</div>
+                        </div>
+                        <span class="tooltip-text">Select from date</span>
+                    </div>
+                    <div class="col-sm-4 tooltip-custom">
+                        <div class="form-group">
+                            <input type="text" class="form-control toDate" id="ToDate" asp-for="ToDate"
+                                   placeholder="Select to date" value="@Model?.serviceRequestFilter?.ToDate">
+                            <div id="toDateErrorID" style="display:none; color:red">Please select to date</div>
+                        </div>
+                        <span class="tooltip-text">Select to date</span>
+                    </div>
+                    <div class="col-sm-4 text-start">
+                        <button type="button" class="btn btn-outline-primary w-48" id="btn-Search" title="Search">
+                            <i class="fa fa-search" style="font-size:14px"></i>
+                            Search
+                        </button>
+                        <button type="button" class="btn btn-warning btn-outline-warning w-48" id="resetButton">
+                            <i class="fa fa-refresh"></i> Reset
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @* ---------- Results ---------- *@
+    <div style="display: flex; flex-direction: column; height: 100%; padding: 0;">
+        @if (errorMessage != "")
+        {
+            <div class="card-header pb-0" style="flex-shrink: 0;">
+                <center style="padding-top: 50px;">
+                    <h4 style="padding-top: 5px;">@errorMessage</h4>
+                </center>
+                <i class="fa fa-refresh" aria-hidden="true" style="padding-top: 5px; font-size: 18px; color: black;"
+                   onclick="getContractsofDashboardCards('@errorMessage')"></i>
+            </div>
+        }
+        else
+        {
+            <div class="tab-content">
+
+                <div class="tab-pane fade @(isFmTab ? "show active" : "")" id="fm" role="tabpanel">
+                    @Html.Partial("_ServiceRequestTable", Model?.fmRequest?.ServiceRequests)
+                </div>
+
+                <div class="tab-pane fade @(isPmTab ? "show active" : "")" id="pm" role="tabpanel">
+                    @Html.Partial("_ServiceRequestTable", Model?.pmRequest?.ServiceRequests)
+                </div>
+
+            </div>
+        }
+    </div>
+</div>
+
+@* ---------- Full page loader ---------- *@
+<div id="fullPageLoader" style="
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0,0,0,0.5);
+                    z-index: 99999;
+                    display: none;
+                    justify-content: center;
+                    align-items: center;
+                    text-align: center;
+                    font-size: 20px;
+                    color: white;
+                ">
+    <div>
+        <div class="spinner-border text-light" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <div style="margin-top: 15px;">Loading...</div>
+    </div>
+</div>
+
+@* =====================================================================
+    SCRIPTS
+    ===================================================================== *@
+<script>
+    // =====================================================================
+    // Helpers
+    // =====================================================================
+    function showLoader() {
+        const loader = document.getElementById('fullPageLoader');
+        if (loader) loader.style.display = 'flex';
+    }
+
+    function hideLoader() {
+        const loader = document.getElementById('fullPageLoader');
+        if (loader) loader.style.display = 'none';
+    }
+
+    // =====================================================================
+    // Tabs / search / reset
+    // =====================================================================
+    $(document).ready(function () {
+
+        // Tab clicks: clear the date filters
+        $("#fm-tab").on("click", function () {
+            $("#FromDate, #ToDate").val('');
+            $("#FMRequestID").show();
+            $("#PMRequestID").hide();
+        });
+
+        $("#pm-tab").on("click", function () {
+            $("#FromDate, #ToDate").val('');
+            $("#FMRequestID").hide();
+            $("#PMRequestID").show();
+        });
+
+        // dd/mm/yyyy  ->  mm-dd-yyyy
+        function formatToMMDDYYYY(dateStr) {
+            if (!dateStr) return "";
+            const parts = dateStr.split('/');
+            if (parts.length !== 3) return "";
+            return `${parts[1]}-${parts[0]}-${parts[2]}`;
+        }
+
+        // Search button
+        $("#btn-Search").on("click", function (e) {
+            showLoader();
+            e.preventDefault();
+
+            let fromDate = $("#FromDate").val();
+            let toDate = $("#ToDate").val();
+            let activeTab = $(".nav-tabs .nav-link.active").attr("id");
+            let type = activeTab.includes("fm-tab") ? "FM" : "PM";
+
+            if (!fromDate && !toDate) {
+                toastr.error("Please select dates");
+                hideLoader();
+                return;
+            }
+
+            let fromDateSend = formatToMMDDYYYY(fromDate);
+            let toDateSend = formatToMMDDYYYY(toDate);
+
+            $.ajax({
+                url: '/ServiceRequests/ServiceRequest/ServiceRequestsFilter',
+                type: 'POST',
+                data: { fromDate: fromDateSend, toDate: toDateSend, type: type },
+                success: function (result) {
+                    hideLoader();
+                    if (type == "FM") {
+                        $("#fm").html(result);
+                    }
+                    if (type == "PM") {
+                        $("#pm").html(result);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    hideLoader();
+                    toastr.error("Something went wrong");
+                    console.error(xhr.responseText);
+                }
+            });
+        });
+
+        // Reset button: clear dates and reload the page on the active tab
+        $("#resetButton").on("click", function (e) {
+            showLoader();
+            e.preventDefault();
+            $("#FromDate, #ToDate").val('');
+
+            // Get the currently active tab
+            var activeTab = '';
+            if ($('#fm-tab').hasClass('active')) {
+                activeTab = 'FM';
+            } else if ($('#pm-tab').hasClass('active')) {
+                activeTab = 'PM';
+            }
+
+            // Redirect with the active tab parameter
+            window.location.href = '@Url.Action("ServiceRequests", "ServiceRequest", new { area = "ServiceRequests" })' +
+                (activeTab ? '?tab=' + activeTab : '?tab=FM');
+        });
+    });
+
+    // =====================================================================
+    // Date validation
+    // =====================================================================
+    $('#FromDate').on('change', function () {
+        document.getElementById("fromDateErrorID").style.display = "none";
+        validateDates();
+    });
+
+    $('#ToDate').on('change', function () {
+        document.getElementById("toDateErrorID").style.display = "none";
+        validateDates();
+    });
+
+    function validateDates() {
+        const fromDate = $('#FromDate').val();
+        const toDate = $('#ToDate').val();
+        if (fromDate && toDate) {
+            const from = new Date(fromDate.split('/').reverse().join('/'));
+            const to = new Date(toDate.split('/').reverse().join('/'));
+            if (to <= from) {
+                toastr.error('Error', "Please select valid date");
+                $('#ToDate').val(''); // Clear the To Date field if the validation fails
+            }
+        }
+    }
+
+    function validateInvoiceDates(fromDateSelector, toDateSelector, fromDateErrorID, toDateErrorID) {
+        const fromDate = $(fromDateSelector).val();
+        const toDate = $(toDateSelector).val();
+        let isValid = true;
+
+        // Hide errors initially
+        document.getElementById(fromDateErrorID).style.display = "none";
+        document.getElementById(toDateErrorID).style.display = "none";
+
+        if (!fromDate) {
+            document.getElementById(fromDateErrorID).style.display = "block";
+            isValid = false;
+        }
+
+        if (!toDate) {
+            document.getElementById(toDateErrorID).style.display = "block";
+            isValid = false;
+        }
+        return isValid;
+    }
+</script>

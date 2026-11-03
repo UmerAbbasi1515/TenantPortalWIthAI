@@ -1,0 +1,115 @@
+@model FaqsViewModelResponse
+
+@{
+    ViewData["Title"] = "FAQs ";
+    Layout = "~/Views/Shared/_Profilelayout.cshtml";
+}
+
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="~/css/site.css"> <!-- Link to your CSS file -->
+    <style>
+        .list-group-item {
+            transition: background-color 0.3s ease;
+            /* Smooth transition for background color */
+        }
+
+        .list-group-item:hover {
+            background-color: #bfd1ec;
+            /* Change to your desired hover color */
+        }
+
+        .list-group-item-custom {
+            margin-top: 4px;
+            margin-bottom: 4px;
+            position: relative;
+            display: block;
+            padding: var(--bs-list-group-item-padding-y) var(--bs-list-group-item-padding-x);
+            color: var(--bs-list-group-color);
+            text-decoration: none;
+            background-color: var(--bs-list-group-bg);
+            border: var(--bs-list-group-border-width) solid var(--bs-list-group-border-color);
+        }
+    </style>
+</head>
+<div class="card pageheader" style="margin-bottom: 0px !important;">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-sm-6">
+                <h4><i class="fa fa-info-circle"></i> FAQs</h4>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card">
+    @if (!string.IsNullOrEmpty(ViewBag.errorGetFaqs))
+        {
+        <div class="card-header pb-0" style="height: 350px;text-align: center;">
+            <center style="padding-top: 150px;">
+
+                <h4>@ViewBag.errorGetFaqs</h4>
+
+            </center>
+            <i class="fa fa-refresh" aria-hidden="true" style="padding-top: 5px; font-size: 18px; color: black;"
+               onclick="window.location.href = '@Url.Action("Faqs", "Faq", new { area = "Faqs" })'"></i>
+        </div>
+        }
+        else
+        {
+        <div class="table-responsive">
+            <table class="table mb-0" style="table-layout: fixed; margin-top: 0px !important;">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">S No</th>
+                        <th style="text-align: left;">Category Id</th>
+                        <th style="text-align: left;">Title</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < (Model.Data?.Count ?? 0); i++)
+                        {
+                            var rowClass = (i % 2 == 0) ? "even" : "odd";
+                            var faq = Model.Data?[i];
+                        <tr class="@rowClass">
+                            <td>@(i + 1)</td>
+                            
+                            <td style="text-align: left; padding-left: 10px;">
+                                <a href="@Url.Action("FaqsDetail", "Faq", new { area = "Faqs",  CategoryId = faq?.CategoryId })">
+                                    <h6 class="f-w-500" style="color: #198754; padding-left: 10px;">@faq?.CategoryId</h6>
+                                </a>
+                            </td>
+                            <td style="text-align: left;">@faq?.Title</td>
+                        </tr>
+                        }
+                </tbody>
+            </table>
+        </div>
+        }
+    </div>
+
+<script src="~/js/profile-page-scripts.js"></script>
+
+@* <div class="card custom-card-according-title">
+    <div class="listScroll">
+        <ul class="list-group ui-sortable">
+            @for (int i = 0; i < (Model.Data?.Count ?? 0); i++)
+            {
+                var rowClass = (i % 2 == 0) ? "even" : "odd";
+                <a href="@Url.Action("FaqsDetail", "Faqs" ,new { CategoryId = @Model.Data?[i].CategoryId})"
+                    onclick="@Url.Action("FaqsDetail", "Faqs")" ; return false; style="margin-top: 4px;margin-bottom: 4px;">
+                    @* <a href="#" onclick="getFaqsDetail(@Model.Data?[i].CategoryId)" ; return false;> 
+                    <li class="list-group-item @rowClass">
+                        <div style="justify-content: space-between; display: flex; align-items: center;">
+                            <div style="text-align: left;">
+                                @Model.Data?[i].Title
+                            </div>
+                            <div class="col-sm-1" style="display: flex; align-items: center;">
+                                <i class="material-icons" style="margin-left: 70px;">keyboard_arrow_right</i>
+                            </div>
+                        </div>
+                    </li>
+                </a>
+            }
+        </ul>
+    </div>
+</div> *@

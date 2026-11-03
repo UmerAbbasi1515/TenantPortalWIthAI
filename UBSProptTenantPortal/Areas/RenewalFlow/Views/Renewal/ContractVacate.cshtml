@@ -1,0 +1,221 @@
+﻿@using UBSProptTenantPortal
+@model GetVacatingReasons
+@{
+    ViewData["Title"] = "Terminate";
+    var ContractNo = ViewBag.ContractNo;
+    var ContractId = ViewBag.ContractId;
+    var dueActionIDD = ViewBag.DueActionID;
+    var directionClass = LabelsLandlordPortal._language == "English" ? "ltr" : "rtl";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var reasons = new List<string>
+{
+        "Maintenance",
+        "Moving other Units",
+        "High Rent",
+        "Job Lost",
+        "Move to other Country",
+        "Others"
+    };
+}
+
+@* =====================================================================
+     STYLES / VENDOR RESOURCES
+    ===================================================================== *@
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="~/css/site.css">
+</head>
+
+<div class="text-center" style="height: 100vh; ">
+
+    @* ---------- Page header ---------- *@
+    <div class="card pageheader sticky-header">
+        <div class="card-header">
+            <div class="row">
+                <div class="col-12 text-start">
+                    <h4>
+                        <a href="@Url.Action("RenewalContracts", "Renewal", new { area = "RenewalFlow" })"
+                           class="text-dark text-decoration-none fw-bold"
+                           style="font-size: 1.25rem;">
+                            <i class="fa fa-arrow-left me-2"></i> Contract No. @ContractNo
+                        </a>
+                    </h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-12 col-lg-12 col-xl-12 mt-2 d-flex">
+        <div style="width:100% !important">
+            <div class="card-body">
+
+                @* ---------- Title ---------- *@
+                <div class="row alert alert-light-primary  subtitle" role="alert" style="margin-left: 2px; margin-right: 2px;">
+                    <div class="col-sm-6">
+                        <h5 style=" text-align: left; padding-left: 20px;">Request to Vacate</h5>
+                    </div>
+
+                    <div class="col-sm-6 text-end">
+                        <input type="hidden" class="AllowMultipleChargeTypeWithVatPayments" value="1">
+                    </div>
+                </div>
+
+                @* ---------- Vacating reasons ---------- *@
+                <div>
+                    @foreach (var reason in Model?.Record!)
+                    {
+                        <div class="form-check d-flex align-items-center mb-2">
+                            <input class="form-check-input me-2"
+                                   type="radio"
+                                   name="SelectedReason"
+                                   value="@reason.Title"
+                                   id="@reason?.VacatingId"
+                                   onchange="onReasonChange(this)"
+                                   @(Model.SelectedReason == reason?.Title ? "checked" : "") />
+
+                            <label class="form-check-label" for="@reason?.Title?.Replace(" ", "")" style=" margin: 0px; padding-top: 5px;">
+                                @reason?.Title
+                            </label>
+                        </div>
+                    }
+                </div>
+
+                @* ---------- Extra info inputs ---------- *@
+                <div id="otherInfoUnitDiv" class="form-group mt-3" style="display: none; margin-left: 2px; margin-right: 2px;">
+                    <input type="text" name="otherUnitInfo" id="otherInfoUnitInput" class="form-control" placeholder="Other Unit Info" value="" />
+                </div>
+                <div id="otherDescriptionDiv" class="form-group mt-3" style="display: none; margin-left: 2px; margin-right: 2px;">
+                    <input type="text" name="ExtraInfo" id="otherDescriptionInput" class="form-control" placeholder="Description" value="" />
+                </div>
+
+                @* ---------- Submit ---------- *@
+                <div class="mt-4 pb-5">
+                    <a class="btn btn-primary btn-block text-white" href="#"
+                       id="btn-submit" style="display: bloc; width:50% !important"
+                       onclick="Submit(@dueActionIDD ,@ContractId , 'null')">Submit</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* =====================================================================
+         SCRIPTS
+        ===================================================================== *@
+    @section Scripts {
+        <script>
+            // =====================================================================
+            // Helpers
+            // =====================================================================
+
+            // Reads a fetch Response body once and never throws on empty / non-JSON bodies.
+            async function readJsonSafely(response, fallback = {}) {
+                try {
+                    const text = await response.text();
+                    return text ? JSON.parse(text) : fallback;
+                } catch (error) {
+                    console.error('Invalid JSON response:', error);
+                    return fallback;
+                }
+            }
+
+            // =====================================================================
+            // Reason selection
+            // =====================================================================
+            function onReasonChange(radio) {
+                const value = radio.value;
+                const extraUnitInput = document.getElementById('otherInfoUnitDiv');
+                const extraDescriptionInput = document.getElementById('otherDescriptionDiv');
+
+                if (value === "Moving other Units") {
+                    otherInfoUnitDiv.style.display = "block";
+                    extraDescriptionInput.style.display = "none";
+                }
+                else if (value === "Others") {
+                    extraDescriptionInput.style.display = "block";
+                    otherInfoUnitDiv.style.display = "none";
+                } else {
+                    otherInfoUnitDiv.style.display = "none";
+                    extraDescriptionInput.style.display = "none";
+                    document.getElementById("extraInfo").value = "";
+                }
+            }
+
+            // =====================================================================
+            // Submit vacate request
+            // =====================================================================
+            async function Submit(dueActionID, ContractID, date) {
+                debugger;
+                try {
+                    btnshowLoader("btn-submit");
+
+                    const selectedRadio = document.querySelector('input[name="SelectedReason"]:checked');
+                    if (!selectedRadio) {
+                        toastr.error("Error:", "Please select a reason");
+                        btnhideLoader("btn-submit");
+                        return;
+                    }
+
+                    const vacatingId = selectedRadio.id;
+                    const reason = selectedRadio.value;
+
+                    // Get extra inputs if shown
+                    let description = "";
+                    if (reason === "Moving other Units") {
+                        description = document.getElementById("otherInfoUnitInput").value;
+                    } else if (reason === "Others") {
+                        description = document.getElementById("otherDescriptionInput").value;
+                    }
+
+                    if (!date || date === 'null') {
+                        var now = new Date();
+                        var day = String(now.getDate()).padStart(2, '0');
+                        var month = String(now.getMonth() + 1).padStart(2, '0');
+                        var year = now.getFullYear();
+                        date = `${day}-${month}-${year}`;
+                    }
+
+                    const data = {
+                        VacatingId: vacatingId.toString(),
+                        ContractId: ContractID.toString(),
+                        DueActionId: dueActionID.toString(),
+                        Description: description.toString(),
+                        Duration: "",
+                        StartDate: "",
+                        EndDate: "",
+                        VacatingDate: date,
+                    };
+
+                    const response = await fetch('/RenewalFlow/Renewal/SubmitContractVacate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (response.ok) {
+                        const res = await readJsonSafely(response);
+
+                        if (res.success == true) {
+                            btnhideLoader("btn-submit");
+                            toastr.success("Success", "Stage updated successfully");
+                            setTimeout(function () {
+                                btnhideLoader("btn-submit");
+                                window.location.href = '@Url.Action("RenewalContracts", "Renewal", new { area = "RenewalFlow" })';
+                            }, 1000);
+                        } else {
+                            btnhideLoader("btn-submit");
+                            toastr.error("Error", res.message);
+                        }
+
+                    } else {
+                        btnhideLoader("btn-submit");
+                        toastr.error("Error", response.status);
+                    }
+                } catch (error) {
+                    btnhideLoader("btn-submit");
+                    toastr.error("Error", error);
+                }
+            }
+        </script>
+    }
+</div>

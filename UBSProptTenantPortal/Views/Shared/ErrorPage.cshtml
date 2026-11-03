@@ -1,0 +1,20 @@
+@model ErrorViewModelN
+
+@{
+    ViewData["Title"] = "Error Page";
+}
+
+<h1 class="text-danger">Error</h1>
+<p class="lead">An error occurred while processing your request.</p>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <h3>Error Message:</h3>
+    <p>@Model.ErrorMessage</p>
+}
+
+@if (!string.IsNullOrEmpty(Model.ErrorUrl))
+{
+    <h3>Request URL:</h3>
+    <p><a href="@Model.ErrorUrl" target="_blank">@Model.ErrorUrl</a></p>
+}
